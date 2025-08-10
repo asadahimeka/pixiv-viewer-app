@@ -8,10 +8,10 @@ defaults
 Chrome 124
 
 [capacitor]
-Chrome > 104
-and_chr > 104
+Chrome >= 72
+and_chr >= 72
+Android >= 8
 Safari >= 16
 ios_saf >= 16
-last 2 versions
 not dead
-> 0.2%
+> 0.1%

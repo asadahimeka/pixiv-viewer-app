@@ -555,11 +555,13 @@
   "vfK4o14WHBwqoxlLGXBhw": "Sind Sie sicher, dass Sie die Download -Geschichte löschen möchten? Heruntergeladene Dateien werden nicht gelöscht.",
   "GC421AyTxr0fbKIiTVhNt": "Deaktivieren Sie die Statusleiste der Detailseite auf transparent",
   "Rw0vijWia2YYJTECmLXnR": "Diese Option kann mit einem speziellen Bildschirm eingeschaltet werden",
-  "mq3jjWeUDS-TPnfYJQvD5": "Der direkte Verbindungsmodus von Pximg kann Bilder schneller laden, garantiert jedoch nicht die Benutzerfreundlichkeit und Stabilität.",
+  "mq3jjWeUDS-TPnfYJQvD5": "Das Laden von Bildern des Pimse Direct-Connect-Modus garantiert keine Benutzerfreundlichkeit und Stabilität",
   "8dWKEVyxLa8UjO0iuOA78": "Teilen Sie Pixiv -Benutzer",
   "hyCctySRvfcddmi6nVh9b": "Erfrischende Zugangstoken",
   "Gry1iNTJ2wm_9FMG_JpBT": "Navigationsleiste ausblenden beim Scrollen ausblenden",
   "1bFB0dqSmKBnjbVLFyJKp": "Aktuelle direkte Verbindung IP: {0}",
   "C-gNiRgJ5qHE6we1kLwaZ": "Verzeichnis herunterladen",
-  "CQXPpD9lIK5Te0yjGoy56": "Das Standardverzeichnis ist das Systembildverzeichnis"
+  "CQXPpD9lIK5Te0yjGoy56": "Das Standardverzeichnis ist das Systembildverzeichnis",
+  "8uktANA7hP_We9wM_o8lN": "Laden Sie mit dem System -Downloader herunter",
+  "9zbbiHNnDhb2eebwLd3HR": "Wenn diese Option ausgeschaltet ist, wird der integrierte Download verwendet"
 }

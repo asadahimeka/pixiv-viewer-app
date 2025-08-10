@@ -9,7 +9,7 @@
         <van-cell v-if="wvVersion" center :title="'Webview '+$t('about.version')" clickable :label="wvVersion" />
       </template>
       <van-cell center :title="$t('about.disclaimer')" is-link :label="$t('tips.click_view')" to="/setting/about/disclaimer" />
-      <van-cell center :title="$t('setting.check_update')" label="Go to Github Release" clickable @click="openGithubRelease" />
+      <van-cell center :title="$t('setting.check_update')" label="Github Release" clickable @click="openGithubRelease" />
       <van-cell
         center
         title="Github"

@@ -21,7 +21,7 @@
           <van-switch :value="appSetting.isImageCardOuterMeta" size="24" @change="v => saveAppSetting('isImageCardOuterMeta', v, true)" />
         </template>
       </van-cell>
-      <van-cell center :title="$t('mR4YFHYUnr00zmzYydrMv')" :label="$t('V-KoSeNoEiNct7oZJgCcD')">
+      <van-cell v-if="!isNavSHSetShow" center :title="$t('mR4YFHYUnr00zmzYydrMv')" :label="$t('V-KoSeNoEiNct7oZJgCcD')">
         <template #right-icon>
           <van-switch :value="appSetting.isImageFitScreen" size="24" @change="v => saveAppSetting('isImageFitScreen', v, true)" />
         </template>
@@ -66,6 +66,11 @@
       </van-cell>
       <van-cell center :title="$t('m9rhO-859d7Br05Hm5b54')" is-link :label="appSetting.dlFileNameTpl" @click="showDlFileNameTplDialog = true" />
       <van-cell center :title="$t('Rq0GHiUs_LyUxDu-IhfBb')" is-link :label="appSetting.ugoiraDefDLFormat || $t('ks96nwuAms0B8wSWBWhil')" @click="ugoiraDL.show = true" />
+      <van-cell v-if="platform.isAndroid" center :title="$t('8uktANA7hP_We9wM_o8lN')" :label="$t('9zbbiHNnDhb2eebwLd3HR')">
+        <template #right-icon>
+          <van-switch :value="appSetting.preferDownloadByDM" size="24" @change="v => saveAppSetting('preferDownloadByDM', v, true)" />
+        </template>
+      </van-cell>
     </van-cell-group>
 
     <van-cell-group :title="$t('7-drBPGRIz_BsYuc9ybCm')">
@@ -539,9 +544,17 @@ export default {
   },
   methods: {
     copyToken() {
-      const t = this.clientConfig.refreshToken
-      if (!t) return
-      copyText(t, () => this.$toast(this.$t('tips.copylink.succ')), err => this.$toast(this.$t('tips.copy_err') + ': ' + err))
+      const token = this.clientConfig.refreshToken
+      if (!token) return
+      copyText(token, () => this.$toast(this.$t('tips.copylink.succ')), err => {
+        window.umami?.track('copy_err', { err: `${err}` })
+        this.$toast(this.$t('tips.copy_err') + ': ' + err)
+        Dialog.alert({
+          title: 'Refresh Token',
+          confirmButtonText: 'Close',
+          message: `<input type="text" value="${token}" style="min-width:200px">`,
+        })
+      })
     },
     async saveClientConfig() {
       PixivAuth.writeConfig(this.clientConfig)
@@ -779,8 +792,8 @@ export default {
         const keyName = localStorage.key(i)
         settings[keyName] = localStorage.getItem(keyName)
       }
-      const blob = new Blob([btoa(encodeURI(JSON.stringify(settings)))])
-      downloadFile(blob, 'pixiv-viewer-settings.txt')
+      const blob = new Blob([btoa(encodeURI(JSON.stringify(settings)))], { type: 'text/plain;charset=utf-8' })
+      downloadFile(blob, 'pixiv-viewer-settings.txt', { subDir: 'backup' })
     },
     async checkURL(val, checkFn) {
       if (!isURL(val)) {

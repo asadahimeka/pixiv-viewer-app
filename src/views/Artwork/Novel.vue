@@ -324,12 +324,13 @@ export default {
         html: () => {
           const el = document.querySelector('.novel-view').cloneNode(true)
           el.querySelector('svg').remove()
-          return el.outerHTML
+          return '<meta charset="utf-8">' + el.outerHTML
         },
       }
       const ext = store.state.appSetting.novelDlFormat
       const novelText = actions[ext]()
-      await downloadFile(new Blob([novelText]), `${getArtworkFileName(this.artwork)}.${ext}`, { subDir: 'novel' })
+      const type = ext == 'html' ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8'
+      await downloadFile(new Blob([novelText], { type }), `${getArtworkFileName(this.artwork)}.${ext}`, { subDir: 'novel' })
     },
     doDefPnt() {
       const key = store.state.appSetting.novelDefTranslate

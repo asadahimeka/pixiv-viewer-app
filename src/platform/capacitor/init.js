@@ -88,6 +88,7 @@ async function initLocalApi() {
   document.querySelector('#ldio-loading .ldio-content')?.insertAdjacentHTML('beforeend', `<p class="ldio-title" style="top:180px;font-size:14px">${i18n.t('hyCctySRvfcddmi6nVh9b')}</p>`)
   window.__localApiMap__ = await getActionMap()
   await initBookmarkCache()
+  window.umami?.track('initLocalApi')
 }
 
 async function initSetting() {
@@ -167,7 +168,7 @@ function addCapListeners() {
         location.replace('/')
       }, 200)
     } catch (err) {
-      alert('Login Error: ', JSON.stringify(err))
+      alert('Login Error: ' + (err?.message || JSON.stringify(err)))
       Dialog.alert({ message: i18n.t('login.fail_tip') })
     }
   })

@@ -210,8 +210,12 @@ export async function downloadFile(source, fileName, options = {}) {
     loading.clear()
   } catch (err) {
     console.log('err: ', err)
+    window.umami?.track('download_file_err', { err: `${err}` })
     Toast.clear(true)
     Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + err)
+    if (typeof source == 'string') {
+      downloadLink(source, fileName)
+    }
   }
 }
 
@@ -334,6 +338,7 @@ export function loadScript(src) {
 export function isSafari() {
   if (platform.isIOS) return true
   const ua = navigator.userAgent
+  if (/Macintosh/i.test(ua)) return true
   if (!/Chrome/i.test(ua) && /Safari/i.test(ua)) return true
   return false
 }

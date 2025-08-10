@@ -19,11 +19,9 @@
         lazy-load
         :title="d.fileName"
       >
-        <template #thumb>
-          <template v-if="d.isImage">
-            <img v-if="isImgLazy" v-lazy="d.imgSrc" alt="" style="width: 100%;height: 100%;object-fit: cover;">
-            <img v-else :src="d.imgSrc" loading="lazy" alt style="width: 100%;height: 100%;object-fit: cover;">
-          </template>
+        <template v-if="d.isImage" #thumb>
+          <img v-if="isImgLazy" v-lazy="d.imgSrc" alt="" style="width: 100%;height: 100%;object-fit: cover;">
+          <img v-else :src="d.imgSrc" loading="lazy" alt style="width: 100%;height: 100%;object-fit: cover;">
         </template>
         <template #desc>
           <p style="line-height: 2;color: #555;">{{ d.date }} <span v-if="d.size" style="margin-left: 1em;">{{ d.size }}</span></p>

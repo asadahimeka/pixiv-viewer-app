@@ -12,6 +12,7 @@ import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
 import { formatBytes } from '@/utils'
 import platform from '..'
+import store from '@/store'
 
 export async function copyText(string, cb, errCb) {
   try {
@@ -59,11 +60,19 @@ export async function downloadFile(url, fileName, subpath) {
           ? ({ Referer: 'https://www.pixiv.net' })
           : ({ Host: 'i.pximg.net', Referer: 'https://www.pixiv.net' }),
       })
-    } else {
+    } else if (store.state.appSetting.preferDownloadByDM) {
       downloadUrl = url
       res = await FileDownload.download({
         uri: downloadUrl,
         fileName: 'pixiv-viewer/' + fileName,
+      })
+    } else {
+      downloadUrl = url
+      res = await Filesystem.downloadFile({
+        url: downloadUrl,
+        path: 'pixiv-viewer/' + fileName,
+        directory: platform.isAndroid ? Directory.Downloads : Directory.Documents,
+        recursive: true,
       })
     }
 
@@ -91,15 +100,14 @@ export async function downloadBlob(blob, fileName, subpath) {
 
     await writeBlob({ blob, path, directory, recursive: true })
     const { uri } = await Filesystem.getUri({ path, directory })
-    const res = { uri }
 
-    addDownloadHistory({ status: 'ok', fileName, path: res.uri })
+    addDownloadHistory({ status: 'ok', fileName, path: uri })
     Toast.clear(true)
     Toast({
-      message: i18n.t('tip.downloaded') + ': ' + decodeURIComponent(res.uri.replace('file://', '')),
+      message: i18n.t('tip.downloaded') + ': ' + decodeURIComponent(uri.replace('file://', '')),
       duration: 3000,
     })
-    return { res }
+    return { res: { uri } }
   } catch (error) {
     addDownloadHistory({ status: 'error', fileName, error: error + '' })
     return { error }

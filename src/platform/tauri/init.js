@@ -118,7 +118,7 @@ function addTauriListener() {
         location.replace('/')
       }, 200)
     } catch (err) {
-      alert(`Login Error: ${JSON.stringify(err)}'`)
+      alert(`Login Error: ${err?.message || JSON.stringify(err)}'`)
       Dialog.alert({ message: i18n.t('login.fail_tip') })
     }
   })

@@ -82,16 +82,15 @@ export default {
       this[showKey] = true
     },
     async setLocalHibi() {
-      if (this.appConfig.refreshToken?.length == 43) {
-        this.appConfig.useLocalAppApi = true
-        PixivAuth.writeConfig(this.appConfig)
-        window.umami?.track('token_login')
-        setTimeout(() => {
-          location.assign('/')
-        }, 500)
-      } else {
+      if (this.appConfig.refreshToken?.length != 43) {
         this.$toast(this.$t('login.t.d4'))
       }
+      this.appConfig.useLocalAppApi = true
+      PixivAuth.writeConfig(this.appConfig)
+      window.umami?.track('token_login', { len: this.appConfig.refreshToken?.length })
+      setTimeout(() => {
+        location.assign('/')
+      }, 500)
     },
     async openLoginWindow() {
       const res = getLoginURL()

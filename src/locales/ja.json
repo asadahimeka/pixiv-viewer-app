@@ -555,11 +555,13 @@
   "vfK4o14WHBwqoxlLGXBhw": "ダウンロード履歴をクリアしたいですか？ダウンロードされたファイルは削除されません。",
   "GC421AyTxr0fbKIiTVhNt": "詳細ページのステータスバーを無効にして透過的に",
   "Rw0vijWia2YYJTECmLXnR": "このオプションは、特別な画面でオンにすることができます",
-  "mq3jjWeUDS-TPnfYJQvD5": "PXIMG ダイレクト接続モードは、画像をより速くロードする場合がありますが、使いやすさと安定性を保証するものではありません。",
+  "mq3jjWeUDS-TPnfYJQvD5": "PXIMG ダイレクト接続モードは使いやすさと安定性を保証するものではありません。",
   "8dWKEVyxLa8UjO0iuOA78": "pixivユーザーを共有します",
   "hyCctySRvfcddmi6nVh9b": "リフレッシュアクセストークン",
   "Gry1iNTJ2wm_9FMG_JpBT": "スクロール時にナビゲーションバーを非表示にします",
   "1bFB0dqSmKBnjbVLFyJKp": "現在の直接接続IP：{0}",
   "C-gNiRgJ5qHE6we1kLwaZ": "ディレクトリをダウンロードします",
-  "CQXPpD9lIK5Te0yjGoy56": "デフォルトのディレクトリは、システムイメージディレクトリです"
+  "CQXPpD9lIK5Te0yjGoy56": "デフォルトのディレクトリは、システムイメージディレクトリです",
+  "8uktANA7hP_We9wM_o8lN": "システムダウンローダーを使用してダウンロードします",
+  "9zbbiHNnDhb2eebwLd3HR": "このオプションがオフになると、組み込みのダウンロードが使用されます"
 }

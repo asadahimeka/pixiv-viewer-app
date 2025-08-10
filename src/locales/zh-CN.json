@@ -555,11 +555,13 @@
   "vfK4o14WHBwqoxlLGXBhw": "确定要清除下载记录吗？已下载的文件不会被删除。",
   "GC421AyTxr0fbKIiTVhNt": "禁用详情页状态栏透明",
   "Rw0vijWia2YYJTECmLXnR": "异形屏可打开此项",
-  "mq3jjWeUDS-TPnfYJQvD5": "pximg 直连模式加载图片可能较快，但不保证可用性及稳定性",
+  "mq3jjWeUDS-TPnfYJQvD5": "pximg 直连模式加载图片不保证可用性及稳定性",
   "8dWKEVyxLa8UjO0iuOA78": "分享 Pixiv 用户",
   "hyCctySRvfcddmi6nVh9b": "刷新访问令牌中",
   "Gry1iNTJ2wm_9FMG_JpBT": "滚动时隐藏导航栏",
   "1bFB0dqSmKBnjbVLFyJKp": "当前直连 IP：{0}",
   "C-gNiRgJ5qHE6we1kLwaZ": "下载目录",
-  "CQXPpD9lIK5Te0yjGoy56": "默认系统图片目录"
+  "CQXPpD9lIK5Te0yjGoy56": "默认系统图片目录",
+  "8uktANA7hP_We9wM_o8lN": "使用系统下载器下载",
+  "9zbbiHNnDhb2eebwLd3HR": "关闭此选项后将使用内建下载"
 }

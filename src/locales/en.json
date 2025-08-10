@@ -556,11 +556,13 @@
   "vfK4o14WHBwqoxlLGXBhw": "Are you sure you want to clear the download history? \nDownloaded files will not be deleted.",
   "GC421AyTxr0fbKIiTVhNt": "Disable the status bar of the details page to transparently",
   "Rw0vijWia2YYJTECmLXnR": "This option can be turned on with a special screen",
-  "mq3jjWeUDS-TPnfYJQvD5": "PXIMG direct connection mode may load images faster, but it does not guarantee usability and stability.",
+  "mq3jjWeUDS-TPnfYJQvD5": "PXIMG direct connection mode does not guarantee usability and stability.",
   "8dWKEVyxLa8UjO0iuOA78": "Share Pixiv users",
   "hyCctySRvfcddmi6nVh9b": "Refreshing Access Token",
   "Gry1iNTJ2wm_9FMG_JpBT": "Hide navigation bar when scrolling",
   "1bFB0dqSmKBnjbVLFyJKp": "Current direct connection IP: {0}",
   "C-gNiRgJ5qHE6we1kLwaZ": "Download directory",
-  "CQXPpD9lIK5Te0yjGoy56": "The default directory is the system image directory"
+  "CQXPpD9lIK5Te0yjGoy56": "The default directory is the system image directory",
+  "8uktANA7hP_We9wM_o8lN": "Download using the system downloader",
+  "9zbbiHNnDhb2eebwLd3HR": "When this option is turned off, the built-in download will be used"
 }
