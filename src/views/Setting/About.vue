@@ -99,13 +99,13 @@
         label="Github:asadahimeka/pixiv-viewer"
         @click="openLink('https://github.com/asadahimeka/pixiv-viewer/issues')"
       />
-      <van-cell
+      <!-- <van-cell
         center
         :title="$t('VhMNSWrg03-_ryN7nRBJ3')"
         is-link
         :label="$t('9H-9VJU67Fuabl8OgbhOr')"
         @click="openLink('https://www.nanoka.top/say/pxve_comments.html')"
-      />
+      /> -->
     </van-cell-group>
   </div>
 </template>

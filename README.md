@@ -192,7 +192,7 @@ https://github.com/asadahimeka/pixiv-viewer/discussions
 
 ## Sponsor
 
-If you find this project helpful, feel free to buy me a coffee:
+If you find this project helpful, feel free to [buy me a coffee](https://sponsors-yumine.netlify.app):
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sakurayumine)
 

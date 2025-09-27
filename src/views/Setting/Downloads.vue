@@ -56,34 +56,43 @@ export default {
   components: {
     TopBar,
   },
+  beforeRouteEnter(_to, from, next) {
+    next(vm => {
+      vm.isFromSetting = from.name == 'Setting'
+    })
+  },
   data() {
     return {
       activeTab: '0',
       dlList: [],
       isImgLazy,
+      isFromSetting: false,
     }
   },
   watch: {
-    activeTab: {
-      immediate: true,
-      async handler(val) {
-        switch (val) {
-          case '0':
-            this.dlList = await this.getHistory()
-            break
-          case '1':
-            this.dlList = await this.getDlDirFiles()
-            break
-          case '2':
-            this.dlList = (await this.getHistory()).filter(e => e.status == 'error')
-            break
-          default:
-            break
-        }
-      },
+    activeTab() {
+      this.init()
     },
   },
+  activated() {
+    this.isFromSetting && this.init()
+  },
   methods: {
+    async init() {
+      switch (this.activeTab) {
+        case '0':
+          this.dlList = await this.getHistory()
+          break
+        case '1':
+          this.dlList = await this.getDlDirFiles()
+          break
+        case '2':
+          this.dlList = (await this.getHistory()).filter(e => e.status == 'error')
+          break
+        default:
+          break
+      }
+    },
     async openFile(filePath) {
       try {
         const { openFile } = await import('@/platform/capacitor/utils')
@@ -123,11 +132,8 @@ export default {
     },
     async getDlDirFiles() {
       const { readDlDir } = await import('@/platform/capacitor/utils')
-      return (await Promise.all([
-        readDlDir('pixiv-viewer'),
-        readDlDir('pixiv-viewer/novel'),
-        readDlDir('pixiv-viewer/ugoira'),
-      ])).flat().sort((a, b) => b.ms - a.ms)
+      const files = await readDlDir()
+      return files.sort((a, b) => b.ms - a.ms)
     },
   },
 }

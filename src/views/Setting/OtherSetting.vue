@@ -59,7 +59,7 @@
         </template>
       </van-cell>
       <van-cell v-if="platform.isTauri" center :title="$t('C-gNiRgJ5qHE6we1kLwaZ')" is-link :label="saveFileDir || $t('CQXPpD9lIK5Te0yjGoy56')" @click="selSaveFileDir" />
-      <van-cell center :title="$t('IQH88ofRzNxE0CTcT0-wO')" :label="$t('setting.lab.title')">
+      <van-cell v-if="!appSetting.preferDownloadManager" center :title="$t('IQH88ofRzNxE0CTcT0-wO')" :label="$t('setting.lab.title')">
         <template #right-icon>
           <van-switch :value="appSetting.dlSubDirByAuthor" size="24" @change="v => saveAppSetting('dlSubDirByAuthor', v)" />
         </template>
@@ -68,7 +68,26 @@
       <van-cell center :title="$t('Rq0GHiUs_LyUxDu-IhfBb')" is-link :label="appSetting.ugoiraDefDLFormat || $t('ks96nwuAms0B8wSWBWhil')" @click="ugoiraDL.show = true" />
       <van-cell v-if="platform.isAndroid" center :title="$t('8uktANA7hP_We9wM_o8lN')" :label="$t('9zbbiHNnDhb2eebwLd3HR')">
         <template #right-icon>
-          <van-switch :value="appSetting.preferDownloadByDM" size="24" @change="v => saveAppSetting('preferDownloadByDM', v, true)" />
+          <van-switch
+            :value="appSetting.preferDownloadManager"
+            size="24"
+            @change="v => {
+              v && saveAppSetting('preferMediaStore', false);
+              saveAppSetting('preferDownloadManager', v, true);
+            }"
+          />
+        </template>
+      </van-cell>
+      <van-cell v-if="platform.isAndroid" center :title="$t('OcF9ZWmu2_E8bvGSIiAdJ')" :label="$t('oaNdIowRN9TQxKA0EECI4')">
+        <template #right-icon>
+          <van-switch
+            :value="appSetting.preferMediaStore"
+            size="24"
+            @change="v => {
+              v && saveAppSetting('preferDownloadManager', false);
+              saveAppSetting('preferMediaStore', v, true);
+            }"
+          />
         </template>
       </van-cell>
     </van-cell-group>
@@ -556,9 +575,9 @@ export default {
         })
       })
     },
-    async saveClientConfig() {
+    async saveClientConfig({ reload } = { reload: true }) {
       PixivAuth.writeConfig(this.clientConfig)
-      setTimeout(() => {
+      reload && setTimeout(() => {
         location.reload()
       }, 500)
     },
@@ -570,36 +589,55 @@ export default {
     },
     async setDirectPximg(val) {
       if (val) {
+        let message = this.$t('mq3jjWeUDS-TPnfYJQvD5')
+        if (platform.isAndroid) message += '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq')
         const res = await Dialog.confirm({
           title: this.$t('setting.other.direct_mode.confirm.title'),
-          message: this.$t('mq3jjWeUDS-TPnfYJQvD5'),
+          message,
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).catch(() => 'cancel')
         if (res == 'cancel') return
       }
       LocalStorage.set('PXV_PXIMG_DIRECT', val)
-      this.saveAppSetting('isDirectPximg', val, true)
+      this.saveAppSetting('isDirectPximg', val, !platform.isAndroid)
+      if (platform.isAndroid) {
+        const { setSkipSslSetting } = await import('@/platform/capacitor/utils')
+        await setSkipSslSetting(this.clientConfig.directMode || val)
+        Dialog.alert({
+          title: this.$t('tips.tip'),
+          message: this.$t('lvocRILZVORp4Y1U0x6gz'),
+          showConfirmButton: false,
+          closeOnPopstate: false,
+        })
+      }
+      this.$nextTick(() => {
+        this.hibiapi.show = false
+        this.hibiapi_.show = false
+      })
     },
     async setDirectMode(val) {
       if (val) {
         const res = await Dialog.confirm({
           title: this.$t('setting.other.direct_mode.confirm.title'),
-          message: this.$t('setting.other.direct_mode.confirm.msg'),
+          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).catch(() => 'cancel')
         if (res == 'cancel') return
-        window.umami?.track('setDirectMode', { val })
-        this.clientConfig.directMode = true
-        await this.$nextTick()
-        await this.saveClientConfig()
-      } else {
-        window.umami?.track('setDirectMode', { val })
-        this.clientConfig.directMode = false
-        await this.$nextTick()
-        await this.saveClientConfig()
       }
+      window.umami?.track('setDirectMode', { val })
+      this.clientConfig.directMode = val
+      await this.$nextTick()
+      await this.saveClientConfig({ reload: false })
+      const { setSkipSslSetting } = await import('@/platform/capacitor/utils')
+      await setSkipSslSetting(this.appSetting.isDirectPximg || val)
+      Dialog.alert({
+        title: this.$t('tips.tip'),
+        message: this.$t('lvocRILZVORp4Y1U0x6gz'),
+        showConfirmButton: false,
+        closeOnPopstate: false,
+      })
     },
     async setUseApiProxy(val) {
       if (val) {

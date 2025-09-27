@@ -118,7 +118,7 @@ export default {
       if (val) {
         const res = await Dialog.confirm({
           title: this.$t('setting.other.direct_mode.confirm.title'),
-          message: this.$t('setting.other.direct_mode.confirm.msg'),
+          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).catch(() => 'cancel')
@@ -130,6 +130,14 @@ export default {
       window.umami?.track('setDirectMode', { val })
       await this.$nextTick()
       PixivAuth.writeConfig(this.appConfig)
+      const { setSkipSslSetting } = await import('@/platform/capacitor/utils')
+      await setSkipSslSetting(val)
+      Dialog.alert({
+        title: this.$t('tips.tip'),
+        message: this.$t('lvocRILZVORp4Y1U0x6gz'),
+        showConfirmButton: false,
+        closeOnPopstate: false,
+      })
     },
   },
 }

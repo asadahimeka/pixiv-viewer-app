@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@capacitor-community/file-opener':
-        specifier: 1.0.6
-        version: 1.0.6(@capacitor/core@5.6.0)
       '@capacitor/android':
         specifier: 5.6.0
         version: 5.6.0(@capacitor/core@5.6.0)
@@ -32,6 +29,9 @@ importers:
       '@capacitor/ios':
         specifier: 5.6.0
         version: 5.6.0(@capacitor/core@5.6.0)
+      '@capacitor/preferences':
+        specifier: 5.0.8
+        version: 5.0.8(@capacitor/core@5.6.0)
       '@capacitor/share':
         specifier: 5.0.6
         version: 5.0.6(@capacitor/core@5.6.0)
@@ -86,9 +86,15 @@ importers:
       capacitor-blob-writer:
         specifier: 1.1.14
         version: 1.1.14(@capacitor/core@5.6.0)(@himeka/capacitor-filesystem@file:packages/capacitor-filesystem(@capacitor/core@5.6.0))
+      capacitor-mediastore:
+        specifier: file:packages/capacitor-mediastore
+        version: '@agorapulse/capacitor-mediastore@file:packages/capacitor-mediastore(@capacitor/core@5.6.0)'
       capacitor-native-settings:
         specifier: 5.0.1
         version: 5.0.1(@capacitor/core@5.6.0)
+      capacitor-plugin-file-opener:
+        specifier: file:packages/capacitor-plugin-file-opener
+        version: '@whiteguru/capacitor-plugin-file-opener@file:packages/capacitor-plugin-file-opener(@capacitor/core@5.6.0)'
       capacitor-plugin-filedownload:
         specifier: file:packages/capacitor-plugin-filedownload
         version: '@himeka/capacitor-plugin-filedownload@file:packages/capacitor-plugin-filedownload(@capacitor/core@5.6.0)'
@@ -216,6 +222,11 @@ packages:
 
   '@adobe/css-tools@4.3.3':
     resolution: {integrity: sha512-rE0Pygv0sEZ4vBWHlAgJLGDU7Pm8xoO6p3wsEceb7GYAjScrOHpEo8KK/eVkAcnSM+slAEtXjA2JpdjLp4fJQQ==}
+
+  '@agorapulse/capacitor-mediastore@file:packages/capacitor-mediastore':
+    resolution: {directory: packages/capacitor-mediastore, type: directory}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -742,12 +753,6 @@ packages:
     resolution: {integrity: sha512-H45s8fVLYjbhFH62dIJ3WtmJ6RSPt/3DRO0ZcT2SUiYiQyz3BLVb9ADEnLl91m74aQPS3AzzeajZHYOalWe3bg==}
     engines: {node: '>=6.9.0'}
 
-  '@capacitor-community/file-opener@1.0.6':
-    resolution: {integrity: sha512-iHsPblcgqTF8rEmvpVyAGfxuTUtV8BthoBv/zBLKEEb1vSUVONed0UTRjvvqjHxewS8LNEWVXzuMzXfQU1r1cA==}
-    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
-    peerDependencies:
-      '@capacitor/core': ^5.0.0
-
   '@capacitor/android@5.6.0':
     resolution: {integrity: sha512-6O7xV6K6c8WvQzKxOe7fnhRyoVpS3TNDXy1FyfhvOvclBvu+1JddSdFvW4e4dSL60s2c00sCzNRgYhm+cn0/dQ==}
     peerDependencies:
@@ -785,6 +790,11 @@ packages:
     resolution: {integrity: sha512-iswpOcD5us10hIF5zS4w6k/ekW0A+2pXhDV4AHOBXR4VOkOMI8QJaavgl9JvZ/NVvVNJdEN2rOKCMNh4AH08sw==}
     peerDependencies:
       '@capacitor/core': ^5.6.0
+
+  '@capacitor/preferences@5.0.8':
+    resolution: {integrity: sha512-zzz8JC2NuZ+xdBP2Cfhu4uyRUMAFoxMl7l8w5ahQPzckyt7Fk/pWATXj6IcTm7DzbsKc8ryXSsYTkv9ZL3Pfmw==}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
 
   '@capacitor/share@5.0.6':
     resolution: {integrity: sha512-/dVOW7kcuuD7hWB9Z1drArIpEk+5JCoMnMrAs2c7CLp3q5PeaXNJjTkGr6RJ1OtMhsHyXc6DAFwQ4frFkmZsgw==}
@@ -1430,6 +1440,12 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
+
+  '@whiteguru/capacitor-plugin-file-opener@file:packages/capacitor-plugin-file-opener':
+    resolution: {directory: packages/capacitor-plugin-file-opener, type: directory}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
 
   '@xml-tools/parser@1.0.11':
     resolution: {integrity: sha512-aKqQ077XnR+oQtHJlrAflaZaL7qZsulWc/i/ZEooar5JiWj1eLt0+Wg28cpa+XLney107wXqneC+oG1IZvxkTA==}
@@ -5564,6 +5580,10 @@ snapshots:
 
   '@adobe/css-tools@4.3.3': {}
 
+  '@agorapulse/capacitor-mediastore@file:packages/capacitor-mediastore(@capacitor/core@5.6.0)':
+    dependencies:
+      '@capacitor/core': 5.6.0
+
   '@ampproject/remapping@2.3.0':
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
@@ -6252,10 +6272,6 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@capacitor-community/file-opener@1.0.6(@capacitor/core@5.6.0)':
-    dependencies:
-      '@capacitor/core': 5.6.0
-
   '@capacitor/android@5.6.0(@capacitor/core@5.6.0)':
     dependencies:
       '@capacitor/core': 5.6.0
@@ -6322,6 +6338,10 @@ snapshots:
       '@capacitor/core': 5.6.0
 
   '@capacitor/ios@5.6.0(@capacitor/core@5.6.0)':
+    dependencies:
+      '@capacitor/core': 5.6.0
+
+  '@capacitor/preferences@5.0.8(@capacitor/core@5.6.0)':
     dependencies:
       '@capacitor/core': 5.6.0
 
@@ -7341,6 +7361,10 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
+
+  '@whiteguru/capacitor-plugin-file-opener@file:packages/capacitor-plugin-file-opener(@capacitor/core@5.6.0)':
+    dependencies:
+      '@capacitor/core': 5.6.0
 
   '@xml-tools/parser@1.0.11':
     dependencies:

@@ -7,7 +7,7 @@ android {
         applicationId "org.eu.cocomi.pxvek"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20250810
+        versionCode 20250927
         versionName "1.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

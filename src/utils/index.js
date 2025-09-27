@@ -1,6 +1,6 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { Toast } from 'vant'
+import { Dialog, Toast } from 'vant'
 import store from '@/store'
 import platform from '@/platform'
 import { i18n, isCNLocale } from '@/i18n'
@@ -212,10 +212,20 @@ export async function downloadFile(source, fileName, options = {}) {
     console.log('err: ', err)
     window.umami?.track('download_file_err', { err: `${err}` })
     Toast.clear(true)
-    Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + err)
-    if (typeof source == 'string') {
-      downloadLink(source, fileName)
+    if (typeof source != 'string') {
+      Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + err)
+      return
     }
+    const action = await Dialog.confirm({
+      title: i18n.t('D8R2062pjASZe9mgvpeLr'),
+      message: err + '<br>' + i18n.t('rTIZ1T04iT1thVsaytEQF'),
+      lockScroll: false,
+      closeOnPopstate: true,
+      cancelButtonText: i18n.t('common.cancel'),
+      confirmButtonText: i18n.t('common.confirm'),
+    }).catch(() => 'cancel')
+    if (action != 'confirm') return
+    downloadLink(source, fileName)
   }
 }
 

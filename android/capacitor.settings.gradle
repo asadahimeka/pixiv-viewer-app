@@ -2,9 +2,6 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/.pnpm/@capacitor+android@5.6.0_@capacitor+core@5.6.0/node_modules/@capacitor/android/capacitor')
 
-include ':capacitor-community-file-opener'
-project(':capacitor-community-file-opener').projectDir = new File('../node_modules/.pnpm/@capacitor-community+file-opener@1.0.6_@capacitor+core@5.6.0/node_modules/@capacitor-community/file-opener/android')
-
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/.pnpm/@capacitor+app@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/app/android')
 
@@ -16,6 +13,9 @@ project(':capacitor-device').projectDir = new File('../node_modules/.pnpm/@capac
 
 include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../node_modules/.pnpm/@himeka+capacitor-filesystem@file+packages+capacitor-filesystem_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-filesystem/android')
+
+include ':capacitor-preferences'
+project(':capacitor-preferences').projectDir = new File('../node_modules/.pnpm/@capacitor+preferences@5.0.8_@capacitor+core@5.6.0/node_modules/@capacitor/preferences/android')
 
 include ':capacitor-share'
 project(':capacitor-share').projectDir = new File('../node_modules/.pnpm/@capacitor+share@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/share/android')
@@ -32,8 +32,14 @@ project(':capacitor-android-shortcuts').projectDir = new File('../node_modules/.
 include ':capacitor-blob-writer'
 project(':capacitor-blob-writer').projectDir = new File('../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@himeka+capacitor-filesystem@file+packages_isrl6rjorgahlm5keuqtliz2hi/node_modules/capacitor-blob-writer/android')
 
+include ':capacitor-mediastore'
+project(':capacitor-mediastore').projectDir = new File('../node_modules/.pnpm/@agorapulse+capacitor-mediastore@file+packages+capacitor-mediastore_@capacitor+core@5.6.0/node_modules/@agorapulse/capacitor-mediastore/android')
+
 include ':capacitor-native-settings'
 project(':capacitor-native-settings').projectDir = new File('../node_modules/.pnpm/capacitor-native-settings@5.0.1_@capacitor+core@5.6.0/node_modules/capacitor-native-settings/android')
+
+include ':capacitor-plugin-file-opener'
+project(':capacitor-plugin-file-opener').projectDir = new File('../node_modules/.pnpm/@whiteguru+capacitor-plugin-file-opener@file+packages+capacitor-plugin-file-opener_@capacitor+core@5.6.0/node_modules/@whiteguru/capacitor-plugin-file-opener/android')
 
 include ':capacitor-plugin-filedownload'
 project(':capacitor-plugin-filedownload').projectDir = new File('../node_modules/.pnpm/@himeka+capacitor-plugin-filedownload@file+packages+capacitor-plugin-filedownload_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-plugin-filedownload/android')

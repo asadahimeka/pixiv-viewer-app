@@ -99,7 +99,7 @@ public class FileDownloadPlugin extends Plugin {
 
         //设置下载的路径
         // File file = new File(mContext.getExternalFilesDir(""), fileName);
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), fileName);
 
         request.setDestinationUri(Uri.fromFile(file));
         pathstr = file.getAbsolutePath();

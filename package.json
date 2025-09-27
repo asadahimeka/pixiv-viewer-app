@@ -17,7 +17,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@capacitor-community/file-opener": "1.0.6",
     "@capacitor/android": "5.6.0",
     "@capacitor/app": "5.0.6",
     "@capacitor/clipboard": "5.0.6",
@@ -25,12 +24,15 @@
     "@capacitor/device": "5.0.6",
     "@capacitor/filesystem": "file:packages/capacitor-filesystem",
     "@capacitor/ios": "5.6.0",
+    "@capacitor/preferences": "5.0.8",
     "@capacitor/share": "5.0.6",
     "@capacitor/status-bar": "5.0.6",
     "@capgo/capacitor-navigation-bar": "6.0.12",
     "capacitor-android-shortcuts": "5.0.5",
     "capacitor-blob-writer": "1.1.14",
+    "capacitor-mediastore": "file:packages/capacitor-mediastore",
     "capacitor-native-settings": "5.0.1",
+    "capacitor-plugin-file-opener": "file:packages/capacitor-plugin-file-opener",
     "capacitor-plugin-filedownload": "file:packages/capacitor-plugin-filedownload",
     "capacitor-plugin-safe-area": "2.0.6",
     "@tauri-apps/api": "2.5.0",
