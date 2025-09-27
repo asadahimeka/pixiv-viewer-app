@@ -564,5 +564,11 @@
   "C-gNiRgJ5qHE6we1kLwaZ": "Scarica la directory",
   "CQXPpD9lIK5Te0yjGoy56": "La directory predefinita è la directory di immagini di sistema",
   "8uktANA7hP_We9wM_o8lN": "Scarica utilizzando il downloader di sistema",
-  "9zbbiHNnDhb2eebwLd3HR": "Quando questa opzione è disattivata, verrà utilizzato il download integrato"
+  "9zbbiHNnDhb2eebwLd3HR": "Quando questa opzione è disattivata, verrà utilizzato il download integrato",
+  "OcF9ZWmu2_E8bvGSIiAdJ": "Salva file utilizzando MediaStore",
+  "oaNdIowRN9TQxKA0EECI4": "Puoi provare ad accendere questa opzione quando si incontra un'eccezione nel file di download.",
+  "lvocRILZVORp4Y1U0x6gz": "Le impostazioni vengono salvate, riavvia l'app per le modifiche ad avere effetto.",
+  "GRVq7phCyjYNikSeFBUpq": "ATTENZIONE: la modalità di connessione diretta salterà la verifica SSL, che può comportare un rischio per la sicurezza, risultando in dati rubati da attacchi man-in-the-middle. Si consiglia di abilitarlo solo in un ambiente di rete completamente affidabile o se utilizzato per il debug.",
+  "Vac-n5rX-GcGmqcu-bhvl": "Se la tua rete ha un normale accesso a Pixiv, non è necessario attivare questa opzione.",
+  "rTIZ1T04iT1thVsaytEQF": "Se aprire questa immagine usando il browser di sistema"
 }

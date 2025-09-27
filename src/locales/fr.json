@@ -563,5 +563,11 @@
   "C-gNiRgJ5qHE6we1kLwaZ": "Télécharger le répertoire",
   "CQXPpD9lIK5Te0yjGoy56": "Le répertoire par défaut est le répertoire d'image système",
   "8uktANA7hP_We9wM_o8lN": "Télécharger en utilisant le téléchargeur système",
-  "9zbbiHNnDhb2eebwLd3HR": "Lorsque cette option sera désactivée, le téléchargement intégré sera utilisé"
+  "9zbbiHNnDhb2eebwLd3HR": "Lorsque cette option sera désactivée, le téléchargement intégré sera utilisé",
+  "OcF9ZWmu2_E8bvGSIiAdJ": "Enregistrer des fichiers à l'aide de MediaStore",
+  "oaNdIowRN9TQxKA0EECI4": "Vous pouvez essayer d'activer cette option lorsqu'une exception est rencontrée dans le fichier de téléchargement.",
+  "lvocRILZVORp4Y1U0x6gz": "Les paramètres sont enregistrés, redémarrez l'application pour que les modifications prennent effet.",
+  "GRVq7phCyjYNikSeFBUpq": "AVERTISSEMENT: Le mode de connexion directe ignorera la vérification SSL, qui peut présenter un risque de sécurité, ce qui entraîne des données volées par des attaques d'homme dans le milieu. Il est recommandé de l'activer uniquement dans un environnement de réseau entièrement fiable ou lorsqu'il est utilisé pour le débogage.",
+  "Vac-n5rX-GcGmqcu-bhvl": "Si votre réseau a un accès normal à PIXIV, vous n'avez pas besoin d'activer cette option.",
+  "rTIZ1T04iT1thVsaytEQF": "S'il faut ouvrir cette image à l'aide du navigateur système"
 }

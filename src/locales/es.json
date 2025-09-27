@@ -563,5 +563,11 @@
   "C-gNiRgJ5qHE6we1kLwaZ": "Descargar directorio",
   "CQXPpD9lIK5Te0yjGoy56": "El directorio predeterminado es el directorio de imágenes del sistema",
   "8uktANA7hP_We9wM_o8lN": "Descargar usando el descargador del sistema",
-  "9zbbiHNnDhb2eebwLd3HR": "Cuando esta opción se apaga, se utilizará la descarga incorporada"
+  "9zbbiHNnDhb2eebwLd3HR": "Cuando esta opción se apaga, se utilizará la descarga incorporada",
+  "OcF9ZWmu2_E8bvGSIiAdJ": "Guardar archivos usando MediaStore",
+  "oaNdIowRN9TQxKA0EECI4": "Puede intentar activar esta opción cuando se encuentra una excepción en el archivo de descarga.",
+  "lvocRILZVORp4Y1U0x6gz": "Se guardan la configuración, reinicie la aplicación para que los cambios entren en vigencia.",
+  "GRVq7phCyjYNikSeFBUpq": "ADVERTENCIA: El modo de conexión directa se omitirá la verificación SSL, que puede representar un riesgo de seguridad, lo que resulta en datos robados por ataques de hombre en el medio. Se recomienda habilitarlo solo en un entorno de red totalmente confiable o cuando se usa para la depuración.",
+  "Vac-n5rX-GcGmqcu-bhvl": "Si su red tiene acceso normal a PIXIV, no necesita encender esta opción.",
+  "rTIZ1T04iT1thVsaytEQF": "Si abrir esta imagen usando el navegador del sistema"
 }

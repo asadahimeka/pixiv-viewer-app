@@ -563,5 +563,11 @@
   "C-gNiRgJ5qHE6we1kLwaZ": "下載資料夾",
   "CQXPpD9lIK5Te0yjGoy56": "預設系統圖片資料夾",
   "8uktANA7hP_We9wM_o8lN": "使用系統下載器下載",
-  "9zbbiHNnDhb2eebwLd3HR": "關閉此選項後將使用內建下載"
+  "9zbbiHNnDhb2eebwLd3HR": "關閉此選項後將使用內建下載",
+  "OcF9ZWmu2_E8bvGSIiAdJ": "使用 MediaStore 方式保存文件",
+  "oaNdIowRN9TQxKA0EECI4": "下載文件遇到異常時可嘗試打開此選項",
+  "lvocRILZVORp4Y1U0x6gz": "設置已保存，請重啟應用以使更改生效。",
+  "GRVq7phCyjYNikSeFBUpq": "警告：直連模式會跳過SSL驗證，可能存在安全風險，導致數據被中間人攻擊竊取，建議僅在完全信任的網絡環境下或用於調試時開啟。",
+  "Vac-n5rX-GcGmqcu-bhvl": "如果您的網絡可以正常訪問pixiv，則無需打開此選項。",
+  "rTIZ1T04iT1thVsaytEQF": "是否用系統瀏覽器打開此圖片"
 }

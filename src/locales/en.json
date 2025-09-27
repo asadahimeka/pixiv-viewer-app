@@ -564,5 +564,11 @@
   "C-gNiRgJ5qHE6we1kLwaZ": "Download directory",
   "CQXPpD9lIK5Te0yjGoy56": "The default directory is the system image directory",
   "8uktANA7hP_We9wM_o8lN": "Download using the system downloader",
-  "9zbbiHNnDhb2eebwLd3HR": "When this option is turned off, the built-in download will be used"
+  "9zbbiHNnDhb2eebwLd3HR": "When this option is turned off, the built-in download will be used",
+  "OcF9ZWmu2_E8bvGSIiAdJ": "Save files using MediaStore",
+  "oaNdIowRN9TQxKA0EECI4": "You can try to turn on this option when an exception is encountered in the download file.",
+  "lvocRILZVORp4Y1U0x6gz": "The settings are saved, please restart the app for the changes to take effect.",
+  "GRVq7phCyjYNikSeFBUpq": "Warning: Direct connection mode will skip SSL verification, which may pose a security risk, resulting in data stolen by man-in-the-middle attacks. It is recommended to enable it only in a fully trusted network environment or when used for debugging.",
+  "Vac-n5rX-GcGmqcu-bhvl": "If your network has normal access to pixiv, you don't need to turn on this option.",
+  "rTIZ1T04iT1thVsaytEQF": "Whether to open this image using the system browser"
 }
