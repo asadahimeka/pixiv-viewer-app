@@ -1,0 +1,57 @@
+{
+  "api": {
+    "name": "FileOpenerPlugin",
+    "slug": "fileopenerplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "open",
+        "signature": "(options: FileOpenerOptions) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "FileOpenerOptions"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "FileOpenerOptions"
+        ],
+        "slug": "open"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "FileOpenerOptions",
+      "slug": "fileopeneroptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "path",
+          "tags": [],
+          "docs": "Path to file",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "mime",
+          "tags": [],
+          "docs": "Mime to select (optional, android only)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}
