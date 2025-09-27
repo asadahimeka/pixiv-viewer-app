@@ -170,6 +170,7 @@
     <van-cell-group :title="$t('_AEPlcZHsKjnjPXQBX59p')">
       <van-cell center :title="$t('Wc3yMDMSkHUhoGx22bsP8')" is-link @click="importSettings" />
       <van-cell center :title="$t('Bi5BpYwKhUhWcm_RueGZN')" is-link @click="exportSettings" />
+      <van-cell v-if="platform.isAndroid" center :title="$t('V8DX1WzGd142O8SUrOlMP')" is-link @click="shareSettings" />
     </van-cell-group>
 
     <van-dialog
@@ -817,13 +818,13 @@ export default {
           }, 500)
         } catch (err) {
           console.log('err: ', err)
+          window.umami?.track('importSettingsError', { err })
           this.$toast(`Error: ${err.message}`)
         }
       }
       input.click()
     },
-    exportSettings() {
-      window.umami?.track('exportSettings')
+    exportSettings(action) {
       const settings = {}
       const len = localStorage.length
       for (let i = 0; i < len; i++) {
@@ -831,7 +832,19 @@ export default {
         settings[keyName] = localStorage.getItem(keyName)
       }
       const blob = new Blob([btoa(encodeURI(JSON.stringify(settings)))], { type: 'text/plain;charset=utf-8' })
+      if (action == 'return-blob') return blob
+      window.umami?.track('exportSettings')
       downloadFile(blob, 'pixiv-viewer-settings.txt', { subDir: 'backup' })
+    },
+    async shareSettings() {
+      try {
+        window.umami?.track('shareSettings')
+        const { shareSettingsFile } = await import('@/platform/capacitor/utils')
+        await shareSettingsFile(this.exportSettings('return-blob'))
+      } catch (err) {
+        console.log('err: ', err)
+        window.umami?.track('shareSettingsError', { err })
+      }
     },
     async checkURL(val, checkFn) {
       if (!isURL(val)) {

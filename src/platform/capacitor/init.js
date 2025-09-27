@@ -136,19 +136,13 @@ function addCapListeners() {
   CapApp.addListener('backButton', ev => {
     if (!ev.canGoBack || history.length <= 1) {
       CapApp.exitApp()
-      return
+    } else if (document.querySelector('.comments-popup .comments-area')) {
+      document.querySelector('.comments-popup .van-popup__close-icon')?.click()
+    } else if (document.querySelector('.fancybox__container')) {
+      document.querySelector('.fancybox__container .f-button[data-fancybox-close]')?.click()
+    } else {
+      router.back()
     }
-    const popupClose = document.querySelector('.comments-popup .van-popup__close-icon')
-    if (popupClose) {
-      popupClose.click()
-      return
-    }
-    const fancyboxClose = document.querySelector('.comments-popup .van-popup__close-icon')
-    if (fancyboxClose) {
-      fancyboxClose.click()
-      return
-    }
-    router.back()
   })
 
   CapApp.addListener('appUrlOpen', async ({ url }) => {

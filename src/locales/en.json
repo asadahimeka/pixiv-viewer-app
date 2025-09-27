@@ -570,5 +570,6 @@
   "lvocRILZVORp4Y1U0x6gz": "The settings are saved, please restart the app for the changes to take effect.",
   "GRVq7phCyjYNikSeFBUpq": "Warning: Direct connection mode will skip SSL verification, which may pose a security risk, resulting in data stolen by man-in-the-middle attacks. It is recommended to enable it only in a fully trusted network environment or when used for debugging.",
   "Vac-n5rX-GcGmqcu-bhvl": "If your network has normal access to pixiv, you don't need to turn on this option.",
-  "rTIZ1T04iT1thVsaytEQF": "Whether to open this image using the system browser"
+  "rTIZ1T04iT1thVsaytEQF": "Whether to open this image using the system browser",
+  "V8DX1WzGd142O8SUrOlMP": "Share settings"
 }

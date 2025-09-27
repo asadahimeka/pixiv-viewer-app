@@ -191,6 +191,18 @@ export async function downloadBlob(blob, fileName, subpath) {
   }
 }
 
+export async function shareSettingsFile(blob) {
+  const path = `pixiv-viewer-settings-${Date.now()}.txt`
+  const directory = Directory.External
+  await writeBlob({ blob, path, directory })
+  const { uri } = await Filesystem.getUri({ path, directory })
+  await Share.share({
+    title: i18n.t('V8DX1WzGd142O8SUrOlMP'),
+    dialogTitle: i18n.t('V8DX1WzGd142O8SUrOlMP'),
+    files: [uri],
+  })
+}
+
 export async function getPximgUri(url) {
   return platform.isAndroid ? getPximgUriAndroid(url) : getPximgUriIOS(url)
 }
