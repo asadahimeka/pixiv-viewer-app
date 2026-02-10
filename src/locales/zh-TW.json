@@ -251,9 +251,9 @@
         "label": "是否通過域前置繞過 SNI 嗅探",
         "proxy": {
           "label": "是否通過雲服務代理本地 AppApi 請求",
-          "title": "啟用 AppApi 代理"
+          "title": "啟用 App API 代理"
         },
-        "title": "啟用直連模式"
+        "title": "啟用 App API 直連模式"
       },
       "swipe_toggle": "詳情頁左右滑動瀏覽作品"
     },

@@ -311,7 +311,7 @@
           "label": "Si enviar solicitudes locales de AppApi a través de servicios en la nube",
           "title": "Habilitar el proxy AppApi"
         },
-        "title": "Habilitar modo directo"
+        "title": "Habilitar el modo directo de API"
       },
       "lang": "Idioma",
       "lang_ph": "Por favor seleccione idioma",

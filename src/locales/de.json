@@ -253,7 +253,7 @@
           "label": "Ob lokale AppApi-Anfragen über Cloud-Dienste weitergeleitet werden sollen",
           "title": "Aktivieren Sie den AppApi-Proxy"
         },
-        "title": "Aktivieren Sie den Direktmodus"
+        "title": "Aktivieren Sie den API -Direktmodus"
       },
       "swipe_toggle": "Wischen Sie auf der Detailseite nach links und rechts, um Werke zu durchsuchen"
     },

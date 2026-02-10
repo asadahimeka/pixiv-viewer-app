@@ -219,10 +219,10 @@
       "cp_token_label": "复制当前 RefreshToken 到剪贴板",
       "cp_token_title": "导出 RefreshToken",
       "direct_mode": {
-        "title": "启用直连模式",
+        "title": "启用 App API 直连模式",
         "label": "是否通过域前置绕过 SNI 嗅探",
         "proxy": {
-          "title": "启用 AppApi 代理",
+          "title": "启用 App API 代理",
           "label": "是否通过云服务代理本地 AppApi 请求"
         },
         "host": {

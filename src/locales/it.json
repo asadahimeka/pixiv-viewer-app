@@ -294,7 +294,7 @@
           "label": "Indica se inoltrare le richieste AppApi locali tramite i servizi cloud",
           "title": "Abilita proxy AppApi"
         },
-        "title": "Attiva la modalità diretta"
+        "title": "Abilita la modalità API Direct"
       },
       "swipe_toggle": "Scorri verso sinistra e verso destra nella pagina dei dettagli per sfogliare le opere"
     },

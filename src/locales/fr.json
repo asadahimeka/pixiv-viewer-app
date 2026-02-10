@@ -254,7 +254,7 @@
           "label": "S'il faut proxy les requêtes AppApi locales via les services cloud",
           "title": "Activer le proxy AppApi"
         },
-        "title": "Activer le mode direct"
+        "title": "Activer le mode API Direct"
       }
     },
     "recomm": {

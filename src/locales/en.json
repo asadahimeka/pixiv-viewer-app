@@ -251,9 +251,9 @@
         "label": "Whether to bypass SNI via domain fronting",
         "proxy": {
           "label": "Whether to proxy local AppApi requests through cloud services",
-          "title": "Enable AppApi Proxy"
+          "title": "Enable App API Proxy"
         },
-        "title": "Enable direct mode"
+        "title": "Enable App API direct mode"
       },
       "swipe_toggle": "Swipe left or right on the details page to toggle artworks"
     },
