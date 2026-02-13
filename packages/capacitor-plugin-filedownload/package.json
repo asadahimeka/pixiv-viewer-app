@@ -1,5 +1,5 @@
 {
-  "name": "@himeka/capacitor-plugin-filedownload",
+  "name": "capacitor-plugin-filedownload",
   "version": "1.0.6",
   "description": "A file download plugin for capacitor3.0+",
   "main": "dist/plugin.cjs.js",

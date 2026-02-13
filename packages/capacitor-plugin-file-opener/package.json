@@ -1,5 +1,5 @@
 {
-  "name": "@whiteguru/capacitor-plugin-file-opener",
+  "name": "capacitor-plugin-file-opener",
   "version": "5.0.1",
   "description": "Capacitor plugin to open files",
   "main": "dist/plugin.cjs.js",

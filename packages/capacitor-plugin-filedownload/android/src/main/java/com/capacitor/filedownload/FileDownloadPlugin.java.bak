@@ -1,5 +1,7 @@
 package com.capacitor.filedownload;
 
+import java.io.File;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
@@ -22,8 +24,6 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
-import java.util.Objects;
-
 @CapacitorPlugin(name = "FileDownload", permissions = {
         @Permission(
                 alias = "publicStorage",
@@ -36,36 +36,36 @@ import java.util.Objects;
 public class FileDownloadPlugin extends Plugin {
 
     static final String PUBLIC_STORAGE = "publicStorage";
+
     private static final String PERMISSION_DENIED_ERROR = "Unable to do file operation, user denied permission request";
+
+    private FileDownload implementation = new FileDownload();
 
     //下载器
     private DownloadManager downloadManager;
     private Context mContext;
     //下载的ID
     private long downloadId;
-    // 存储最终返回给前端的路径或Uri
     private String pathstr;
 
-    PluginCall savedCall;
+    PluginCall _call;
 
     @PluginMethod
     public void download(PluginCall call) {
         try {
-            // 在 Android 10 及以下，需要该权限
             if (isStoragePermissionGranted()) {
-                savedCall = call;
+                _call = call;
                 mContext = getContext();
                 downloadFile(call);
             } else {
                 requestAllPermissions(call, "permissionCallback");
             }
         } catch (Exception ex) {
-            call.reject("Error initiating file download: " + ex.getLocalizedMessage(), ex);
+            call.reject("Error downloading file: " + ex.getLocalizedMessage(), ex);
         }
     }
 
     private boolean isStoragePermissionGranted() {
-        // Android R (API 30) 及以上版本，分区存储是强制性的，不再需要运行时请求写入权限
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R || getPermissionState(PUBLIC_STORAGE) == PermissionState.GRANTED;
     }
 
@@ -76,6 +76,7 @@ public class FileDownloadPlugin extends Plugin {
             call.reject(PERMISSION_DENIED_ERROR);
             return;
         }
+
         download(call);
     }
 
@@ -84,36 +85,31 @@ public class FileDownloadPlugin extends Plugin {
         String url = call.getString("uri", "");
         String fileName = call.getString("fileName", "");
 
-        assert url != null;
-        assert fileName != null;
-        if (url.isEmpty() || fileName.isEmpty()) {
-            call.reject("URL and fileName must be provided.");
-            return;
-        }
-
         //创建下载任务
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         //移动网络情况下是否允许漫游
         request.setAllowedOverRoaming(false);
         //在通知栏中显示，默认就是显示的
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        assert fileName != null;
         request.setTitle(fileName.substring(fileName.lastIndexOf("/") + 1));
         request.setDescription(url);
         request.setVisibleInDownloadsUi(true);
         request.allowScanningByMediaScanner();
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-        pathstr = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fileName;
+
+        //设置下载的路径
+        // File file = new File(mContext.getExternalFilesDir(""), fileName);
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), fileName);
+
+        request.setDestinationUri(Uri.fromFile(file));
+        pathstr = file.getAbsolutePath();
 
         //获取DownloadManager
-        if (downloadManager == null) {
+        if (downloadManager == null)
             downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        }
         //将下载请求加入下载队列，加入下载队列后会给该任务返回一个long型的id，通过该id可以取消任务，重启任务、获取下载的文件等等
         if (downloadManager != null) {
             downloadId = downloadManager.enqueue(request);
-        } else {
-            call.reject("DownloadManager service not available.");
-            return;
         }
 
         //注册广播接收者，监听下载状态
@@ -133,68 +129,34 @@ public class FileDownloadPlugin extends Plugin {
         DownloadManager.Query query = new DownloadManager.Query();
         //通过下载的id查找
         query.setFilterById(downloadId);
-        try (Cursor cursor = downloadManager.query(query)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                @SuppressLint("Range") int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                switch (status) {
+        Cursor cursor = downloadManager.query(query);
+        if (cursor.moveToFirst()) {
+            @SuppressLint("Range") int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            switch (status) {
+                //下载暂停
+                case DownloadManager.STATUS_PAUSED:
+                    break;
+                //下载延迟
+                case DownloadManager.STATUS_PENDING:
+                    break;
+                //正在下载
+                case DownloadManager.STATUS_RUNNING:
+                    break;
+                //下载完成
+                case DownloadManager.STATUS_SUCCESSFUL:
                     //下载完成
-                    case DownloadManager.STATUS_SUCCESSFUL:
-                        mContext.unregisterReceiver(this.receiver);
-                        JSObject ret = new JSObject();
-                        ret.put("path", "file://" + pathstr);
-                        if (savedCall != null) {
-                            savedCall.resolve(ret);
-                        }
-                        break;
-                    //下载失败
-                    case DownloadManager.STATUS_FAILED:
-                        mContext.unregisterReceiver(this.receiver);
-                        @SuppressLint("Range") int reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
-                        String errorMessage = getErrorMessage(reason);
-                        if (savedCall != null) {
-                            savedCall.reject("下载失败: " + errorMessage);
-                        }
-                        break;
-                    case DownloadManager.STATUS_PAUSED:
-                    case DownloadManager.STATUS_PENDING:
-                    case DownloadManager.STATUS_RUNNING:
-                        // 可以在这里处理进度更新，但本插件未实现
-                        break;
-                }
+                    cursor.close();
+                    JSObject ret = new JSObject();
+                    ret.put("path", "file://" + pathstr);
+                    _call.resolve(ret);
+                    break;
+                //下载失败
+                case DownloadManager.STATUS_FAILED:
+                    cursor.close();
+                    mContext.unregisterReceiver(receiver);
+                    _call.reject("下载失败,请检查URL是否正确");
+                    break;
             }
-        } catch (Exception e) {
-            Logger.error(getLogTag(), "Error checking download status", e);
-            if (savedCall != null) {
-                savedCall.reject("查询下载状态时出错: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * 将 DownloadManager 的错误代码转换为可读信息
-     */
-    private String getErrorMessage(int reason) {
-        switch (reason) {
-            case DownloadManager.ERROR_CANNOT_RESUME:
-                return "无法恢复下载";
-            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                return "找不到存储设备";
-            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                return "文件已存在";
-            case DownloadManager.ERROR_FILE_ERROR:
-                return "文件操作错误 (可能是权限不足或路径无效)";
-            case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                return "HTTP数据错误";
-            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                return "存储空间不足";
-            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                return "重定向次数过多";
-            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                return "未处理的HTTP代码 (如 404, 403 等)";
-            case DownloadManager.ERROR_UNKNOWN:
-                return "未知错误";
-            default:
-                return "错误代码: " + reason;
         }
     }
 }

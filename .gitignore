@@ -25,4 +25,6 @@ yarn-error.log*
 .sourcemaps
 *.map
 
+/packages/**/android/build/*
+
 /public/static/words.txt

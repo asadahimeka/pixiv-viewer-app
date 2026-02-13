@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import store from '@/store'
 import { UA_Header } from '@/consts'
 import platform from '@/platform'
+import { LocalStorage } from '@/utils/storage'
 
 async function fetchAppNotice(notices) {
   const today = dayjs().startOf('day')
@@ -48,8 +49,13 @@ async function fetchSeasonEffects(effects) {
 
 export async function fetchNotices() {
   try {
-    const res = await fetch(`https://pxve-notice.nanoka.top/anon.json?t=${dayjs().format('YYYYMMDD')}`, { headers: UA_Header })
-    const { notices = [], effects = [] } = await res.json()
+    let res = LocalStorage.get('PXV_NOTICES')
+    if (!res) {
+      const resp = await fetch(`https://pxve-notice.nanoka.top/anon.json?t=${dayjs().format('YYYYMMDD')}`, { headers: UA_Header })
+      res = await resp.json()
+      LocalStorage.set('PXV_NOTICES', res, 3600)
+    }
+    const { notices = [], effects = [] } = res
     fetchAppNotice(notices)
     fetchSeasonEffects(effects)
   } catch (err) {

@@ -452,7 +452,7 @@ const api = {
       const res = await get('/illust_recommended', { params })
 
       if (res.illusts) {
-        relatedList = res.illusts.map(art => parseIllust(art)).filter(e => e.like >= 500)
+        relatedList = res.illusts.map(art => parseIllust(art))/* .filter(e => e.like >= 500) */
         relatedList.nextUrl = res.next_url
         if (!window.APP_CONFIG.useLocalAppApi) {
           setCache(cacheKey, relatedList, 60 * 60 * 12)

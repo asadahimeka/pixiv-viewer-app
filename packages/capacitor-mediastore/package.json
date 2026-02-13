@@ -1,5 +1,5 @@
 {
-  "name": "@agorapulse/capacitor-mediastore",
+  "name": "capacitor-mediastore",
   "version": "0.2.0",
   "description": "Manage Android media files",
   "main": "dist/plugin.cjs.js",

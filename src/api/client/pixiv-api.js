@@ -48,10 +48,13 @@ const DEFAULT_HEADERS = {
   'User-Agent': 'PixivAndroidApp/6.140.1 (Android 14.0; Pixel 8)',
 }
 
+let _tauriClient
 const getClient = async () => {
   if (!platform.isTauri) return axios
+  if (_tauriClient) return _tauriClient
   const { default: adapter } = await import('@/platform/tauri/axios-tauri-adapter')
-  return axios.create({ adapter })
+  _tauriClient = axios.create({ adapter })
+  return _tauriClient
 }
 
 function callApi(url, options) {

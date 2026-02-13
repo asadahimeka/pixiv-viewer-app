@@ -8,11 +8,8 @@ export async function onMounted() {
     webVer: CURRENT_WEB_VERSION,
     appVer: `${appInfo.version}(${appInfo.build})`,
     webViewVersion: deviceInfo.webViewVersion,
-    device: [
-      deviceInfo.platform,
-      deviceInfo.osVersion,
-      deviceInfo.model,
-      deviceInfo.manufacturer,
-    ].join('_'),
+    os: deviceInfo.platform + '_' + deviceInfo.osVersion,
+    brand: deviceInfo.manufacturer,
+    model: deviceInfo.manufacturer + '_' + deviceInfo.model,
   })
 }

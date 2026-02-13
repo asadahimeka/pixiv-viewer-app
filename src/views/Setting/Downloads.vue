@@ -19,9 +19,8 @@
         lazy-load
         :title="d.fileName"
       >
-        <template v-if="d.isImage" #thumb>
-          <img v-if="isImgLazy" v-lazy="d.imgSrc" alt="" style="width: 100%;height: 100%;object-fit: cover;">
-          <img v-else :src="d.imgSrc" loading="lazy" alt style="width: 100%;height: 100%;object-fit: cover;">
+        <template v-if="d.isImage && d.imgSrc" #thumb>
+          <LazyImage :src="d.imgSrc" style="width: 100%;height: 100%;object-fit: cover;" />
         </template>
         <template #desc>
           <p style="line-height: 2;color: #555;">{{ d.date }} <span v-if="d.size" style="margin-left: 1em;">{{ d.size }}</span></p>
@@ -45,16 +44,15 @@
 <script>
 import { Dialog } from 'vant'
 import TopBar from '@/components/TopBar'
-import store from '@/store'
+import LazyImage from '@/components/LazyImage.vue'
 import { downloadFile } from '@/utils'
 import { getCache, setCache } from '@/utils/storage/siteCache'
-
-const { isImgLazy } = store.state.appSetting
 
 export default {
   name: 'SettingDownloads',
   components: {
     TopBar,
+    LazyImage,
   },
   beforeRouteEnter(_to, from, next) {
     next(vm => {
@@ -65,7 +63,6 @@ export default {
     return {
       activeTab: '0',
       dlList: [],
-      isImgLazy,
       isFromSetting: false,
     }
   },

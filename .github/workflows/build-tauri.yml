@@ -112,7 +112,7 @@ jobs:
           VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
           VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
           VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
-          VUE_APP_PIXIV_NEXT_URL_ALTS: ${{ secrets.VUE_APP_PIXIV_NEXT_URL_ALTS }}
+          VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
           VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
           BROWSERSLIST_ENV: 'tauri'
           VUE_APP_PLATFORM: 'tauri'
