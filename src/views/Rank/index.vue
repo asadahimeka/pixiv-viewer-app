@@ -161,7 +161,7 @@ export default {
       actRankCat: '1',
       rankCatLabels: getRankCatLabels(),
       rankCatActions: getRankCatActions(),
-      showFilterFavsBtn: window.APP_CONFIG.useLocalAppApi,
+      showFilterFavsBtn: localApi.APP_CONFIG.useLocalAppApi,
       showFilterFavsPop: false,
       isFilterFavs: false,
       isHideManga,

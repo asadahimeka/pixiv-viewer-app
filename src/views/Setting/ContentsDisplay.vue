@@ -75,7 +75,7 @@ export default {
       currentContentSetting: _.cloneDeep(store.state.contentSetting),
       blockTags: '',
       blockUids: '',
-      clientConfig: { ...window.APP_CONFIG },
+      clientConfig: { ...localApi.APP_CONFIG },
       searchMinFavNum: store.state.appSetting.searchListMinFavNum,
     }
   },

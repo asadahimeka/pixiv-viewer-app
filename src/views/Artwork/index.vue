@@ -189,7 +189,7 @@ export default {
         this.artwork = art
         this.loading = false
         SessionStorage.set(`param_art_detail_${id}`, art)
-        if (window.APP_CONFIG.useLocalAppApi) {
+        if (localApi.APP_CONFIG.useLocalAppApi) {
           this.getArtwork(+id)
         } else {
           this.pushHistory(art)

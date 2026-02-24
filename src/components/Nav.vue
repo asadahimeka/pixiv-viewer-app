@@ -68,7 +68,7 @@ export default {
   },
   data() {
     return {
-      isLogin: window.APP_CONFIG.useLocalAppApi || isWebLogin,
+      isLogin: localApi.APP_CONFIG.useLocalAppApi || isWebLogin,
       isShowBackTop: document.documentElement.clientWidth > 1270,
       isDark: !!localStorage.PXV_DARK,
     }

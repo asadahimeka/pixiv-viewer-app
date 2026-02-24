@@ -65,7 +65,7 @@ export default {
       this.finished = false
     },
     getMemberFavorite() {
-      window.APP_CONFIG.useLocalAppApi
+      localApi.APP_CONFIG.useLocalAppApi
         ? this.getBookmarks()
         : this.getBookmarksWeb()
     },

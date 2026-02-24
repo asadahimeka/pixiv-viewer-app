@@ -70,12 +70,12 @@ export default {
   },
   methods: {
     async logoutApp() {
-      if (window.APP_CONFIG.useLocalAppApi) {
+      if (localApi.APP_CONFIG.useLocalAppApi) {
         const res = await Dialog.confirm({ message: this.$t('login.logout_tip') }).catch(() => {})
         if (res != 'confirm') return
         LocalStorage.remove('PXV_CLIENT_AUTH')
-        window.APP_CONFIG.useLocalAppApi = false
-        PixivAuth.writeConfig(window.APP_CONFIG)
+        localApi.APP_CONFIG.useLocalAppApi = false
+        PixivAuth.writeConfig(localApi.APP_CONFIG)
         setTimeout(() => {
           location.reload()
         }, 500)

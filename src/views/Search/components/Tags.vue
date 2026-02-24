@@ -171,7 +171,7 @@ export default {
       }
     }
 
-    @media screen and (min-width: 1280px) {
+    @media screen and (min-width: 1120px) {
       &:hover {
         img {
           transform scale(1.1)

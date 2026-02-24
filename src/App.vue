@@ -3,28 +3,44 @@
     <Preload />
     <div v-if="platform.isCapacitor" id="nav-bar-overlay"></div>
     <router-view />
+    <FpsDemo v-if="showFpsDemo" />
   </div>
 </template>
 
 <script>
-import Preload from '@/components/Preload'
+import Preload from './components/Preload.vue'
+import FpsDemo from './components/FpsDemo.vue'
 import platform from '@/platform'
 import store from '@/store'
 import { checkIsLogin } from '@/store/actions/check-login'
 import { fetchNotices } from '@/store/actions/fetch-notice'
-import { loadImtSdk } from '@/utils/translate'
+import { loadKISSTranslator } from './utils/translate'
 
 export default {
   name: 'App',
-  components: { Preload },
+  components: { Preload, FpsDemo },
   data: () => ({ platform }),
+  computed: {
+    showFpsDemo() {
+      return store.state.appSetting.showFpsDemo
+    },
+  },
+  beforeCreate() {
+    if (location.pathname != '/') return
+    if (sessionStorage.getItem('PXV_WELCOME_PAGE_DONE')) return
+    const { appStartPage } = store.state.appSetting
+    if (appStartPage) {
+      sessionStorage.setItem('PXV_WELCOME_PAGE_DONE', '1')
+      this.$router.replace(appStartPage)
+    }
+  },
   async created() {
     checkIsLogin()
     fetchNotices()
   },
   async mounted() {
     document.querySelector('#ldio-loading')?.remove()
-    if (store.state.appSetting.isAutoLoadImt) loadImtSdk(true)
+    if (store.state.appSetting.isAutoLoadKissT) loadKISSTranslator(true)
     if (platform.isCapacitor) (await import('@/platform/capacitor/mounted')).onMounted()
     if (platform.isTauri) (await import('@/platform/tauri/mounted')).onMounted()
   },
@@ -43,12 +59,12 @@ html.tauri {
 .with-body-bg.custom_theme body:not(.dark) .novel .artwork-meta .shrink::after {
   background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0));
 }
-.with-body-bg.custom_theme body:not(.dark) .image-view.shrink {
+.with-body-bg body:not(.dark) .image-view.shrink {
   max-height: 95vh;
 }
 @media screen and (max-width: 600px) {
-  .with-body-bg.custom_theme body:not(.dark) .image-view.shrink{
-    max-width: 13rem;
+  .with-body-bg body:not(.dark) .image-view.shrink{
+    max-height: 13rem;
   }
 }
 </style>
@@ -140,7 +156,7 @@ html,body
         padding-left 6vw
         padding-right 6vw
 
-@media screen and (min-width: 1280px)
+@media screen and (min-width: 1120px)
   #app
     .app-main
       padding-left 1.4rem !important
@@ -232,11 +248,12 @@ html,body
       .van-dropdown-menu__bar
         border-radius 0
 
-// @media screen and (min-width: 1280px)
+// @media screen and (min-width: 1120px)
 //   #app
 //     .Home,
 //     .search .tags,
 //     .search .result-list,
+//     .search-user .list-wrap,
 //     .rank-list,
 //     .users .user-tabs .van-tab__pane,
 //     .user-illusts,

@@ -45,7 +45,7 @@ export default {
   methods: {
     getRankList: _.throttle(async function () {
       this.loading = true
-      const res = window.APP_CONFIG.useLocalAppApi
+      const res = localApi.APP_CONFIG.useLocalAppApi
         ? await localApi.illustFollow(this.curPage)
         : await getFollowingIllusts(this.curPage)
       if (res.status === 0) {

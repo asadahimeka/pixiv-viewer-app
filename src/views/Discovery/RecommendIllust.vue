@@ -48,7 +48,7 @@ export default {
       isFromDetail: false,
       finished: false,
       nextUrl: null,
-      showLoadMoreBtn: window.APP_CONFIG.useLocalAppApi,
+      showLoadMoreBtn: localApi.APP_CONFIG.useLocalAppApi,
     }
   },
   head() {

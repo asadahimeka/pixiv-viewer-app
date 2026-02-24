@@ -64,7 +64,7 @@ export default {
     },
     getUserList: _.throttle(async function () {
       this.loading = true
-      const res = window.APP_CONFIG.useLocalAppApi
+      const res = localApi.APP_CONFIG.useLocalAppApi
         ? await localApi.userFollowing(this.$store.state.user.id, this.curPage)
         : await getFollowingUsers(this.curPage)
       if (res.status === 0) {

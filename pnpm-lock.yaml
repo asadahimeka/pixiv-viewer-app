@@ -74,12 +74,15 @@ importers:
       '@vant/touch-emulator':
         specifier: 1.4.0
         version: 1.4.0
+      '@vueuse/components':
+        specifier: 11.3.0
+        version: 11.3.0(vue@2.7.16)
+      '@vueuse/core':
+        specifier: 11.3.0
+        version: 11.3.0(vue@2.7.16)
       axios:
-        specifier: 0.30.2
-        version: 0.30.2
-      better-justified-layout:
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 0.30.3
+        version: 0.30.3
       capacitor-android-shortcuts:
         specifier: 5.0.5
         version: 5.0.5(@capacitor/core@5.6.0)
@@ -122,9 +125,6 @@ importers:
       lodash:
         specifier: 4.17.21
         version: 4.17.21
-      mint-filter:
-        specifier: 4.0.3
-        version: 4.0.3
       modern-mp4:
         specifier: 0.1.2
         version: 0.1.2(mp4box@2.3.0)
@@ -1470,6 +1470,9 @@ packages:
   '@types/sockjs@0.3.36':
     resolution: {integrity: sha512-MK9V6NzAS1+Ud7JV9lJLFqW85VbC9dq3LmwZCuBe4wBDgKC0Kj/jd8Xl+nSviU+Qc3+m7umHHyHg//2KSa0a0Q==}
 
+  '@types/web-bluetooth@0.0.20':
+    resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
+
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
@@ -1689,6 +1692,18 @@ packages:
 
   '@vue/web-component-wrapper@1.3.0':
     resolution: {integrity: sha512-Iu8Tbg3f+emIIMmI2ycSI8QcEuAUgPTgHwesDU1eKMLE4YC/c/sFbGc70QgMq31ijRftV0R7vCm9co6rldCeOA==}
+
+  '@vueuse/components@11.3.0':
+    resolution: {integrity: sha512-sqaGtWPgobXvZmv3atcjW8YW0ypecFuB286OEKFXaPrLsA5b2Y+xAvHvq5V7d+VJRKt705gCK3BNBjxu3g1PdQ==}
+
+  '@vueuse/core@11.3.0':
+    resolution: {integrity: sha512-7OC4Rl1f9G8IT6rUfi9JrKiXy4bfmHhZ5x2Ceojy0jnd3mHNEvV4JaRygH362ror6/NZ+Nl+n13LPzGiPN8cKA==}
+
+  '@vueuse/metadata@11.3.0':
+    resolution: {integrity: sha512-pwDnDspTqtTo2HwfLw4Rp6yywuuBdYnPYDq+mO38ZYKGebCUQC/nVj/PXSiK9HX5otxLz8Fn7ECPbjiRz2CC3g==}
+
+  '@vueuse/shared@11.3.0':
+    resolution: {integrity: sha512-P8gSSWQeucH5821ek2mn/ciCk+MS/zoRKqdQIM3bHq6p7GXDAJLmnRRKmF5F65sAVJIfzQlwR3aDzwCn10s8hA==}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -1947,8 +1962,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  axios@0.30.2:
-    resolution: {integrity: sha512-0pE4RQ4UQi1jKY6p7u6i1Tkzqmu+d+/tHS7Q7rKunWLB9WyilBTpHHpXzPNMDj5hTbK0B0PTLSz07yqMBiF6xg==}
+  axios@0.30.3:
+    resolution: {integrity: sha512-5/tmEb6TmE/ax3mdXBc/Mi6YdPGxQsv+0p5YlciXWt3PHIn0VamqCXhRMtScnwY3lbgSXLneOuXAKUhgmSRpwg==}
 
   b4a@1.7.4:
     resolution: {integrity: sha512-u20zJLDaSWpxaZ+zaAkEIB2dZZ1o+DF4T/MRbmsvGp9nletHOyiai19OzX1fF8xUBYsO1bPXxODvcd0978pnug==}
@@ -2048,9 +2063,6 @@ packages:
 
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
-
-  better-justified-layout@1.0.0:
-    resolution: {integrity: sha512-eCzIMu6/55BJ7B/N37LYOZ2O5q3UkQx273pihu9TyfcuKyj/VDYHh1FCmPBksY6wbOFPMZYlFbTYDpb6MKGLYQ==}
 
   big-integer@1.6.52:
     resolution: {integrity: sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==}
@@ -4188,9 +4200,6 @@ packages:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
     engines: {node: '>= 8'}
 
-  mint-filter@4.0.3:
-    resolution: {integrity: sha512-CKh2zKv9oFHEmYCXFk5REG2480FBNYixK+hw0mlRd/TgDJVhPpRhHPNhWa3Q6zF1tpE2q7w7y+Ylu1YJusXDpA==}
-
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
 
@@ -5688,6 +5697,17 @@ packages:
     peerDependencies:
       swiper: ^5.2.0
       vue: 2.x
+
+  vue-demi@0.14.10:
+    resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
 
   vue-eslint-parser@9.4.3:
     resolution: {integrity: sha512-2rYRLWlIpaiN8xbPiDyXZXRgLGOtWxERV7ND5fFAv5qo1D2N9Fu9MNajBNc6o13lZ+24DAWCkQCvj4klgmcITg==}
@@ -7461,6 +7481,8 @@ snapshots:
     dependencies:
       '@types/node': 25.2.3
 
+  '@types/web-bluetooth@0.0.20': {}
+
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 25.2.3
@@ -8024,6 +8046,34 @@ snapshots:
 
   '@vue/web-component-wrapper@1.3.0': {}
 
+  '@vueuse/components@11.3.0(vue@2.7.16)':
+    dependencies:
+      '@vueuse/core': 11.3.0(vue@2.7.16)
+      '@vueuse/shared': 11.3.0(vue@2.7.16)
+      vue-demi: 0.14.10(vue@2.7.16)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
+  '@vueuse/core@11.3.0(vue@2.7.16)':
+    dependencies:
+      '@types/web-bluetooth': 0.0.20
+      '@vueuse/metadata': 11.3.0
+      '@vueuse/shared': 11.3.0(vue@2.7.16)
+      vue-demi: 0.14.10(vue@2.7.16)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
+  '@vueuse/metadata@11.3.0': {}
+
+  '@vueuse/shared@11.3.0(vue@2.7.16)':
+    dependencies:
+      vue-demi: 0.14.10(vue@2.7.16)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
   '@webassemblyjs/ast@1.14.1':
     dependencies:
       '@webassemblyjs/helper-numbers': 1.13.2
@@ -8300,7 +8350,7 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axios@0.30.2:
+  axios@0.30.3:
     dependencies:
       follow-redirects: 1.15.11(debug@4.4.3)
       form-data: 4.0.5
@@ -8417,8 +8467,6 @@ snapshots:
   baseline-browser-mapping@2.9.19: {}
 
   batch@0.6.1: {}
-
-  better-justified-layout@1.0.0: {}
 
   big-integer@1.6.52: {}
 
@@ -10689,8 +10737,6 @@ snapshots:
       minipass: 3.3.6
       yallist: 4.0.0
 
-  mint-filter@4.0.3: {}
-
   mkdirp-classic@0.5.3: {}
 
   mkdirp@1.0.4: {}
@@ -12282,6 +12328,10 @@ snapshots:
   vue-awesome-swiper@4.1.1(swiper@5.4.5)(vue@2.7.16):
     dependencies:
       swiper: 5.4.5
+      vue: 2.7.16
+
+  vue-demi@0.14.10(vue@2.7.16):
+    dependencies:
       vue: 2.7.16
 
   vue-eslint-parser@9.4.3(eslint@8.57.0):

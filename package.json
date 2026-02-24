@@ -46,8 +46,9 @@
     "@tauri-apps/plugin-process": "2.2.1",
     "@tauri-apps/plugin-shell": "2.2.1",
     "@vant/touch-emulator": "1.4.0",
-    "axios": "0.30.2",
-    "better-justified-layout": "1.0.0",
+    "@vueuse/core": "11.3.0",
+    "@vueuse/components": "11.3.0",
+    "axios": "0.30.3",
     "core-js": "3.40.0",
     "crypto-js": "4.2.0",
     "dayjs": "1.11.13",
@@ -55,7 +56,6 @@
     "jszip": "3.10.1",
     "localforage": "1.10.0",
     "lodash": "4.17.21",
-    "mint-filter": "4.0.3",
     "modern-mp4": "0.1.2",
     "nprogress": "0.2.0",
     "swiper": "5.4.5",
@@ -90,8 +90,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "core-js",
-      "swiper",
       "vue-demi"
     ]
   }

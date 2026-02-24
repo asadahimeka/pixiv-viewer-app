@@ -245,7 +245,7 @@ export default {
     },
     checkBookmarked() {
       if (!this.artwork.id) return
-      if (window.APP_CONFIG.useLocalAppApi) {
+      if (localApi.APP_CONFIG.useLocalAppApi) {
         this.bookmarkId = this.artwork.is_bookmarked
         return
       }
@@ -258,7 +258,7 @@ export default {
     toggleBookmark() {
       this.favLoading = true
       if (this.bookmarkId) {
-        window.APP_CONFIG.useLocalAppApi
+        localApi.APP_CONFIG.useLocalAppApi
           ? localApi.illustBookmarkDelete(this.artwork.id).then(isOk => {
             this.favLoading = false
             if (isOk) {
@@ -277,7 +277,7 @@ export default {
             }
           })
       } else {
-        window.APP_CONFIG.useLocalAppApi
+        localApi.APP_CONFIG.useLocalAppApi
           ? localApi.illustBookmarkAdd(this.artwork.id).then(isOk => {
             this.favLoading = false
             if (isOk) {

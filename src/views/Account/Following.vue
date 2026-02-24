@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       activeTab: this.$route.params?.tab || '1',
-      isLocalApi: window.APP_CONFIG.useLocalAppApi,
+      isLocalApi: localApi.APP_CONFIG.useLocalAppApi,
     }
   },
   head() {

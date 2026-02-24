@@ -1,10 +1,12 @@
 import dayjs from 'dayjs'
+import { Dialog } from 'vant'
 import { get } from './http'
 import { SessionStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
-import { filterCensoredIllusts } from '@/utils/filter'
-import { PXIMG_PROXY_BASE, notSelfHibiApi, PIXIV_NOW_URL, PIXIV_NEXT_URL } from '@/consts'
+import { filterCensoredIllusts, filterCensoredNovels, isBlockTagHit, mintFilter } from '@/utils/filter'
+import { PXIMG_PROXY_BASE, notSelfHibiApi, PIXIV_NOW_URL, PIXIV_NEXT_URL, COMMON_PROXY, COMMON_IMAGE_PROXY, PXIMG_PID_BASE } from '@/consts'
+import { setProperFontSize } from '@/utils'
 
 const isSupportWebP = (() => {
   const elem = document.createElement('canvas')
@@ -117,6 +119,8 @@ const parseIllust = data => {
     type,
     is_bookmarked: data.is_bookmarked,
     series: data.series,
+    seasonal_effect: data.seasonal_effect_animation_urls?.webp,
+    event_banners: data.event_banners,
   }
 
   return artwork
@@ -147,57 +151,17 @@ const parseNovel = data => {
   return artwork
 }
 
-const parseAiIllust = (d, r18) => {
+function parseWebRankIllust(d, mode, content) {
   const url = 'https://i.pximg.net' + d.url.replace('/-/', '/')
   const images = [{
     s: imgProxy(url.replace('_master1200', '_square1200')),
     m: imgProxy(url),
     l: imgProxy(url.replace(/\/c\/\d+x\d+\//i, '/')),
-    o: 'https://i.loli.best/' + d.illust_id,
+    o: PXIMG_PID_BASE + d.illust_id,
   }]
 
-  let avatar = d.profile_img
-  if (!avatar.includes('s.pximg.net')) {
-    avatar = imgProxy(avatar)
-  }
-
-  const artwork = {
-    id: d.illust_id,
-    title: d.title,
-    caption: '',
-    author: {
-      id: d.user_id,
-      name: d.user_name,
-      avatar,
-    },
-    created: d.date,
-    images,
-    tags: d.tags.map(e => ({ name: e })),
-    tools: [],
-    width: d.width,
-    height: d.height,
-    count: d.illust_page_count,
-    view: d.view_count,
-    like: d.rating_count,
-    x_restrict: r18 ? 1 : 0,
-    illust_ai_type: 2,
-    type: 'illust',
-  }
-
-  return artwork
-}
-
-const parseWebRankIllust = (d, mode, content) => {
-  const url = 'https://i.pximg.net' + d.url.replace('/-/', '/')
-  const images = [{
-    s: imgProxy(url.replace('_master1200', '_square1200')),
-    m: imgProxy(url),
-    l: imgProxy(url.replace(/\/c\/\d+x\d+\//i, '/')),
-    o: 'https://i.loli.best/' + d.illust_id,
-  }]
-
-  let avatar = d.profile_img
-  if (!avatar.includes('s.pximg.net')) {
+  let avatar = d.profile_img || ''
+  if (avatar && !avatar.includes('s.pximg.net')) {
     avatar = imgProxy(avatar)
   }
 
@@ -227,17 +191,17 @@ const parseWebRankIllust = (d, mode, content) => {
   return artwork
 }
 
-export const parseWebApiIllust = d => {
+export function parseWebApiIllust(d) {
   const url = 'https://i.pximg.net' + d.url.replace('/-/', '/')
   const images = [{
     s: imgProxy(url.replace('_master1200', '_square1200')),
     m: imgProxy(url),
     l: imgProxy(url.replace(/\/c\/\d+x\d+\//i, '/')),
-    o: 'https://i.loli.best/' + d.id,
+    o: PXIMG_PID_BASE + d.id,
   }]
 
-  let avatar = d.profileImageUrl
-  if (!avatar.includes('s.pximg.net')) {
+  let avatar = d.profileImageUrl || ''
+  if (avatar && !avatar.includes('s.pximg.net')) {
     avatar = imgProxy(avatar)
   }
 
@@ -267,11 +231,279 @@ export const parseWebApiIllust = d => {
   return artwork
 }
 
-const dealErrMsg = res => {
+export function parseWebPopularIllust(d) {
+  const url = 'https://i.pximg.net' + d.url.replace('/-/', '/')
+  const images = [{
+    s: imgProxy(url),
+    m: imgProxy(url),
+    l: imgProxy(url.replace(/\/c\/\d+x\d+\w*\//i, '/')),
+    o: PXIMG_PID_BASE + d.illust_id,
+  }]
+
+  const artwork = {
+    id: d.illust_id,
+    title: d.illust_title,
+    caption: '',
+    author: { id: d.illust_user_id, name: d.user_name },
+    created: d.illust_create_date,
+    images,
+    tags: d.tags.map(e => ({ name: e })),
+    tools: [],
+    width: +d.illust_width,
+    height: +d.illust_height,
+    count: d.illust_page_count,
+    view: 0,
+    like: 0,
+    x_restrict: d.illust_x_restrict,
+    illust_ai_type: d.illust_ai_type,
+    type: ['illust', 'manga', 'ugoira'][d.illust_type || 0],
+  }
+
+  return artwork
+}
+
+function handleErrMsg(res) {
+  const isRateLimitCode = res.error?.response?.status == 429
   const err = res.error?.response?.data?.error || res.error?.error || res.error
   let msg = err?.message || err?.user_message || err
-  if (msg == 'Rate Limit') msg = i18n.t('tip.rate_limit')
+  if (msg == 'Rate Limit' || isRateLimitCode) msg = i18n.t('tip.rate_limit')
   return msg
+}
+
+function decodeCFEmail(encodedString) {
+  let email = ''
+  const r = parseInt(encodedString.substr(0, 2), 16)
+  for (let n = 2; n < encodedString.length; n += 2) {
+    const letter = parseInt(encodedString.substr(n, 2), 16) ^ r
+    email += String.fromCharCode(letter)
+  }
+  return email
+}
+
+function reqGet(path, params) {
+  return get('/req_get', {
+    path,
+    params: JSON.stringify(params),
+  })
+}
+
+function reqPost(path, data) {
+  return get('/req_post', {
+    path,
+    data: JSON.stringify(data),
+    t: Date.now(),
+  }, {
+    headers: {
+      'cache-control': 'no-cache',
+    },
+  })
+}
+
+export const localApi = {
+  actionMap: {},
+  APP_CONFIG: {
+    directMode: false,
+    refreshToken: '',
+    useApiProxy: false,
+    useLocalAppApi: false,
+  },
+  isLoggedIn() {
+    return Boolean(localApi.APP_CONFIG.useLocalAppApi)
+  },
+  async me() {
+    const res = await get('/me', { _t: Date.now() })
+    if (res?.id) {
+      return {
+        id: res.id,
+        pixivId: res.account,
+        name: res.name,
+        profileImg: imgProxy(res.profile_image_urls.px_170x170),
+        profileImgBig: imgProxy(res.profile_image_urls.px_170x170),
+        premium: res.is_premium,
+        xRestrict: res.x_restrict,
+      }
+    }
+    return null
+  },
+  async userFollowing(id, page = 1, restrict = 'public') {
+    let list = []
+    const res = await get('/following', {
+      id,
+      page,
+      restrict,
+      t: Date.now(),
+    }, {
+      headers: {
+        'cache-control': 'no-cache',
+      },
+    })
+    if (res.user_previews) {
+      list = res.user_previews
+        .map(u => {
+          return {
+            id: u.user.id,
+            name: u.user.name,
+            avatar: imgProxy(u.user.profile_image_urls.medium),
+            illusts: u.illusts.map(i => ({
+              id: i.id,
+              title: i.title,
+              src: imgProxy(i.image_urls.medium),
+              x_restrict: i.x_restrict,
+              illust_ai_type: i.illust_ai_type,
+            })),
+          }
+        })
+    } else if (res.error) {
+      return {
+        status: -1,
+        msg: handleErrMsg(res),
+      }
+    } else {
+      return {
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
+      }
+    }
+
+    return { status: 0, data: list }
+  },
+  async illustFollow(page = 1, restrict = 'all') {
+    let list = []
+    const res = await reqGet('v2/illust/follow', {
+      restrict,
+      offset: (page - 1) * 30,
+    })
+
+    if (res.illusts) {
+      list = res.illusts.map(art => parseIllust(art))
+    } else if (res.error) {
+      return {
+        status: -1,
+        msg: handleErrMsg(res),
+      }
+    } else {
+      return {
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
+      }
+    }
+
+    return { status: 0, data: filterCensoredIllusts(list) }
+  },
+  async novelFollow(page = 1, restrict = 'all') {
+    let list = []
+    const offset = (page - 1) * 30
+    const params = { restrict }
+    if (offset > 0) params.offset = offset
+    const res = await reqGet('v1/novel/follow', params)
+
+    if (res.novels) {
+      list = res.novels.map(art => parseNovel(art))
+    } else if (res.error) {
+      return {
+        status: -1,
+        msg: handleErrMsg(res),
+      }
+    } else {
+      return {
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
+      }
+    }
+
+    return { status: 0, data: filterCensoredNovels(list) }
+  },
+  async illustBookmarkAdd(id, restrict = 'public', tags) {
+    if (!id) return false
+    try {
+      const res = await reqPost('v2/illust/bookmark/add', {
+        illust_id: `${id}`,
+        restrict,
+        tags,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async illustBookmarkDelete(id) {
+    if (!id) return false
+    try {
+      const res = await reqPost('v1/illust/bookmark/delete', {
+        illust_id: `${id}`,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async userFollowAdd(id, restrict = 'public') {
+    if (!id) return false
+    try {
+      const res = await reqPost('v1/user/follow/add', {
+        user_id: `${id}`,
+        restrict,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async userFollowDelete(id) {
+    if (!id) return false
+    try {
+      const res = await reqPost('v1/user/follow/delete', {
+        user_id: `${id}`,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async novelBookmarkAdd(id, restrict = 'public', tags) {
+    if (!id) return false
+    try {
+      const res = await reqPost('v2/novel/bookmark/add', {
+        novel_id: `${id}`,
+        restrict,
+        tags,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async novelBookmarkDelete(id) {
+    if (!id) return false
+    try {
+      const res = await reqPost('v1/novel/bookmark/delete', {
+        novel_id: `${id}`,
+      })
+      return !res.error
+    } catch (error) {
+      return false
+    }
+  },
+  async userBookmarkTags(page = 1, restrict = 'public', type = 'illust') {
+    const res = await reqGet(`v1/user/bookmark-tags/${type}`, {
+      restrict,
+      offset: (page - 1) * 30,
+    })
+    console.log('userBookmarkTags: ', type, res)
+    if (res.bookmark_tags) {
+      return { status: 0, data: res.bookmark_tags }
+    } else if (res.error) {
+      return {
+        status: -1,
+        msg: handleErrMsg(res),
+      }
+    } else {
+      return {
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
+      }
+    }
+  },
 }
 
 const api = {
@@ -301,7 +533,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -329,7 +561,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -357,7 +589,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -369,7 +601,7 @@ const api = {
 
     console.log('latestList: ', latestList)
 
-    return { status: 0, data: latestList }
+    return { status: 0, data: filterCensoredNovels(latestList) }
   },
 
   /**
@@ -395,7 +627,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -426,7 +658,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -438,13 +670,13 @@ const api = {
 
     console.log('relatedList: ', relatedList)
 
-    return { status: 0, data: relatedList }
+    return { status: 0, data: filterCensoredNovels(relatedList) }
   },
 
   async getRecommendedIllust(params) {
     const cacheKey = 'recommended.illust'
     let relatedList
-    if (!window.APP_CONFIG.useLocalAppApi) {
+    if (!localApi.APP_CONFIG.useLocalAppApi) {
       relatedList = await getCache(cacheKey)
     }
 
@@ -454,13 +686,13 @@ const api = {
       if (res.illusts) {
         relatedList = res.illusts.map(art => parseIllust(art))/* .filter(e => e.like >= 500) */
         relatedList.nextUrl = res.next_url
-        if (!window.APP_CONFIG.useLocalAppApi) {
+        if (!localApi.APP_CONFIG.useLocalAppApi) {
           setCache(cacheKey, relatedList, 60 * 60 * 12)
         }
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -488,7 +720,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -516,7 +748,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -528,7 +760,7 @@ const api = {
 
     console.log('getRecommendedNovel: ', relatedList)
 
-    return { status: 0, data: relatedList }
+    return { status: 0, data: filterCensoredNovels(relatedList) }
   },
 
   async getPopularPreview(word, params = {}) {
@@ -544,7 +776,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -557,12 +789,12 @@ const api = {
     return { status: 0, data: filterCensoredIllusts(relatedList) }
   },
 
-  async getPopularPreviewNovel(word) {
-    const cacheKey = `search.popularPreview.novel.${word}`
+  async getPopularPreviewNovel(word, params = {}) {
+    const cacheKey = `search.popularPreview.novel.${word}.${JSON.stringify(params)}`
     let relatedList = await getCache(cacheKey)
 
     if (!relatedList) {
-      const res = await get('/popular_preview_novel', { word })
+      const res = await get('/popular_preview_novel', { word, ...params })
 
       if (res.novels) {
         relatedList = res.novels.map(art => parseNovel(art))
@@ -570,7 +802,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -580,7 +812,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: relatedList }
+    return { status: 0, data: filterCensoredNovels(relatedList) }
   },
 
   async getRecommendedUser() {
@@ -613,7 +845,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -655,7 +887,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -697,7 +929,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -718,12 +950,12 @@ const api = {
       const res = await get('/search_autocomplete', { word })
 
       if (res.tags) {
-        relatedList = res.tags.map(t => t.name)
+        relatedList = res.tags.map(t => [t.name, t.translated_name]).flat().filter(Boolean)
         setCache(cacheKey, relatedList, 60 * 60 * 72)
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -777,7 +1009,36 @@ const api = {
     return { status: 0, data: spotlights }
   },
 
+  async getAllSpotlights(page = 1) {
+    const cacheKey = `spotlights.all.${page}`
+    let spotlights = await getCache(cacheKey)
+
+    if (!spotlights) {
+      const res = await get('/spotlights', { page })
+
+      if (res.spotlight_articles) {
+        spotlights = {
+          articles: res.spotlight_articles.map(a => ({
+            ...a,
+            thumbnail: imgProxy(a.thumbnail),
+          })),
+        }
+        setCache(cacheKey, spotlights, 60 * 60 * 12)
+      } else {
+        return {
+          status: -1,
+          msg: i18n.t('tip.unknown_err'),
+        }
+      }
+    }
+
+    console.log('spotlights: ', spotlights)
+
+    return { status: 0, data: spotlights }
+  },
+
   async getSpotlightTypeList(type, page) {
+    if (type == 'all') return api.getAllSpotlights(page)
     const lang = i18n.locale
     const cacheKey = `spotlights.${type}.${lang}.${page}`
     let spotlights = await getCache(cacheKey)
@@ -826,7 +1087,7 @@ const api = {
       }
       const res = await get(`${PIXIV_NEXT_URL}/api/pixivision/detail`, params)
 
-      if (res) {
+      if (res && !res.error) {
         res.related_latest?.items?.forEach(a => {
           a.thumbnail = imgProxy(a.thumbnail)
         })
@@ -861,7 +1122,7 @@ const api = {
       }
       const res = await get(`${PIXIV_NEXT_URL}/api/pixivision/${id}`, params)
 
-      if (res) {
+      if (res && !res.error) {
         res.cover = imgProxy(res.cover?.replace('i-ogp.pximg.net', 'i.pximg.net') || '')
         res.items?.forEach(a => {
           a.illust_url = imgProxy(a.illust_url)
@@ -937,7 +1198,7 @@ const api = {
       })
 
       if (res && res.contents) {
-        rankList = res.contents.map(e => parseWebRankIllust(e, mode, content))
+        rankList = res.contents.map(e => ({ ...parseWebRankIllust(e, mode, content), _index: e.rank }))
         rankList.length && setCache(cacheKey, rankList, 60 * 60 * 24 * 14)
       } else {
         return {
@@ -963,7 +1224,9 @@ const api = {
 
     const illust = res?.thumbnails?.illust
     if (illust) {
-      list = illust.filter(e => !e.isAdContainer).map(e => parseWebApiIllust(e))
+      const blockIds = res?.recommendedIllusts?.filter(e => JSON.stringify(e).includes('illust_for_user_mf_vh_bookmark'))?.map(e => `${e.illustId}`) || []
+      const blockTags = ['拷问', '重口', '猎奇', '羞辱', '萝莉', '虐待', '虐杀', '血腥', '足控', '敗北', '足裏', '足指', '裸足', '处刑', '束缚', '内臓', '銃フェラ', 'sexy', 'honeyselect2', 'honeyselect', 'HoneySelect', 'HS2', '3D', '斗罗大陆', '漫画', 'manga', '中文', '中国語']
+      list = illust.filter(e => !e.isAdContainer && !blockIds.includes(`${e.id}`) && !isBlockTagHit(blockTags, e.tags)).map(e => parseWebApiIllust(e))
     } else {
       return {
         status: 0,
@@ -984,7 +1247,7 @@ const api = {
       params._t = Date.now()
     }
 
-    const res = await get(`${PIXIV_NOW_URL}/ajax/illust/discovery`, params, { baseURL: '/' })
+    const res = await get(`${PIXIV_NOW_URL}/ajax/illust/discovery`, params)
 
     if (res && res.illusts) {
       list = res.illusts.filter(e => !e.isAdContainer).map(e => parseWebApiIllust(e))
@@ -996,6 +1259,34 @@ const api = {
     }
 
     return { status: 0, data: filterCensoredIllusts(list) }
+  },
+
+  async getPopularIllusts(page = 1, mode = 'safe', type = '') {
+    let artList
+
+    const params = {
+      p: page,
+      mode: 'popular_illust',
+      type,
+    }
+    if (mode == 'r18') {
+      params.mode = 'popular_illust_r18'
+    } else {
+      params._anon = 1
+    }
+    const res = await get(`${PIXIV_NOW_URL}/touch/ajax_api/ajax_api.php`, params)
+
+    console.log('getPopularIllusts: ', res)
+    if (Array.isArray(res)) {
+      artList = res.map(parseWebPopularIllust)
+    } else {
+      return {
+        status: 0,
+        data: [],
+      }
+    }
+
+    return { status: 0, data: filterCensoredIllusts(artList) }
   },
 
   /**
@@ -1017,12 +1308,12 @@ const api = {
       })
 
       if (res.illusts) {
-        rankList = res.illusts.map(art => parseIllust(art))
+        rankList = res.illusts.map((art, i) => ({ ...parseIllust(art), _index: (page - 1) * 30 + i + 1 }))
         rankList.length && setCache(cacheKey, rankList, 60 * 60 * 24 * 14)
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1048,12 +1339,12 @@ const api = {
       })
 
       if (res.novels) {
-        rankList = res.novels.map(art => parseNovel(art))
+        rankList = res.novels.map((art, i) => ({ ...parseNovel(art), _index: (page - 1) * 30 + i + 1 }))
         rankList.length && setCache(cacheKey, rankList, 60 * 60 * 24 * 14)
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1063,7 +1354,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: rankList }
+    return { status: 0, data: filterCensoredNovels(rankList) }
   },
 
   /**
@@ -1088,7 +1379,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1101,23 +1392,26 @@ const api = {
     return { status: 0, data: filterCensoredIllusts(searchList) }
   },
 
-  async searchNovel(word, page = 1) {
-    const cacheKey = `searchList_novel_${word}_${page}`
+  async searchNovel(word, page = 1, params = {}) {
+    const cacheKey = `searchList_novel_${word}_${page}_${JSON.stringify(params)}`
     let searchList = SessionStorage.get(cacheKey)
+    let hasNext
 
     if (!searchList) {
       const res = await get('/search_novel', {
         word,
         page,
+        ...params,
       })
 
       if (res.novels) {
         searchList = res.novels.map(art => parseNovel(art))
         SessionStorage.set(cacheKey, searchList, 60 * 60 * 1)
+        hasNext = Boolean(res.next_url)
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1127,7 +1421,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: searchList }
+    return { status: 0, data: filterCensoredNovels(searchList), hasNext }
   },
 
   async getNovelDetail(id) {
@@ -1145,7 +1439,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1186,7 +1480,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1218,7 +1512,7 @@ const api = {
   //     } else if (res.error) {
   //       return {
   //         status: -1,
-  //         msg: dealErrMsg(res),
+  //         msg: handleErrMsg(res),
   //       }
   //     } else {
   //       return {
@@ -1293,7 +1587,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1322,7 +1616,7 @@ const api = {
       if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         ugoira = {
@@ -1352,7 +1646,7 @@ const api = {
       if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         memberInfo = parseUser(res)
@@ -1378,17 +1672,19 @@ const api = {
    * 获取画师作品标签
    * @param {Number} id 画师ID
    */
-  async getMemberTags(id) {
-    const cacheKey = `memberTags_${id}`
+  async getMemberTags(id, isR18On = false) {
+    const params = { lang: 'zh' }
+    if (isR18On) params.all = '1'
+    const cacheKey = `memberTags_${id}_${isR18On}`
     let memberInfo = await getCache(cacheKey)
 
     if (!memberInfo) {
-      const res = await get(`${PIXIV_NOW_URL}/ajax/user/${id}/illusts/tags`)
+      const res = await get(`${PIXIV_NOW_URL}/ajax/user/${id}/illusts/tags`, params)
 
       if (!Array.isArray(res)) {
         return {
           status: -1,
-          msg: dealErrMsg(res.error ? res : { error: res }),
+          msg: handleErrMsg(res.error ? res : { error: res }),
         }
       } else {
         memberInfo = res.sort((a, b) => b.cnt - a.cnt)
@@ -1421,7 +1717,7 @@ const api = {
       if (!Array.isArray(res.works)) {
         return {
           status: -1,
-          msg: dealErrMsg(res.error ? res : { error: res }),
+          msg: handleErrMsg(res.error ? res : { error: res }),
         }
       } else {
         memberInfo = {
@@ -1460,7 +1756,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1488,7 +1784,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1517,7 +1813,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1544,7 +1840,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1554,7 +1850,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: memberArtwork }
+    return { status: 0, data: filterCensoredNovels(memberArtwork) }
   },
 
   async getNovelSeries(id, page = 1) {
@@ -1572,7 +1868,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1601,7 +1897,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1619,14 +1915,14 @@ const api = {
    * @param {Number} id 画师ID
    * @param {Number} max_bookmark_id max_bookmark_id
    */
-  async getMemberFavorite(id, max_bookmark_id, nocache) {
+  async getMemberFavorite(id, max_bookmark_id, nocache = false, options = {}) {
     const cacheKey = `memberFavorite_${id}_m${max_bookmark_id}`
-    let memberFavorite = await getCache(cacheKey)
+    let memberFavorite = nocache ? null : await getCache(cacheKey)
 
     if (!memberFavorite) {
       memberFavorite = {}
 
-      const params = { id, max_bookmark_id }
+      const params = { id, max_bookmark_id, ...options }
       const headers = {}
       if (nocache) {
         params.t = Date.now()
@@ -1639,11 +1935,11 @@ const api = {
         memberFavorite.next = url.get('max_bookmark_id')
         memberFavorite.illusts = res.illusts.map(art => parseIllust(art))
 
-        setCache(cacheKey, memberFavorite, 60 * 60 * 12)
+        !nocache && setCache(cacheKey, memberFavorite, 60 * 60 * 12)
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1657,17 +1953,20 @@ const api = {
     return { status: 0, data: memberFavorite }
   },
 
-  async getMemberFavoriteNovel(id, max_bookmark_id) {
+  async getMemberFavoriteNovel(id, max_bookmark_id, nocache = false, options = {}) {
     const cacheKey = `member_fav_novel_${id}_m${max_bookmark_id}`
-    let memberFavorite = await getCache(cacheKey)
+    let memberFavorite = nocache ? null : await getCache(cacheKey)
 
     if (!memberFavorite) {
       memberFavorite = {}
 
-      const res = await get('/favorite_novel', {
-        id,
-        max_bookmark_id,
-      })
+      const params = { id, max_bookmark_id, ...options }
+      const headers = {}
+      if (nocache) {
+        params.t = Date.now()
+        headers['cache-control'] = 'no-cache'
+      }
+      const res = await get('/favorite_novel', params, { headers })
 
       if (res.novels) {
         const url = new URLSearchParams(res.next_url)
@@ -1678,7 +1977,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1712,7 +2011,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1746,7 +2045,7 @@ const api = {
       } else if (res.error) {
         return {
           status: -1,
-          msg: dealErrMsg(res),
+          msg: handleErrMsg(res),
         }
       } else {
         return {
@@ -1764,7 +2063,7 @@ const api = {
     if (res.error) {
       return {
         status: -1,
-        msg: dealErrMsg(res),
+        msg: handleErrMsg(res),
       }
     }
     if (!res.lives) {
@@ -1776,175 +2075,453 @@ const api = {
 
     return { status: 0, data: res.lives }
   },
+
+  /**
+   * @param {string} tag
+   * @returns {Promise<string[]>}
+   */
+  async getTagStories(tag) {
+    const cacheKey = `tag_stories_${tag}`
+    const cache = await getCache(cacheKey)
+    if (cache) return cache
+    const res = await get(`${PIXIV_NOW_URL}/ajax/stories/tag_stories?tag=${tag}&lang=zh`)
+    const ids = res?.tagStoryIds
+    if (!Array.isArray(ids) || !ids.length) return []
+    await setCache(cacheKey, ids, 60 * 60 * 24 * 3)
+    return ids
+  },
+  /**
+   * @param {string[]} ids
+   * @returns {Promise<{id:string;label:string;coverImage:string}[]>}
+   */
+  async getTagStoryDetails(ids = []) {
+    const cacheKey = `tag_stories_details_${ids}`
+    const cache = await getCache(cacheKey)
+    if (cache) return cache
+    const params = new URLSearchParams()
+    ids.forEach(e => params.append('storyIds[]', e))
+    params.append('lang', 'zh')
+    const res = await get(`${PIXIV_NEXT_URL}/https://www.pixiv.net/ajax/stories/tag_stories/details/many?${params}`)
+    const details = res?.body?.storyDetails
+    if (!Array.isArray(details) || !details.length) return []
+    details.forEach(e => { e.coverImage = imgProxy(e.coverImage) })
+    await setCache(cacheKey, details, 60 * 60 * 24 * 3)
+    return details
+  },
+  /**
+   * @param {string} tag
+   * @param {string} date
+   * @returns {Promise<string>}
+   */
+  async getTagStoryPage(tag, date) {
+    const cacheKey = `tag_story_page_${tag}_${date}`
+    const cache = await getCache(cacheKey)
+    if (cache) return cache
+    const resp = await fetch(`${PIXIV_NEXT_URL}/https://www.pixiv.net/stories/tags/${tag}/artworks/${date}`)
+    if (!resp.ok) return ''
+    let html = await resp.text()
+    html = html
+      .replace(/i\.pximg\.net/g, PXIMG_PROXY_BASE)
+      .replace(/https:\/\/i-mail\.pximg\.net/g, `${COMMON_IMAGE_PROXY}https://i-mail.pximg.net`)
+      .replace(/https:\/\/source\.pixiv\.net/g, `${COMMON_IMAGE_PROXY}https://source.pixiv.net`)
+      .replace(/<amp-analytics.+<\/amp-analytics>/g, '')
+    if (html) {
+      await setCache(cacheKey, html, -1)
+    }
+    return html
+  },
+  async getPixivisionStoryPage(id) {
+    const cacheKey = `pixivision_story_page_${id}`
+    const cache = await getCache(cacheKey)
+    if (cache) return cache
+    const resp = await fetch(`${PIXIV_NEXT_URL}/https://www.pixivision.net/zh/stories/${id}`)
+    if (!resp.ok) return ''
+    let html = await resp.text()
+    html = html
+      .replace(/i\.pximg\.net/g, PXIMG_PROXY_BASE)
+      .replace(/https:\/\/i-mail\.pximg\.net/g, `${COMMON_IMAGE_PROXY}https://i-mail.pximg.net`)
+      .replace(/https:\/\/source\.pixiv\.net/g, `${COMMON_IMAGE_PROXY}https://source.pixiv.net`)
+      .replace(/href="https:\/\/www\.pixivision\.net\/\w+\/a\/\d+#illust-(\d+)"/g, 'href="/artworks/$1"')
+      .replace(/<amp-analytics.+<\/amp-analytics>/g, '')
+    if (html) {
+      await setCache(cacheKey, html, -1)
+    }
+    return html
+  },
+
+  /**
+   * @returns {Promise<[string, string|null][]>}
+   */
+  async getCollectionRecommendedTags() {
+    const cacheKey = 'collections.recommendedTags'
+    const cache = await getCache(cacheKey)
+    if (cache) return cache
+    const res = await get(`${PIXIV_NOW_URL}/ajax/collections/search/recommended_tags?lang=zh`)
+    let tags = res?.recommendedTags
+    if (!Array.isArray(tags) || !tags.length) return []
+    tags = tags.map(e => {
+      const t = res.tagTranslation?.[e]
+      if (!t) return [e, null]
+      return [e, t.zh || t.zh_tw || t.en]
+    })
+    await setCache(cacheKey, tags, 60 * 60 * 24)
+    return tags
+  },
+  /**
+   * @returns {Promise<{ recommend:any[]; everyone:any[]; tagRecommend:{tag:string;list:any[]}[] } | null>}
+   */
+  async getCollectionTop() {
+    try {
+      const cacheKey = 'collections.top'
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+      const data = await get(`${PIXIV_NOW_URL}/ajax/top/collection?lang=zh`)
+      const cols = data.thumbnails.collection
+      if (!Array.isArray(cols) || !cols.length) return null
+      const map = cols.reduce((acc, cur) => {
+        acc[cur.id] = cur
+        return acc
+      }, {})
+      const result = {}
+      result.recommend = data.page.recommendCollectionIds.map(e => map[e])
+      result.everyone = data.page.everyoneCollectionIds.map(e => map[e])
+      result.tagRecommend = data.page.tagRecommendCollectionIds.map(e => ({
+        tag: e.tag,
+        list: e.ids.map(f => map[f]),
+      }))
+      await setCache(cacheKey, result, 60 * 60 * 3)
+      return result
+    } catch (err) {
+      console.log('err: ', err)
+      return null
+    }
+  },
+  async getCollectionRelated(id, page = 1) {
+    try {
+      const cacheKey = `collections.recomm.${id}.${page}`
+      const nextIdsKey = `collections.recomm.${id}.nextIds`
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+      if (page == 1) {
+        const { collections, nextIds } = await get(`${PIXIV_NOW_URL}/ajax/collection/${id}/recommend/init?lang=zh`)
+        if (!Array.isArray(collections) || !collections.length) return []
+        await setCache(cacheKey, collections, 60 * 60 * 24)
+        if (Array.isArray(nextIds) && nextIds.length) {
+          await setCache(nextIdsKey, nextIds, 60 * 60 * 24)
+        }
+        return collections
+      }
+      const nextIds = await getCache(nextIdsKey)
+      if (!Array.isArray(nextIds) || !nextIds.length) return []
+      const cur = (page - 2) * 10
+      const ids = nextIds.slice(cur, cur + 10)
+      if (!ids.length) return []
+      const params = new URLSearchParams()
+      ids.forEach(e => params.append('ids[]', e))
+      params.append('lang', 'zh')
+      const res = await get(`${PIXIV_NEXT_URL}/https://www.pixiv.net/ajax/collection/recommend/collections?${params}`)
+      const data = res?.body?.collections
+      if (!Array.isArray(data) || !data.length) return []
+      await setCache(cacheKey, data, 60 * 60 * 24)
+      return data
+    } catch (err) {
+      console.log('err: ', err)
+      return []
+    }
+  },
+  async searchCollections(tags = [], page = 1, mode = 'safe') {
+    try {
+      const cacheKey = `collections.search.${tags.join('_')}.${page}.${mode}`
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+      const params = new URLSearchParams()
+      if (tags.length) {
+        tags.forEach(e => params.append('tags[]', e))
+      }
+      params.append('mode', mode)
+      params.append('limit', 20)
+      params.append('offset', (page - 1) * 20)
+      params.append('lang', 'zh')
+      const res = await get(`${PIXIV_NEXT_URL}/https://www.pixiv.net/ajax/collections/search?${params}`)
+      const data = res?.body?.thumbnails?.collection
+      if (!Array.isArray(data) || !data.length) return []
+      const total = res?.body?.data?.total
+      if (total) data._total = total
+      await setCache(cacheKey, data, 60 * 30)
+      return data
+    } catch (err) {
+      console.log('err: ', err)
+      return []
+    }
+  },
+  async getUserCollections(id) {
+    try {
+      const cacheKey = `collections.user.${id}`
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+      const res1 = await get(`${PIXIV_NOW_URL}/ajax/user/${id}/profile/all?sensitiveFilterMode=userSetting&lang=zh`)
+      const ids = res1?.collectionIds
+      if (!Array.isArray(ids) || !ids.length) return []
+      const params = new URLSearchParams()
+      ids.forEach(e => params.append('ids[]', e))
+      params.append('lang', 'zh')
+      const res2 = await get(`${PIXIV_NEXT_URL}/https://www.pixiv.net/ajax/user/${id}/profile/collections?${params}`)
+      const data = res2?.body?.works
+      if (!Array.isArray(data) || !data.length) return []
+      await setCache(cacheKey, data, 60 * 60 * 24)
+      return data
+    } catch (err) {
+      console.log('err: ', err)
+      return []
+    }
+  },
+  async getCollectionDetail(id) {
+    try {
+      sessionStorage.removeItem('__PXV_CL_SCROLL_TOP_' + id)
+      const cacheKey = `collections.detail.${id}`
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+      const resp = await fetch(`${PIXIV_NEXT_URL}/https://www.pixiv.net/collections/${id}`)
+      if (!resp.ok) return ''
+      let html = await resp.text()
+      html = html.replace(/i\.pximg\.net/g, PXIMG_PROXY_BASE)
+      const doc = new DOMParser().parseFromString(html, 'text/html')
+      const data = JSON.parse(doc.querySelector('#__NEXT_DATA__').innerHTML).props.pageProps
+      const thumbnail = JSON.parse(data.serverSerializedPreloadedState).thumbnail
+      const illusts = Object.values(thumbnail.illust).concat(Object.values(thumbnail.novel))
+      doc.querySelectorAll('a[data-ga4-label="user_icon_link"]').forEach(a => {
+        const uid = a.getAttribute('data-gtm-value')
+        const act = illusts.find(e => e.userId == uid)
+        if (!act) return
+        a.querySelector('div').innerHTML = `<img alt="${act.userName}" width="16" height="16" src="${act.profileImageUrl}" style="object-fit: cover; object-position: center top;">`
+      })
+      doc.querySelectorAll('a[data-ga4-label="thumbnail_link"]').forEach(a => {
+        if (a.innerHTML.trim()) return
+        const id = a.getAttribute('href')?.split('/')?.pop()
+        const act = illusts.find(e => e.id == id)
+        if (!act) return
+        a.innerHTML = `<img alt="${act.alt}" class="block size-full object-cover object-top" loading="lazy" src="${act.url}">`
+      })
+      doc.querySelectorAll('a[href^="/novel/show.php?id="]:has(figure)').forEach(a => {
+        const nid = a.getAttribute('data-gtm-value')
+        const act = thumbnail.novel[nid]
+        if (!act) return
+        const figure = a.querySelector('figure')
+        figure.setAttribute('src', act.url)
+        figure.setAttribute('alt', act.title)
+        figure.setAttribute('style', 'object-fit: cover; object-position: center center;')
+        figure.outerHTML = figure.outerHTML.replace(/figure/g, 'img')
+      })
+      doc.querySelectorAll('[data-ga4-label="thumbnail"]:has(a[href^="/novel/show.php"])').forEach(el => {
+        const a = el.querySelector('a[href^="/novel/show.php"]')
+        if (!a) return
+        let nid = a.getAttribute('data-ga4-entity-id')?.split('/')?.pop()
+        if (!nid) nid = a.getAttribute('data-gtm-value')
+        const act = thumbnail.novel[nid]
+        if (!act) return
+        const caption = el.querySelector('.break-all.w-full > [class*="line-clamp-1"] + [title=""][class*="line-clamp-2"]')
+        if (!caption.innerHTML.trim()) caption.innerHTML = act.description
+      })
+      setProperFontSize(
+        doc.querySelectorAll('[data-ga4-label="thumbnail"]:not(:has(a[href^="/novel/show.php"])) div[lang][style*="font-family"]')
+      )
+      doc.querySelectorAll('a').forEach(a => {
+        if (a.getAttribute('target')) a.setAttribute('target', '')
+        if (a.href.includes('/cdn-cgi/l/email-protection') || a.className.includes('__cf_email__')) {
+          a.innerHTML = decodeCFEmail(a.getAttribute('data-cfemail'))
+        }
+      })
+      doc.querySelectorAll('link[href*="fonts.googleapis.com"]').forEach(el => {
+        const href = el.getAttribute('href').replace('fonts.googleapis.com', 'fonts.loli.net')
+        el.outerHTML = `<link href="${href}" onload="this.rel='stylesheet'" rel="preload" as="style" crossorigin />`
+      })
+      doc.querySelectorAll('script').forEach(el => {
+        el.remove()
+      })
+      const lang = doc.documentElement.getAttribute('lang')
+      const styles = [...doc.querySelectorAll('style')].map(e => e.outerHTML).join('')
+      const linkStyleTexts = await Promise.all(
+        [...doc.querySelectorAll('link')]
+          .filter(e => e.rel == 'stylesheet' && e.href.endsWith('.css'))
+          .map(e => fetch(PIXIV_NEXT_URL + '/' + e.href).then(r => r.text()))
+      )
+      const tiles = doc.querySelector('[data-ga4-label="collection_tiles"]').outerHTML
+      const token = Math.random().toString(32).slice(2)
+      const theme = localStorage.PXV_DARK ? 'data-theme="dark"' : 'data-theme="light"'
+      html = `<html lang="${lang}" ${theme}>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
+          <style>${linkStyleTexts.join('\n')}</style>
+          ${styles}
+          <style>
+            html{min-width: unset !important}
+            body{width: 97vw;margin: 1vw auto;box-sizing: border-box;}
+            [data-theme="dark"] .backdrop-blur-md,
+            [data-theme="dark"] .backdrop-blur-sm {
+              border-color: rgba(0, 0, 0, 0.08) !important;
+              background-color: rgba(0, 0, 0, 0.8) !important;
+            }
+            [data-ga4-label="collection_tiles"]{overflow: auto;aspect-ratio: unset}
+            [data-ga4-label="collection_tiles"] > .absolute{display: none}
+            a [style*="width:0px"]:not(:has(img)){flex: 1;width: auto !important}
+            a [style*="width:0px"]:has(img){width: 40% !important}
+            a[href*="/jump.php?url="] > div[style*="width:0px"]:has(img,pixiv-icon){width:30% !important}
+            a[href*="/jump.php?url="] > div[style*="width:0px"]:has(img,pixiv-icon) + div{width:70% !important}
+            [class*="line-clamp"][style*="line-clamp:0"]{line-clamp:none!important;-webkit-line-clamp:none!important}
+            pixiv-icon[name="24/Link"]{
+              background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTQuMDMxIDMuMzY3YTQuNjY2IDQuNjY2IDAgMTE2LjYgNi41OThsLTQuMjQzIDQuMjQzYTQuNjY1IDQuNjY1IDAgMDEtMi4xNjMgMS4yMjZoLS4wMzdsLS4xOTMuMDQtLjEwNy4wMi0uMjMuMDM0aC0uMTEzYy0uMDUgMC0uMDk3LjAwNS0uMTQyLjAxYTEuMjk2IDEuMjk2IDAgMDEtLjA5NS4wMWwtLjIuMDIzaC0uMjUzYTQuNjE2IDQuNjE2IDAgMDEtLjQ5Ny0uMDQ3IDUuMzU2IDUuMzU2IDAgMDEtLjQwMy0uMDgzbC0uMTk3LS4wNTNhMi42NCAyLjY0IDAgMDEtLjIxMy0uMDdsLS4wNzgtLjAyOWMtLjA0NS0uMDE2LS4wOS0uMDMyLS4xMzUtLjA1MWE0LjcxIDQuNzEgMCAwMC0uMDctLjAzIDQuNjI3IDQuNjI3IDAgMDEtMS40NzMtLjk5NCAxLjMzMyAxLjMzMyAwIDAxMC0xLjg3OSAxLjM2NiAxLjM2NiAwIDAxMS44NzMgMCAyIDIgMCAwMDIuODI2IDBsMS4wOTMtMS4wODYuMDI3LS4wMyAzLjEyNi0zLjEyM2EyIDIgMCAwMC0yLjgzLTIuODNsLTIuNTEgMi41MDdhLjMzMy4zMzMgMCAwMS0uMzYyLjA3MyA1LjYgNS42IDAgMDAtMi4xMy0uNDE3aC0uMTIzYS4zMzMuMzMzIDAgMDEtLjI0My0uNTdsMy40OTUtMy40OTJ6IiBmaWxsPSJjdXJyZW50Q29sb3IiPjwvcGF0aD48cGF0aCBkPSJNMTMuNDE4IDkuMTY2Yy4yODQuMTguNTQ3LjM5MS43ODQuNjMuMjcuMjcuNDEuNjQ0LjM4NiAxLjAyNi0uMDIzLjMyLS4xNi42Mi0uMzg2Ljg0N2ExLjM2NiAxLjM2NiAwIDAxLTEuODczIDAgMiAyIDAgMDAtMi44MjcgMEw1LjI0NiAxNS45MmEyIDIgMCAwMDIuODMgMi44M2wyLjUxNi0yLjUyYS4zMzMuMzMzIDAgMDEuMzYzLS4wNzMgNS42MTIgNS42MTIgMCAwMDIuMTMzLjQxM2guMTM0YS4zMzMuMzMzIDAgMDEuMjM2LjU3bC0zLjUgMy41QTQuNjM2IDQuNjM2IDAgMDE2LjY2NCAyMmE0LjY2NiA0LjY2NiAwIDAxLTMuMy03Ljk2Mmw0LjI0LTQuMjQyYTQuNjY2IDQuNjY2IDAgMDE1LjgxNi0uNjN6IiBmaWxsPSJjdXJyZW50Q29sb3IiPjwvcGF0aD48L3N2Zz4=) no-repeat center / contain;
+            }
+            ::-webkit-scrollbar{width: 5px;height: 5px;}
+            ::-webkit-scrollbar-track{background: transparent;}
+            ::-webkit-scrollbar-thumb{background: #b0b0b0;border-radius: 7px;}
+            ::-webkit-scrollbar-thumb:hover{background: #666;}
+            @media screen and (max-width: 600px) {
+              body{width:100%;margin:0}
+              [data-ga4-label="collection_tiles"] .grid[style*="gap:16px"]{gap:8px !important}
+              [data-ga4-label="thumbnail"] a[href*="/jump.php?url="]{justify-content: flex-start;align-items: flex-start;}
+              [data-ga4-label="thumbnail"] a[href*="/jump.php?url="] > div:has(img,pixiv-icon){display:none}
+              [data-ga4-label="thumbnail"] a[href*="/jump.php?url="] > div:has(img,pixiv-icon) + div{width: 100% !important;padding: 2px 8px;}
+              ::-webkit-scrollbar{width: 0 !important}
+            }
+          </style>
+          </head>
+          <body>
+            ${tiles}
+            <script>
+              window.onpagehide = () => {
+                sessionStorage.setItem('__PXV_CL_SCROLL_TOP_' + '${id}', document.documentElement.scrollTop)
+              }
+              window.onpageshow = () => {
+                const scrollTop = sessionStorage.getItem('__PXV_CL_SCROLL_TOP_' + '${id}')
+                if (scrollTop) document.documentElement.scrollTop = scrollTop
+              }
+              document.body.onclick = ev => {
+                ev.stopPropagation()
+                ev.preventDefault()
+                let el = ev.target
+                while (el && el.tagName != 'A') {
+                  el = el.parentElement
+                }
+                if (!el) return
+                const url = el.href
+                window.parent.postMessage({
+                  token: '${token}',
+                  action: 'push',
+                  payload: url
+                }, '*')
+              }
+            </script>
+          </body>
+      </html>`
+      const ucMap = thumbnail.collection
+      const result = {
+        ...data.collection,
+        html,
+        _token: token,
+        userCols: data.userCollectionIds.map(e => ucMap[e]),
+      }
+      await setCache(cacheKey, result, -1)
+      return result
+    } catch (err) {
+      console.log('err: ', err)
+      return null
+    }
+  },
+
+  async getTwitterMedias(userName, userId, nextCursor) {
+    try {
+      const cacheKey = `twitter.media.${userName}.${userId}.${nextCursor}`
+      const cache = await getCache(cacheKey)
+      if (cache) return cache
+
+      const params = new URLSearchParams()
+      if (userName) params.append('userName', userName)
+      if (userId) params.append('userId', userId)
+      if (nextCursor) params.append('nextCursor', nextCursor)
+
+      const res = await get(`${PIXIV_NEXT_URL}/api/x/media?${params}`)
+      if (!Array.isArray(res.results) || !res.results.length) {
+        return null
+      }
+      res.results = res.results.map(e => ({
+        id: e.id,
+        userName,
+        title: e.text?.replace(/https:\/\/t\.co\/\w+$/i, '').trim(),
+        caption: e.full_text,
+        createdDate: dayjs(e.created_at).format('YYYY-MM-DD HH:mm'),
+        width: e.media?.[0]?.width || 0,
+        height: e.media?.[0]?.height || 0,
+        count: e.media?.length || 0,
+        type: (e.media?.[0]?.type || '').toUpperCase(),
+        images: e.media?.map(item => {
+          const src = item.media_url
+          if (item.type != 'photo') {
+            const o = COMMON_PROXY + item.stream_url
+            return { m: COMMON_PROXY + src, l: o, o }
+          }
+          const m = src.match(/^(https?:\/\/\w+\.twimg\.com\/media\/[^/:]+)\.(jpg|jpeg|gif|png|bmp|webp)(:\w+)?$/i)
+          if (!m) return { m: src, l: src, o: src }
+          const base = m[1]
+          let format = m[2]
+          if (format == 'jpeg') format = 'jpg'
+          return {
+            m: `${COMMON_PROXY}${base}?format=${format}&name=small`,
+            l: `${COMMON_PROXY}${base}?format=${format}&name=large`,
+            o: `${COMMON_PROXY}${base}?format=${format}&name=orig`,
+          }
+        }) || [],
+      }))
+      await setCache(cacheKey, res, 60 * 60 * 24)
+
+      return res
+    } catch (err) {
+      console.log('err: ', err)
+      return null
+    }
+  },
 }
+
 export default api
 
-function reqGet(path, params) {
-  return get('/req_get', {
-    path,
-    params: JSON.stringify(params),
-  })
-}
-
-function reqPost(path, data) {
-  return get('/req_post', {
-    path,
-    data: JSON.stringify(data),
-    t: Date.now(),
-  }, {
-    headers: {
-      'cache-control': 'no-cache',
-    },
-  })
-}
-
-export const localApi = {
-  async me() {
-    const res = await get('/me', { _t: Date.now() })
-    if (res?.id) {
-      return {
-        id: res.id,
-        pixivId: res.account,
-        name: res.name,
-        profileImg: imgProxy(res.profile_image_urls.px_170x170),
-        profileImgBig: imgProxy(res.profile_image_urls.px_170x170),
-        premium: res.is_premium,
-        xRestrict: res.x_restrict,
-      }
-    }
-    return null
-  },
-  async userFollowing(id, page = 1) {
-    let list = []
-    const res = await get('/following', {
-      id,
-      page,
-      t: Date.now(),
-    }, {
-      headers: {
-        'cache-control': 'no-cache',
+export function getBookmarkRestrictTags(tags = []) {
+  return new Promise(resolve => {
+    Dialog.confirm({
+      title: i18n.t('user.fav'),
+      message: `
+        <div id="sel_block_dialog">
+          <p style="margin:0.2rem 0">${i18n.t('r7d1o2ui8dhVA0A4rAwHq')}</p>
+          <div class="sel_block_chks" style="justify-content: center;">
+            <input type="radio" id="get_fav_restrict_public" name="restrict" value="public" checked />
+            <label for="get_fav_restrict_public" style="margin-right: 10px;">${i18n.t('tMMgcuNAMSfxgPmaTDPuN')}</label>
+            <input type="radio" id="get_fav_restrict_private" name="restrict" value="private" />
+            <label for="get_fav_restrict_private">${i18n.t('WUegrN0Qk6zuHdl9EHUa-')}</label>
+          </div>
+          <div style="height:1px;margin:0.2rem 0;border-bottom:1px solid #ccc"></div>
+          <p style="margin:0.2rem 0">${i18n.t('gJIMYUgtWdroLrG3seGNl')}</p>
+          <input id="get_fav_tags_input" type="text" style="margin-bottom:0.2rem">
+          ${tags.map(e => `
+          <div class="sel_block_chks" style="margin-bottom:0.1rem">
+            <input type="checkbox" data-tag="${e.name}">
+            <span style="text-align: left;">${e.name}</span>
+          </div>`).join('')}
+        </div>`,
+      lockScroll: false,
+      closeOnPopstate: true,
+      cancelButtonText: i18n.t('common.cancel'),
+      confirmButtonText: i18n.t('common.confirm'),
+      beforeClose: (action, done) => {
+        if (action == 'confirm') {
+          const restrict = document.querySelector('#sel_block_dialog input[name="restrict"]:checked')?.value
+          const tagsInput = document.querySelector('#get_fav_tags_input')?.value
+          const tags = document.querySelectorAll('#sel_block_dialog input[data-tag]:checked')
+          resolve({
+            restrict,
+            tags: [...tags].map(e => e.getAttribute('data-tag')).concat(tagsInput.split(/\s+/)).filter(Boolean),
+          })
+        }
+        done()
       },
-    })
-    if (res.user_previews) {
-      list = res.user_previews
-        .map(u => {
-          return {
-            id: u.user.id,
-            name: u.user.name,
-            avatar: imgProxy(u.user.profile_image_urls.medium),
-            illusts: u.illusts.map(i => ({
-              id: i.id,
-              title: i.title,
-              src: imgProxy(i.image_urls.medium),
-              x_restrict: i.x_restrict,
-              illust_ai_type: i.illust_ai_type,
-            })),
-          }
-        })
-    } else if (res.error) {
-      return {
-        status: -1,
-        msg: dealErrMsg(res),
-      }
-    } else {
-      return {
-        status: -1,
-        msg: i18n.t('tip.unknown_err'),
-      }
-    }
-
-    return { status: 0, data: list }
-  },
-  async illustFollow(page = 1, restrict = 'all') {
-    let list = []
-    const res = await reqGet('v2/illust/follow', {
-      restrict,
-      offset: (page - 1) * 30,
-    })
-
-    if (res.illusts) {
-      list = res.illusts.map(art => parseIllust(art))
-    } else if (res.error) {
-      return {
-        status: -1,
-        msg: dealErrMsg(res),
-      }
-    } else {
-      return {
-        status: -1,
-        msg: i18n.t('tip.unknown_err'),
-      }
-    }
-
-    return { status: 0, data: filterCensoredIllusts(list) }
-  },
-  async novelFollow(page = 1) {
-    let list = []
-    const offset = (page - 1) * 30
-    const params = {}
-    if (offset > 0) params.offset = offset
-    const res = await reqGet('v1/novel/follow', params)
-
-    if (res.novels) {
-      list = res.novels.map(art => parseNovel(art))
-    } else if (res.error) {
-      return {
-        status: -1,
-        msg: dealErrMsg(res),
-      }
-    } else {
-      return {
-        status: -1,
-        msg: i18n.t('tip.unknown_err'),
-      }
-    }
-
-    return { status: 0, data: list }
-  },
-  async illustBookmarkAdd(id, restrict = 'public') {
-    if (!id) return false
-    try {
-      const res = await reqPost('v2/illust/bookmark/add', {
-        illust_id: `${id}`,
-        restrict,
-      })
-      return !res.error
-    } catch (error) {
-      return false
-    }
-  },
-  async illustBookmarkDelete(id) {
-    if (!id) return false
-    try {
-      const res = await reqPost('v1/illust/bookmark/delete', {
-        illust_id: `${id}`,
-      })
-      return !res.error
-    } catch (error) {
-      return false
-    }
-  },
-  async userFollowAdd(id, restrict = 'public') {
-    if (!id) return false
-    try {
-      const res = await reqPost('v1/user/follow/add', {
-        user_id: `${id}`,
-        restrict,
-      })
-      return !res.error
-    } catch (error) {
-      return false
-    }
-  },
-  async userFollowDelete(id) {
-    if (!id) return false
-    try {
-      const res = await reqPost('v1/user/follow/delete', {
-        user_id: `${id}`,
-      })
-      return !res.error
-    } catch (error) {
-      return false
-    }
-  },
+    }).catch(() => {})
+  })
 }

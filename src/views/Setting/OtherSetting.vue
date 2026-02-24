@@ -374,7 +374,7 @@ export default {
   data() {
     return {
       platform,
-      clientConfig: { ...window.APP_CONFIG },
+      clientConfig: { ...localApi.APP_CONFIG },
       apiProxySel: {
         show: false,
         actions: APP_API_PROXYS.split(',').map((_value, i) => {

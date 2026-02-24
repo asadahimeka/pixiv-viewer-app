@@ -92,7 +92,10 @@ const app = {
  * @param {import('./pixiv-api').default} pixiv
  */
 function initApp(pixiv) {
-  app.get('/me', async () => pixiv.authInfo().user)
+  app.get('/me', async () => {
+    const auth = await pixiv.authInfo()
+    return auth.user
+  })
   app.get('/illust', async req => {
     return pixiv.illustDetail(req.query.id)
   })
@@ -181,9 +184,10 @@ function initApp(pixiv) {
     })
   })
   app.get('/following', async req => {
-    const { id, page = 1, size = 30 } = req.query
+    const { id, page = 1, size = 30, restrict } = req.query
     return pixiv.userFollowing(id, {
       offset: (page - 1) * size,
+      restrict,
     })
   })
   app.get('/rank', async req => {
@@ -328,13 +332,23 @@ function initApp(pixiv) {
     if (page > 1) params.offset = (page - 1) * size
     return pixiv.liveList(params)
   })
+  app.get('/spotlights', async req => {
+    const { page = 1, size = 10, ...opts } = req.query
+    return pixiv.spotlights({
+      offset: (page - 1) * size,
+      ...opts,
+    })
+  })
   app.get('/req_get', async req => {
     const { path, params } = req.query
     console.log('path: ', path)
     console.log('params: ', params)
+    const options = JSON.parse(params)
     const fns = {
-      'v2/illust/follow': () => pixiv.illustFollow(JSON.parse(params)),
-      'v1/novel/follow': () => pixiv.novelFollow(JSON.parse(params)),
+      'v2/illust/follow': () => pixiv.illustFollow(options),
+      'v1/novel/follow': () => pixiv.novelFollow(options),
+      'v1/user/bookmark-tags/illust': () => pixiv.userBookmarkIllustTags(options),
+      'v1/user/bookmark-tags/novel': () => pixiv.userBookmarkNovelTags(options),
     }
     return fns[path]?.()
   })
@@ -344,10 +358,12 @@ function initApp(pixiv) {
     console.log('data: ', data)
     const d = JSON.parse(data)
     const fns = {
-      'v2/illust/bookmark/add': () => pixiv.bookmarkIllust(d.illust_id),
+      'v2/illust/bookmark/add': () => pixiv.bookmarkIllust(d.illust_id, d.restrict, d.tags),
       'v1/illust/bookmark/delete': () => pixiv.unbookmarkIllust(d.illust_id),
-      'v1/user/follow/add': () => pixiv.followUser(d.user_id),
+      'v1/user/follow/add': () => pixiv.followUser(d.user_id, d.restrict),
       'v1/user/follow/delete': () => pixiv.unfollowUser(d.user_id),
+      'v2/novel/bookmark/add': () => pixiv.bookmarkNovel(d.novel_id, d.restrict, d.tags),
+      'v1/novel/bookmark/delete': () => pixiv.unbookmarkNovel(d.novel_id),
     }
     return fns[path]?.()
   })

@@ -76,7 +76,7 @@ async function setupApp() {
 
 async function initLocalApi() {
   const config = LocalStorage.get('PXV_CLIENT_CONFIG', {})
-  window.APP_CONFIG = config
+  localApi.APP_CONFIG = config
   if (!config.useLocalAppApi) return
   document.querySelector('#ldio-loading .ldio-content')?.insertAdjacentHTML('beforeend', `<p class="ldio-title" style="top:180px;font-size:14px">${i18n.t('hyCctySRvfcddmi6nVh9b')}</p>`)
   window.__localApiMap__ = await getActionMap()

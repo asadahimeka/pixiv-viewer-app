@@ -93,7 +93,7 @@ export default {
   },
   data() {
     return {
-      showBookmarkBtn: window.APP_CONFIG.useLocalAppApi,
+      showBookmarkBtn: localApi.APP_CONFIG.useLocalAppApi,
       bLoading: false,
       isBookmarked: false,
       isOuterMeta: isImageCardOuterMeta,
@@ -280,7 +280,7 @@ export default {
   margin-bottom: 10px;
   // border-radius: 20px;
 
-  // @media screen and (min-width: 1280px)
+  // @media screen and (min-width: 1120px)
   //   &:hover
   //     .image[lazy="loaded"]
   //       transform: scale(1.1);

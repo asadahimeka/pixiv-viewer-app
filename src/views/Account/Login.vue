@@ -60,7 +60,7 @@ export default {
   name: 'Login',
   data() {
     return {
-      appConfig: { ...window.APP_CONFIG },
+      appConfig: { ...localApi.APP_CONFIG },
       showConfirmDialog: false,
       showTokenDialog: false,
       platform,
