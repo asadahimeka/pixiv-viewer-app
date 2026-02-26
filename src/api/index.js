@@ -1150,39 +1150,6 @@ const api = {
     return { status: 0, data: spotlight }
   },
 
-  /**
-   *
-   * @param {String} mode 排行榜类型  ['daily_ai', 'daily_r18_ai']
-   * @param {Number} page 页数
-   * @param {String} date YYYYMMDD 默认为「前天」
-   */
-  async getAiRankList(mode = 'daily_ai', page = 1, date = dayjs().subtract(2, 'days').format('YYYYMMDD')) {
-    date = dayjs(date).format('YYYYMMDD')
-    const cacheKey = `rankList_${mode}_${date}_${page}`
-    let rankList = await getCache(cacheKey)
-
-    if (!rankList) {
-      const res = await get(`${PIXIV_NOW_URL}/ranking`.replace('/http', ''), {
-        format: 'json',
-        p: page,
-        mode,
-        date,
-      })
-
-      if (res && res.contents) {
-        rankList = res.contents.map(e => parseAiIllust(e, mode.includes('r18')))
-        rankList.length && setCache(cacheKey, rankList, 60 * 60 * 24 * 14)
-      } else {
-        return {
-          status: 0,
-          data: [],
-        }
-      }
-    }
-
-    return { status: 0, data: filterCensoredIllusts(rankList) }
-  },
-
   async getWebRankList(mode = 'daily', page = 1, date = dayjs().subtract(2, 'days').format('YYYYMMDD'), content) {
     date = dayjs(date).format('YYYYMMDD')
     const cacheKey = `rankList_${mode}_${content}_${date}_${page}`
@@ -1658,6 +1625,7 @@ const api = {
             memberInfo.twitter_url = webRes?.social?.twitter?.url || ''
             memberInfo.twitter_account = webRes?.social?.twitter?.url?.split('/').pop() || ''
           }
+          memberInfo.comment = await mintFilter(memberInfo.comment)
         } catch (err) {
           console.log('err: ', err)
         }

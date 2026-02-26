@@ -92,11 +92,13 @@ export async function initUser() {
     } else {
       // removeCookie('CSRFTOKEN')
       sessionStorage.removeItem('PXV_NOW_CSRFTOKEN')
+      LocalStorage.remove('PXV_NOW_COOKIE')
       throw new Error(i18n.t('k0V0c1MNZGYs9MCqjx8QL'))
     }
   } catch (err) {
     // removeCookie('CSRFTOKEN')
     sessionStorage.removeItem('PXV_NOW_CSRFTOKEN')
+    LocalStorage.remove('PXV_NOW_COOKIE')
     throw err
   }
 }
@@ -309,8 +311,8 @@ export async function getFollowingIllusts(page = 1, mode = 'all') {
   return { status: 0, data: list }
 }
 
-export async function getNewIllusts(page = 1, lastId = 0) {
-  const cacheKey = `new.illusts.${page}`
+export async function getNewIllusts(page = 1, lastId = 0, restrict = 'safe') {
+  const cacheKey = `new.illusts.${page}.${restrict}`
   let list = await getCache(cacheKey)
 
   if (!list) {
@@ -318,7 +320,7 @@ export async function getNewIllusts(page = 1, lastId = 0) {
       lastId,
       limit: 20,
       type: 'illust',
-      r18: false,
+      r18: restrict == 'r18',
       lang: 'zh',
       _vercel_no_cache: 1,
       _t: Date.now(),

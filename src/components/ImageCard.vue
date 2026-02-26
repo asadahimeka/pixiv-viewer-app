@@ -1,5 +1,9 @@
 <template>
-  <div class="image-card" :class="{isOuterMeta}" :style="{ '--w': artwork.width, '--h': artwork.height }">
+  <div
+    class="image-card"
+    :class="{ isOuterMeta, [`art-cover-${artwork.id}`]: true }"
+    :style="{ '--w': artwork.width, '--h': artwork.height }"
+  >
     <div
       class="image-card-wrapper"
       :style="{ paddingBottom: paddingBottom(artwork) }"
@@ -21,7 +25,7 @@
         <Icon name="layer" scale="1.5" />
         {{ artwork.count }}
       </div>
-      <div v-if="(mode == 'all' || mode == 'cover') && showBookmarkBtn" class="bookmark" @click.stop="toggleBookmark">
+      <div v-if="(mode == 'all' || mode == 'cover') && showBookmarkBtn" v-longpress="showBookmarkDialog" class="bookmark" @click.stop="toggleBookmark">
         <van-loading v-if="bLoading" color="#ff4060" size="28px" />
         <van-icon v-else :name="isBookmarked?'like':'like-o'" color="#ff4060" />
       </div>
@@ -31,11 +35,11 @@
         name="play"
         scale="8"
       />
-      <div v-if="mode == 'all' || mode === 'meta'" v-longpress="isTriggerLongpress?onLongpress:null" class="meta">
+      <div v-if="mode == 'all' || mode === 'meta'" v-longpress="onLongpress" class="meta">
         <div v-if="!isOuterMeta" class="content">
           <h2 class="title" :title="artwork.title + ' ' + artwork.created" @click.stop="onImageTitleClick">{{ artwork.title }}</h2>
           <div class="author-cont" @click.stop="toAuthor">
-            <Pximg :src="artwork.author.avatar" :alt="artwork.author.name" nobg class="avatar" />
+            <Pximg v-if="artwork.author.avatar" :src="artwork.author.avatar" :alt="artwork.author.name" nobg class="avatar" />
             <div class="author">{{ artwork.author.name }}</div>
           </div>
         </div>
@@ -47,7 +51,7 @@
           {{ artwork.title }}
         </h2>
         <div class="author-cont" @click="toAuthor">
-          <Pximg :src="artwork.author.avatar" :alt="artwork.author.name" nobg class="avatar" />
+          <Pximg v-if="artwork.author.avatar" :src="artwork.author.avatar" :alt="artwork.author.name" nobg class="avatar" />
           <div class="author">{{ artwork.author.name }}</div>
         </div>
       </div>
@@ -58,14 +62,31 @@
 <script>
 import { Dialog, ImagePreview } from 'vant'
 import { mapGetters } from 'vuex'
-import { localApi } from '@/api'
-import { getCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
+import { getBookmarkRestrictTags, localApi } from '@/api'
+import { getCache, setCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
 import { isAiIllust } from '@/utils/filter'
 import { fancyboxShow, downloadFile } from '@/utils'
 import store from '@/store'
 import { getArtworkFileName } from '@/store/actions/filename'
+import { ugoiraAvifSrc } from '@/consts'
 
-const { isImageCardOuterMeta, isLongpressDL, isLongpressBlock } = store.state.appSetting
+const {
+  isImageCardOuterMeta,
+  imgReso,
+  isUgoiraAvifSrc,
+  isDefBookmarkPrivate,
+  isDefBookmarkAddTags,
+  isLongpressPrivateBookmark,
+  isDefFollowPrivate,
+  isAutoFollowAfterBookmark,
+  isAutoDownLoadAfterBookmark,
+  isAutoBookmarkAfterDownload,
+} = store.state.appSetting
+const isOuterMeta = store.getters.isNoOuterMeta ? false : isImageCardOuterMeta
+const isLargeWebp = imgReso == 'Large(WebP)'
+const getLargeWebpSrc = (src, fbk) => {
+  return src?.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/c/1200x1200_90_webp/') || fbk
+}
 
 export default {
   props: {
@@ -78,15 +99,18 @@ export default {
       required: false,
       default: 'cover',
     },
-    column: {
-      type: Number,
-      required: false,
-      default: 2,
-    },
     index: {
       type: Number,
     },
     square: {
+      type: Boolean,
+      default: false,
+    },
+    forceLargeWebp: {
+      type: Boolean,
+      default: false,
+    },
+    noLongpress: {
       type: Boolean,
       default: false,
     },
@@ -96,32 +120,32 @@ export default {
       showBookmarkBtn: localApi.APP_CONFIG.useLocalAppApi,
       bLoading: false,
       isBookmarked: false,
-      isOuterMeta: isImageCardOuterMeta,
-      isTriggerLongpress: isLongpressDL || isLongpressBlock,
+      isOuterMeta,
     }
   },
   computed: {
     imgSrc() {
-      if (this.square) {
-        return this.artwork.images[0].s
+      if (this.artwork.type == 'ugoira' && isUgoiraAvifSrc) {
+        return ugoiraAvifSrc(this.artwork.id)
       }
-      return this.artwork.images[0].m
+      const i0 = this.artwork.images[0]
+      if (this.square) return i0.s
+      if (isLargeWebp || this.forceLargeWebp) return getLargeWebpSrc(i0.l, i0.m)
+      return i0.m
     },
     isAiIllust() {
       return isAiIllust(this.artwork)
     },
     tagText() {
-      if (this.artwork.x_restrict == 1) {
-        return 'R-18'
-      } else if (this.artwork.x_restrict == 2) {
-        return 'R-18G'
-      } else {
-        return false
-      }
+      return ['', 'R-18', 'R-18G'][this.artwork.x_restrict] || ''
     },
     ...mapGetters(['isCensored']),
     censored() {
       return this.isCensored(this.artwork)
+    },
+    isTriggerLongpress() {
+      if (this.noLongpress) return false
+      return store.state.appSetting.isLongpressDL || store.state.appSetting.isLongpressBlock
     },
   },
   async mounted() {
@@ -131,49 +155,90 @@ export default {
     }
   },
   methods: {
-    // onAvatarErr() {
-    //   const src = this.artwork.author.avatar
-    //   if (!src) return
-    //   if (src.includes('i.pixiv.re')) return
-    //   try {
-    //     const u = new URL(src)
-    //     u.host = 'i.pixiv.re'
-    //     // eslint-disable-next-line vue/no-mutating-props
-    //     this.artwork.author.avatar = u.href
-    //   } catch (error) {
-    //     console.log('error: ', error)
-    //   }
-    // },
+    async autoAddFollow() {
+      if (!isAutoFollowAfterBookmark || this.artwork.author.is_followed) return
+      const isFollowedCacheKey = `member_is_followed_${this.artwork.author.id}`
+      if (await getCache(isFollowedCacheKey)) return
+      this.bLoading = true
+      const isOk = await localApi.userFollowAdd(this.artwork.author.id, isDefFollowPrivate ? 'private' : 'public')
+      this.bLoading = false
+      if (!isOk) {
+        this.$toast(this.$t('user.follow_fail'))
+        return
+      }
+      await setCache(isFollowedCacheKey, true)
+      const itemKey = `memberInfo_${this.artwork.author.id}`
+      const user = await getCache(itemKey)
+      if (user) {
+        user.is_followed = true
+        await setCache(itemKey, user, 60 * 60 * 6)
+      }
+    },
+    async addBookmark(restrict, tags) {
+      try {
+        if (!restrict && isDefBookmarkPrivate) {
+          restrict = 'private'
+        }
+        if (!tags && isDefBookmarkAddTags) {
+          tags = this.artwork.tags.map(e => e.name)
+        }
+        const isOk = await localApi.illustBookmarkAdd(this.artwork.id, restrict, tags)
+        if (isOk) {
+          this.isBookmarked = true
+          toggleBookmarkCache(this.artwork, true)
+          this.autoAddFollow()
+          if (isAutoDownLoadAfterBookmark) this.downloadArtwork('noConfirm')
+        } else {
+          this.$toast(this.$t('artwork.fav_fail'))
+        }
+      } catch (err) {
+        console.log('addBookmark err: ', err)
+      }
+    },
+    async deleteBookmark() {
+      try {
+        const isOk = await localApi.illustBookmarkDelete(this.artwork.id)
+        if (isOk) {
+          this.isBookmarked = false
+          toggleBookmarkCache(this.artwork, false)
+        } else {
+          this.$toast(this.$t('artwork.unfav_fail'))
+        }
+      } catch (err) {
+        console.log('deleleBookmark err: ', err)
+      }
+    },
     async toggleBookmark() {
       if (this.bLoading) return
       this.bLoading = true
-      try {
-        if (this.isBookmarked) {
-          const isOk = await localApi.illustBookmarkDelete(this.artwork.id)
-          if (isOk) {
-            this.isBookmarked = false
-            toggleBookmarkCache(this.artwork, false)
-          } else {
-            this.$toast(this.$t('artwork.unfav_fail'))
-          }
-        } else {
-          const isOk = await localApi.illustBookmarkAdd(this.artwork.id)
-          if (isOk) {
-            this.isBookmarked = true
-            toggleBookmarkCache(this.artwork, true)
-          } else {
-            this.$toast(this.$t('artwork.fav_fail'))
-          }
-        }
-      } finally {
-        this.bLoading = false
+      if (this.isBookmarked) {
+        await this.deleteBookmark()
+      } else {
+        await this.addBookmark()
       }
+      this.bLoading = false
+    },
+    async showBookmarkDialog(/** @type {Event} */ ev) {
+      ev.preventDefault()
+      if (this.isBookmarked) return
+      if (isLongpressPrivateBookmark) {
+        this.bLoading = true
+        await this.addBookmark('private', isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0)
+        this.$toast(this.$t('kL2NNZsLQT9TUgeEmMQk3'))
+        this.bLoading = false
+        return
+      }
+      const { restrict, tags } = await getBookmarkRestrictTags(this.artwork.tags)
+      console.log('restrict: ', restrict)
+      console.log('tags: ', tags)
+      this.bLoading = true
+      await this.addBookmark(restrict, tags)
+      this.bLoading = false
     },
     click(id) {
-      if (
-        !id ||
-        (this.$route.name === 'Artwork' && this.$route.params.id == id)
-      ) { return false }
+      if (!id || (this.$route.name == 'Artwork' && this.$route.params.id == id)) {
+        return false
+      }
 
       this.$emit('click-card', id)
     },
@@ -191,14 +256,16 @@ export default {
     onLongpress(/** @type {Event} */ ev) {
       if (!this.isTriggerLongpress) return
       ev.preventDefault()
-      isLongpressDL ? this.downloadArtwork() : this.showBlockDialog()
+      store.state.appSetting.isLongpressDL ? this.downloadArtwork() : this.showBlockDialog()
     },
     onImageTitleClick() {
       if (this.artwork.novel_ai_type) {
         this.click(this.artwork.id)
         return
       }
-      const getSrc = e => e.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/')
+      const getSrc = isLargeWebp
+        ? e => getLargeWebpSrc(e.l)
+        : e => e.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/')
       if (store.state.appSetting.isUseFancybox) {
         fancyboxShow(this.artwork, 0, getSrc)
       } else {
@@ -221,11 +288,11 @@ export default {
         title: this.$t('1a1meIFthYyv_s7C4M4L0'),
         message: `
         <div id="sel_block_dialog">
-          <p style="margin:0.2rem 0">Author</p>
+          <p style="margin:0.2rem 0">${this.$t('mK4Dqnx_FvC3JhJMR4B4t')}</p>
           <div class="sel_block_chks"><input type="checkbox" data-author="${this.artwork.author.id}">${this.artwork.author.name}(${this.artwork.author.id})</div>
           <div style="height:1px;margin:0.2rem 0;border-bottom:1px solid #ccc"></div>
-          <p style="margin:0.2rem 0">Tags</p>
-          ${this.artwork.tags.map(e => `<div class="sel_block_chks"><input type="checkbox" data-tagname="${e.name}">${e.name}</div>`).join('')}
+          <p style="margin:0.2rem 0">${this.$t('1NIKIVhrUKhUHhuWv3Sxt')}</p>
+          ${this.artwork.tags.map(e => `<div class="sel_block_chks" style="margin-bottom:0.1rem"><input type="checkbox" data-tagname="${e.name}"><span style="text-align: left;">${e.name}</span></div>`).join('')}
         </div>`,
         lockScroll: false,
         closeOnPopstate: true,
@@ -246,17 +313,37 @@ export default {
         },
       }).catch(() => {})
     },
-    async downloadArtwork() {
+    async downloadArtwork(noConfirm) {
       if (this.artwork.type == 'ugoira') return
-      const res = await Dialog.confirm({
-        title: this.$t('wuh4SsMnuqgjHpaOVp2rB'),
-        message: this.artwork.title,
-        lockScroll: false,
-        closeOnPopstate: true,
-        cancelButtonText: this.$t('common.cancel'),
-        confirmButtonText: this.$t('common.confirm'),
-      }).catch(() => 'cancel')
-      if (res != 'confirm') return
+      if (noConfirm != 'noConfirm') {
+        const res = await Dialog.confirm({
+          title: this.$t('wuh4SsMnuqgjHpaOVp2rB'),
+          message: this.artwork.title,
+          lockScroll: false,
+          closeOnPopstate: true,
+          cancelButtonText: this.$t('common.cancel'),
+          confirmButtonText: this.$t('common.confirm'),
+        }).catch(() => 'cancel')
+        if (res != 'confirm') return
+      }
+      if (localApi.APP_CONFIG.useLocalAppApi && !this.isBookmarked && isAutoBookmarkAfterDownload) {
+        this.bLoading = true
+        localApi.illustBookmarkAdd(
+          this.artwork.id,
+          isDefBookmarkPrivate ? 'private' : void 0,
+          isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0
+        )
+          .then(isOk => {
+            this.bLoading = false
+            if (isOk) {
+              this.isBookmarked = true
+              toggleBookmarkCache(this.artwork, true)
+            } else {
+              this.$toast(this.$t('artwork.fav_fail'))
+            }
+          })
+      }
+      window.umami?.track('download_artwork_longpress')
       await this.$nextTick()
       const len = this.artwork.images.length
       for (let index = 0; index < len; index++) {
@@ -313,9 +400,6 @@ export default {
     position: absolute;
     top: 10px;
     right: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     background: rgba(#000, 0.3);
     color: #fff;
     padding: 4px 8px;
@@ -323,8 +407,8 @@ export default {
     border-radius: 5px;
 
     svg
-      vertical-align: bottom;
-      margin-right: 4px;
+      vertical-align: middle;
+      margin-right: 1PX;
 
   .bookmark
     position absolute

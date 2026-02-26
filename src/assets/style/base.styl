@@ -1,5 +1,7 @@
 html
   --font-family: -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Source Han Sans SC, Source Han Sans CN, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  overflow-x hidden
+  overflow-x clip
 
 html, body
   font-family: var(--font-family);
@@ -18,6 +20,14 @@ code
   display flex
   justify-content center
   align-items center
+
+.flex-sb
+  display flex
+  justify-content space-between
+  align-items center
+
+.bg-none
+  background none !important
 
 .icon
   width: 1em;
@@ -154,6 +164,19 @@ code
 .van-image-preview__close-icon--top-right
   top 1rem
 
+.loading-fixed
+  position fixed !important
+  top 45vh !important
+  left 50% !important
+  transform translateX(-50%) !important
+
+.van-tabs__content--animated,
+.van-overflow-hidden
+  overflow initial !important
+html:has(.van-tabs__content--animated)
+  overflow-x hidden
+  overflow-x clip
+
 .android,.ios
   .fancybox__nav
     display none
@@ -177,6 +200,10 @@ code
 
 .swiper-container
   --swiper-theme-color: #fcb93e
+
+.swiper-pagination-bullet
+  width 0.2rem
+  height 0.2rem
 
 .swiper-container-horizontal>.swiper-scrollbar
   bottom: .04rem;
@@ -209,14 +236,30 @@ code
 @media screen and (max-width: 600px)
   .swiper-button-prev, .swiper-button-next, .swiper-scrollbar
     display none
+  .search .com_sel_tabs
+    justify-content: flex-start !important
+    max-width: 92vw !important
+    overflow-x: auto
+    &::-webkit-scrollbar
+      width: 0
+      height 0
+  .comments-popup
+    top: unset;
+    bottom: 0;
+    transform: none;
+    .comments-area
+      height 80vh
+      min-height 80vh !important
+    .show-more
+      padding-bottom 0.4rem
 
 @font-face
   font-family: 'Dosis';
   src: local('Dosis Regular'), local('Dosis-Regular'), url('../fonts/dosis-v7-latin-ext_latin-regular.woff') format('woff');
 
 ::-webkit-scrollbar
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
 
 ::-webkit-scrollbar-track
   background: #e6e6e6;
@@ -233,6 +276,14 @@ code
 @media screen and (max-width: 500px)
   ::-webkit-scrollbar
     width: 0;
+
+  .app-main:has(.home-i)
+    padding-right 0 !important
+  #app .home-i
+    .rank-card
+      padding-right 0 !important
+    .image-list-comp
+      margin-right 0.10667rem !important
 
   .justified-container
     padding: 0 0.2rem;
@@ -294,7 +345,8 @@ html.dark
   color #fff
   .van-dialog,
   .van-button,
-  .comments-popup
+  .comments-popup,
+  .van-popup--center[style*="80vw"]
     background #333
     color #fff !important
   .van-dialog__message--has-title
@@ -327,6 +379,9 @@ html.dark
 
   .nav_divi
     background #fff
+
+  .van-pagination__item
+    background-color transparent
 
   .user-wrap,
   .user-illusts
@@ -555,13 +610,24 @@ html.dark
 .user-container .user-tabs .van-tag--mark
   font-weight bold
 
+.van-pagination__next, .van-pagination__prev
+  width 1rem
+
+.artwork-meta .date,
+.artwork-meta .whid,
+.van-pagination__page,
+.image-card .layer-num,
 .user-container .user_id,
+.user-container .follow .num,
+.user-container .friend .num,
 .user-container .user-tabs .van-tag--mark,
+.user-container .member-tag .member-tag-cnt
 .artwork-meta .date,
 .artwork-meta .whid
   font-family Bahnschrift,Dosis,Arial,Helvetica,sans-serif
 
-.user-container .user_account
+.user-container .user_account,
+.image-card .tag-r18-ai
   font-family Bahnschrift, Helvetica, Arial, sans-serif
 
 .user-container .user_link,
@@ -629,7 +695,8 @@ html.dark
   .tags .tag,
   .tags .tag img,
   .tags .tag .meta,
-  .search .tags .meta::after
+  .search .tags .meta::after,
+  .Spotlight .sp_desc .am__work__main img
     border-radius: 0 !important;
 
 .image-card .btn-play
@@ -804,10 +871,19 @@ body .Home .com_sel_tabs
 .noImgFillScreen
   .Home,
   .image-layout,
+  .image-list-comp,
   .rank .top,
   .search .tags,
+  .member-tags,
   .user-tabs .van-tabs__nav,
-  .History .h-tabs .van-tabs__nav
+  .History .h-tabs .van-tabs__nav,
+  .artwork .related > .cell,
+  .search .search_params + .rank-card > .cell,
+  .search .TagStorySlides,
+  .search-user .list-wrap,
+  .discovery_restrict,
+  .collections_restrict,
+  .nifs-list-cont
     max-width 1200PX
     margin-left auto !important
     margin-right auto !important
@@ -817,6 +893,66 @@ body .Home .com_sel_tabs
   .justified-container .image-card
     --jstf-w: 265;
     --jstf-w-px: 265PX;
+  .users .van-tabs__nav
+    padding-left 0 !important
+    padding-right 0 !important
+    overflow-y unset
+    border-bottom-left-radius 8PX
+    border-bottom-right-radius 8PX
+    background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), var(--accent-color, #f7f8fa);
+  @media screen and (min-width: 1280px)
+    .search .search-bar-wrap .search-bar
+      padding: 10px 7rem !important
+    .search .search-bar-wrap .search-bar-word
+      left: 8rem !important
+      top: 0.72rem !important
+    .search .image-search
+      right: 7rem !important
+      top: 0.4rem !important
+
+@media screen and (min-width: 1400px)
+  #app .noImgFillScreen .Home .home-i-tabs
+    justify-content: space-between;
+    padding: 0.3rem calc(50vw - 600PX);
+    .home-title
+        position: relative;
+        order: 1;
+        margin-left: 0.2rem;
+        transform: none
+        left: unset
+        top: unset
+    .sel-tabs
+        order: 3;
+    .home-search
+        order: 2;
+        position: relative;
+        transform: none
+        left: unset
+        top: unset
+
+#app .navbar-alt-style .nav-container .nav-bar
+  width: 90%;
+  transform: translateY(-0.4rem);
+  border-radius: 1rem;
+  li:has(.active)
+    color: var(--accent-color, #f2c358)
+    &::before
+      content ''
+      position absolute
+      top 50%
+      left 50%
+      z-index -1
+      transform translate(-50%, -50%)
+      width 100%
+      height 88%
+      border-radius: 1rem
+      background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9)), var(--accent-color, #f2c358)
+  @media screen and (min-width: 1280px)
+    // transform: translateX(-0.2rem);
+    transform: translateX(0.1rem);
+    li:has(.active)
+      &::before
+        display none
 
 .app-main:has(.live_detail)
   border-top 4PX solid #F2C358
@@ -858,12 +994,19 @@ html:has(.novel_text) #immersive-translate-popup
     border-radius: 5PX;
     box-shadow: 0 0 transparent, 0 0 transparent, 0 1PX 3PX 0 rgba(0, 0, 0, 0.1), 0 1PX 2PX -1PX rgba(0, 0, 0, 0.1);
 
-.non-cjk-lang
+.hide-home-search
   .Home .com_sel_tabs .home-search
     display none !important
   @media screen and (max-width: 999px)
     .Home .com_sel_tabs .home-title
       display none !important
+    .Home .com_sel_tabs .sel-tabs
+      max-width: 92vw
+      overflow-x: auto
+      justify-content: flex-start
+      &::-webkit-scrollbar
+        width: 0
+        height 0
 
 #app .users .info-container .info .detail.ex
   max-height: 5.33333rem
@@ -957,3 +1100,6 @@ body.dark::before
   width: 100vw;
   height: 100vh;
   background: #16161a;
+
+.van-dialog__content
+  user-select text !important
