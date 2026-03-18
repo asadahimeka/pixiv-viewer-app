@@ -55,9 +55,8 @@
 </template>
 
 <script>
+import { localApi } from '@/api'
 import { existsSessionId } from '@/api/user'
-
-const isWebLogin = existsSessionId()
 
 export default {
   props: {
@@ -68,7 +67,7 @@ export default {
   },
   data() {
     return {
-      isLogin: localApi.APP_CONFIG.useLocalAppApi || isWebLogin,
+      isLogin: localApi.APP_CONFIG.useLocalAppApi || existsSessionId(),
       isShowBackTop: document.documentElement.clientWidth > 1270,
       isDark: !!localStorage.PXV_DARK,
     }

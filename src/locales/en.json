@@ -128,7 +128,8 @@
         "sans": "Sans",
         "serif": "Serif",
         "size": "Font size",
-        "weight": "Text weight"
+        "weight": "Text weight",
+        "direct_hc": "Horizontal Columns"
       },
       "title": "Novel Settings"
     }
@@ -182,16 +183,16 @@
   "setting": {
     "about": "About",
     "api": {
-      "desc": "Enter the HibiAPI instance address below, you need to add https://, and the path needs to be filled in the `/api/pixiv` part",
-      "desc2": "For example: https://hibiapi.getloli.com/api/pixiv, the local cache will be cleared after saving",
+      "desc": "Enter the HibiAPI/PxveAPI instance address below, you need to add https://, and the path needs to be filled in the `/api/pixiv` part",
+      "desc2": "For example: {0}, the local cache will be cleared after saving",
       "desc3": "API instances can be found or built by yourself at Github",
       "desc4": "or built your own",
       "desc5": "The API instance address needs to support cross-origin (CORS) access",
       "ph": "Please select a HibiAPI instance (the local cache will be cleared after switching)",
-      "title": "HibiAPI Instance Setting",
+      "title": "PxveAPI Instance Setting",
       "title2": "HibiAPI instance select",
-      "title3": "HibiAPI instance link",
-      "title4": "HibiAPI instance"
+      "title3": "HibiAPI/PxveAPI instance link",
+      "title4": "PxveAPI instance"
     },
     "dark": {
       "title": "Dark Mode"
@@ -231,16 +232,16 @@
       "manual_input_label": "Turn this switch on to manually enter the link below",
       "api_proxy": {
         "def_ph": "If the default proxy cannot be used, you can try another proxy",
-        "sel_desc": "Please select AppApi Proxy",
-        "title": "Select AppApi Proxy"
+        "sel_desc": "Please select AppAPI Proxy",
+        "title": "Select AppAPI Proxy"
       },
       "cp_token_label": "Copy the current RefreshToken to the clipboard",
       "cp_token_title": "Export RefreshToken",
       "direct_mode": {
         "confirm": {
-          "msg": "Direct connection mode may be faster, but stability is not guaranteed. \nIt cannot be enabled at the same time as the AppApi proxy.",
-          "proxy_msg": "Forwarding local AppApi requests through third-party cloud services cannot guarantee stability and security. \nIt cannot be turned on at the same time as the direct connection mode.",
-          "proxy_title": "Are you sure to enable AppApi proxy?",
+          "msg": "Direct connection mode may be faster, but stability is not guaranteed. \nIt cannot be enabled at the same time as the AppAPI proxy.",
+          "proxy_msg": "Forwarding local AppAPI requests through third-party cloud services cannot guarantee stability and security. \nIt cannot be turned on at the same time as the direct connection mode.",
+          "proxy_title": "Are you sure to enable AppAPI proxy?",
           "title": "Are you sure to enable direct mode?"
         },
         "host": {
@@ -250,10 +251,10 @@
         "host_msg": "Are you sure to clear the hosts cache records in direct connection mode?",
         "label": "Whether to bypass SNI via domain fronting",
         "proxy": {
-          "label": "Whether to proxy local AppApi requests through cloud services",
+          "label": "Whether to proxy local AppAPI requests through cloud services",
           "title": "Enable App API Proxy"
         },
-        "title": "Enable App API direct mode"
+        "title": "Enable App API direct connection mode"
       },
       "swipe_toggle": "Swipe left or right on the details page to toggle artworks"
     },
@@ -264,7 +265,7 @@
       "tm": "UserScript"
     },
     "down_app": "Download App",
-    "app_desc": "Another Pixiv illustration/novel browser tool",
+    "app_desc": "Yet Another Pixiv Illustration & Novel Viewer",
     "check_update": "Check for updates"
   },
   "sp": {
@@ -385,7 +386,7 @@
     },
     "succ_tip": "Login success",
     "t": {
-      "d1": "Make sure you can connect to Pixiv, otherwise open the AppApi proxy",
+      "d1": "Make sure you can connect to Pixiv, otherwise open the AppAPI proxy",
       "d2": "Please fill in the RefreshToken, refer to the link below for how to obtain it",
       "d3": "Please fill in RefreshToken",
       "d4": "RefreshToken is malformed"
@@ -456,7 +457,7 @@
   "SAs_Y4hKK7myneH47ZQKG": "Please make sure the HTTP Helper script is installed. \nNon-CORS images can be downloaded.",
   "m9rhO-859d7Br05Hm5b54": "Download file name format",
   "QJJd8OqGWs3rIHxMwYma9": "Please set the format template of the download file name",
-  "bmqXgC68c1dDsgtYwO1Sv": "It is recommended that the download format contains at least:",
+  "bmqXgC68c1dDsgtYwO1Sv": "It is recommended that the download format contain at least the following variables, otherwise the file may be overwritten:",
   "Zt3czgV8wrvas-it5b9Z0": "The variables available in the template are as follows. You can click the label to quickly set it.",
   "VJLRKYZZDrAv5NKTHcisN": "Author name",
   "hVJXyeDWfpiwbIS7CpgEX": "Author ID",
@@ -571,5 +572,96 @@
   "GRVq7phCyjYNikSeFBUpq": "Warning: Direct connection mode will skip SSL verification, which may pose a security risk, resulting in data stolen by man-in-the-middle attacks. It is recommended to enable it only in a fully trusted network environment or when used for debugging.",
   "Vac-n5rX-GcGmqcu-bhvl": "If your network has normal access to pixiv, you don't need to turn on this option.",
   "rTIZ1T04iT1thVsaytEQF": "Whether to open this image using the system browser",
-  "V8DX1WzGd142O8SUrOlMP": "Share settings"
+  "V8DX1WzGd142O8SUrOlMP": "Share settings",
+  "7KdpxnZMAURov4JetAfvV": "Click to load",
+  "ZwLxHHLEfTwPAC6E2g6Pv": "Manually load related works on the details page",
+  "-cm0i-Kb6i1rhmSk3FXnf": "Text",
+  "vCd3kQ1QluX-OCbnI2v_6": "Keywords",
+  "iHxoO4eLVL-CHSVMoVynN": "Recommended users",
+  "60RSxzAvXAF1Lfp_oqv7h": "Automatically play Ugoira on the details page",
+  "0r7KFznJTs3SQlvp4KQ84": "LAST SEEN",
+  "0NCaoKpvYXQvFiCsbcPpK": "Imported successfully",
+  "zhO6bfsyPM1-GpZgyer-L": "Import history",
+  "VV1Yh4x2vpWMf-YwVIRSl": "Export history",
+  "-LmNvXZulUIIHq_iCdxda": "Import failed",
+  "4DPjs7ecYtMrqrD1DNkAE": "Virtual List",
+  "WrsiY7DP94fbUlQ6SoLlH": "Single column and full width",
+  "MA6IA3Iad77L-GFmI1G2e": "Within half a year",
+  "AHbKrrnigwX4uyEuNTLhD": "Within one year",
+  "ZrjYwXfoy-1VsGd5GPUaG": "Age restriction",
+  "KaQ9vCtHFcDpPCx80CpoW": "R-18 only",
+  "q3dZB--IevljTdxWdrQMC": "All ages",
+  "D3kINSMv_LLXKunaXRBkY": "Show AI works",
+  "VTewlLtKnSV8muyw35y8P": "Hide AI works",
+  "foF5sr3Mc2YROB7MxRm49": "Image card box shadow",
+  "C7QksnJamis3gnOQYahco": "Select Ugoira MP4 video bitrate",
+  "9nsjvMfdZrtrkkwjKuyAh": "Try turning on this option when the page browses stutter or the memory occupies high",
+  "OHSPV09hSKNSbdJgbYJfV": "Automatically play Ugoira in the image list",
+  "1c9AB2NdmH-9CpwIEK2jg": "Ugoira APNG Save as PNG",
+  "X6XWoxxKCWK5k7s8oOiGi": "When saving Ugoira in apng format, use .png file suffix name",
+  "FQPdJ3lYL_mVbUQ09Ly4m": "Block over-long tag novel",
+  "6jy3lpKMK-SRoKaOYC9es": "Maximum length of the novel tag",
+  "deioz-o-xyQumyCC0nxcg": "Maximum number of novel tags split by \"/\"",
+  "D4Sg4TcGKn13JicohFGvG": "Block very short novel",
+  "qZpSERwayoTSDmMpi0w57": "Minimum length of novel text",
+  "mK4Dqnx_FvC3JhJMR4B4t": "author",
+  "iz3RSFqi1q9gMqF9CUGSp": "Publisher",
+  "ofVgseiGUCwCT-0m7Gr1h": "Caption",
+  "1NIKIVhrUKhUHhuWv3Sxt": "Tags",
+  "sJimI61fn8ruloG-3ObJs": "Remove page style when saving as EPUB",
+  "BL3mClhoBiB1ETwTnJpqV": "First line indentation",
+  "60rHZkbSVyvMXR5mxfOUS": "Aspect Ratio",
+  "4qZPW5NFW8YYDwkKtrKjz": "Width > Height",
+  "lveNeJo4VKOxFL7t6wvN_": "Width = Height",
+  "Fe6ZIApJoqbXO5UU5S001": "Width < height",
+  "h_6GIulP5_rWoGwBbyuMf": "Loading illustration search results using paginator",
+  "XmZ5gQefKGSI43SZ5Kb--": "Loading with a paginator instead of infinite loading",
+  "Uf25j8CV8zHmOiUk7dn-M": "Print",
+  "Oz0zZHqnxZoCjYysARbO1": "Popular",
+  "qLlCQvCG0kXud25b-hKEv": "Explore",
+  "r7d1o2ui8dhVA0A4rAwHq": "Restrict",
+  "tMMgcuNAMSfxgPmaTDPuN": "Public",
+  "WUegrN0Qk6zuHdl9EHUa-": "Private",
+  "gJIMYUgtWdroLrG3seGNl": "Please select bookmark tags, or enter it separated by space",
+  "vrHKCLkhV92dZ7eyvgFx8": "Example",
+  "k8lr4kQuHztU5VK45a39z": "More fonts",
+  "-Awb9ThE8xXqaFTAHFHE2": "Configure startup page",
+  "NpehaslwZK0m14UfYZaHO": "Copy text",
+  "U7uqf6LXov5GP4PvkrnFk": "Follow this user privately?",
+  "dR97TVmXFMlpOBpKF2bRL": "All",
+  "YEPi_dV_gdvw9NzE4iBEu": "Bookmark & Follow",
+  "kUXt_VWip1c_DZjKGnfNE": "Add private bookmarks by default",
+  "pPdP_eYRyF6xl83qAZ8py": "Follow users privately by default",
+  "Kzn-_j_XdwEx0af7BLXWA": "Automatically add artwork tags when adding bookmarks",
+  "mHj_-v8C_IQvGnmZrub-d": "Automatically follow the author after adding bookmarks",
+  "J8jpRsD7IP-QHHzpQYvH3": "Automatically download when adding bookmarks",
+  "OLNaZsi0wpY8KJRRatM0j": "Automatically add bookmarks when downloading",
+  "xlcRGv9gUFiOhgdaPh2cy": "Long press to add private bookmarks without confirmation",
+  "rsyTbSP8LCnLYe326zCa5": "Long press to follow privately without confirmation",
+  "kL2NNZsLQT9TUgeEmMQk3": "Add private bookmark successful",
+  "QcXruM7VMaBz-9zcw5wtD": "Privately follow success",
+  "lsPtlBf66gm0GWyn_c6pj": "Weekly Popular Illusts",
+  "dZ93cWZJ03hu5emsVwgjA": "Collections",
+  "Iv_AtBrZSiXtLxkAr8Kas": "View all",
+  "s-vSdRKLDIiBD6JGj3r7P": "Discover Collections",
+  "w7H3HomCOAoJHg0XxBQpc": "Recommended collections",
+  "TqlK8T5LCQZrufKKCrmcU": "All collections",
+  "UloXxmkw8Hfy3fU3AwYoJ": "Recommended collections",
+  "TBjERNyUzTvXHFSY65teN": "See more",
+  "4--dCKaKniIMUQ7l_mKpg": "{0}'s collection",
+  "_mXHPuQteMFhoe5D48nmE": "Collections Tagged {0}",
+  "MMvrKgvtY_JmiidXJ-ead": "View AMP story",
+  "bWxoo0Ax8c19Asx33W8tC": "R18 Label",
+  "BQErokL17-JKhKeCf21yI": "AI Label",
+  "GVpGJVKGl9ZCmIecor4fa": "Image details scroll horizontally",
+  "Pb7RAgYfySagsZJPhO2kC": "When the artwork contains multiple images, you can scroll left and right to browse",
+  "glzJ0Q3_3X3q0v9KbqaB_": "Browse image details using Swiper",
+  "87ehZBo7vT7vvdqsnOi9k": "Open link in new tab on Ctrl/Cmd + click",
+  "HBhN6EmgH_x2sduNtKpXn": "Delete this history?",
+  "skzCJPKUWOVtXHRV3puwB": "Close multi-P works",
+  "dDeCBvfHPUoQt48l5Gr3D": "Expand multi-P works",
+  "YpPRTcXoLoM5R1mhSy3si": "Use pop-up window to open image details",
+  "CZNaDWItH2DtJ-Gp2V_8D": "Trending",
+  "0JnI5_DBdR8YNUHsS-mJr": "Search novels",
+  "9y6HjIgJZ9CzHOEy8UKr1": "Search Collections"
 }

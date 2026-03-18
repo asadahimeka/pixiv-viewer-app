@@ -14,10 +14,11 @@ import { SafeArea } from 'capacitor-plugin-safe-area'
 
 import Vue from 'vue'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
-import { Dialog, Lazyload, Toast } from 'vant'
+import { Dialog, Toast } from 'vant'
+import { vOnLongPress } from '@vueuse/components'
 
 import setupVant from '@/lib/vant'
-import SvgIcon, { loadingSvg } from '@/icons'
+import SvgIcon from '@/icons'
 import VueMasonry from '@/components/VueMasonryCss'
 import ImageLayout from '@/components/ImageLayout.vue'
 import TopBar from '@/components/TopBar.vue'
@@ -25,7 +26,7 @@ import Pximg from '@/components/DirectPximg.vue'
 import AppComp from '@/App.vue'
 import router from '@/router'
 import store from '@/store'
-import longpress from '@/directives/longpress'
+import { localApi } from '@/api'
 import { i18n, initLocale } from '@/i18n'
 import { getActionMap, setPximgIP } from '@/api/client/action'
 import { LocalStorage } from '@/utils/storage'
@@ -51,21 +52,11 @@ async function setupApp() {
   setShortcuts()
 
   setupVant()
-  Vue.use(Toast)
-  if (store.state.appSetting.isImgLazy) {
-    Vue.use(Lazyload, {
-      observer: store.state.appSetting.isImgLazyOb,
-      observerOptions: { rootMargin: '0px 50px 50px 0px', threshold: [0] },
-      lazyComponent: false,
-      loading: loadingSvg(localStorage.PXV_ACT_COLOR || '#38a9f5'),
-      preload: 1.3,
-    })
-  }
-
   Vue.use(VueAwesomeSwiper)
   Vue.use(VueMasonry)
   Vue.use(SvgIcon)
-  Vue.use(longpress)
+
+  Vue.directive('longpress', vOnLongPress)
 
   Vue.component('WfCont', ImageLayout)
   Vue.component('TopBar', TopBar)
@@ -86,7 +77,7 @@ async function initLocalApi() {
   localApi.APP_CONFIG = config
   if (!config.useLocalAppApi) return
   document.querySelector('#ldio-loading .ldio-content')?.insertAdjacentHTML('beforeend', `<p class="ldio-title" style="top:180px;font-size:14px">${i18n.t('hyCctySRvfcddmi6nVh9b')}</p>`)
-  window.__localApiMap__ = await getActionMap()
+  localApi.actionMap = await getActionMap()
   await initBookmarkCache()
   window.umami?.track('initLocalApi')
 }

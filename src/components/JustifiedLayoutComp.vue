@@ -1,6 +1,19 @@
 <template>
-  <div ref="layoutRef" class="JustifiedLayout" :style="containerStyle">
-    <slot></slot>
+  <div ref="layoutRef" class="justified-layout" :style="containerStyle">
+    <div
+      v-for="(data, index) in boxes"
+      :key="items[index][itemKey] || index"
+      :style="{
+        position: 'absolute',
+        contentVisibility: 'auto',
+        width: `${data.width}px`,
+        height: `${data.height}px`,
+        transform: `translate(${data.left}px, ${data.top}px)`,
+        containIntrinsicSize: `${data.width}px ${data.height}px`,
+      }"
+    >
+      <slot :item="items[index]" :index="index"></slot>
+    </div>
   </div>
 </template>
 
@@ -9,9 +22,14 @@ import justifiedLayout from './justified-layout'
 
 export default {
   name: 'JustifiedLayout',
+  props: {
+    items: { type: Array, default: () => [] },
+    itemKey: { type: String, default: 'id' },
+  },
   data() {
     return {
       containerHeight: 0,
+      boxes: [],
     }
   },
   computed: {
@@ -21,53 +39,39 @@ export default {
       }
     },
   },
+  watch: {
+    items(val) {
+      if (val?.length) {
+        this.calculate()
+      } else {
+        this.boxes = []
+      }
+    },
+  },
   mounted() {
-    this.$nextTick(() => {
-      this.calculate()
-    })
-
+    this.calculate()
     window.addEventListener('resize', this.calculate)
   },
   activated() {
-    this.$nextTick(() => {
-      this.calculate()
-    })
-  },
-  updated() {
-    this.$nextTick(() => {
-      this.calculate()
-    })
+    this.calculate()
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.calculate)
   },
   methods: {
     calculate() {
+      if (!this.$refs.layoutRef || !this.items.length) return
       console.log('--------------------------justifiedLayout calculate')
-      const containerWidth = this.$refs.layoutRef?.clientWidth
-      const items = this.getChildren()
-      const list = items.map(e => {
-        const s = e.elm.style
-        const w = +s.getPropertyValue('--w').trim()
-        const h = +s.getPropertyValue('--h').trim()
-        return w / h
+      this.$nextTick(() => {
+        const containerWidth = this.$refs.layoutRef.clientWidth
+        const list = this.items.map(e => e.width / e.height)
+        const geometry = this.getGeometry(list, containerWidth)
+        this.containerHeight = geometry.containerHeight
+        this.boxes = geometry.boxes
       })
-      const geometry = this.getGeometry(list, containerWidth)
-      this.containerHeight = geometry.containerHeight
-      const boxes = geometry.boxes
-      for (let i = 0; i < items.length; i++) {
-        const b = boxes[i]
-        items[i].elm.style.width = `${b.width}px`
-        items[i].elm.style.height = `${b.height}px`
-        items[i].elm.style.transform = `translate(${b.left}px, ${b.top}px)`
-      }
-    },
-    getChildren() {
-      const childItems = this.$slots.default || []
-      return childItems.filter(cell => cell.tag)
     },
     getGeometry(list, containerWidth) {
-      if (!list?.length) return []
+      if (!list?.length) return { containerHeight: 0, boxes: [] }
       return justifiedLayout(list, {
         // The width that boxes will be contained within irrelevant of padding.
         containerWidth,
@@ -97,12 +101,27 @@ export default {
 }
 </script>
 
-<style lang="stylus" scoped>
-.JustifiedLayout
-  position: relative
-  width 100%
-  max-width 100%
-  transition: 0.2s
-  will-change height
-  overflow hidden
+<style>
+.justified-layout {
+  contain: layout paint;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  transition: 0.2s;
+  will-change: height;
+  overflow: hidden;
+}
+.justified-layout .image-card {
+  width: 100%;
+  height: 100%;
+  margin-bottom: 0 !important;
+}
+.justified-layout .image-card-wrapper {
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0 !important;
+}
+.justified-layout .image {
+  position: relative !important;
+}
 </style>

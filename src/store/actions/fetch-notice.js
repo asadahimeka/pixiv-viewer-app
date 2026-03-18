@@ -2,11 +2,12 @@ import { Dialog } from 'vant'
 import _ from '@/lib/lodash'
 import dayjs from 'dayjs'
 import store from '@/store'
-import { UA_Header } from '@/consts'
 import platform from '@/platform'
+import { UA_Header } from '@/consts'
 import { LocalStorage } from '@/utils/storage'
+import { HiddenAuthors } from '@/utils/filter'
 
-async function fetchAppNotice(notices) {
+async function setAppNotice(notices) {
   const today = dayjs().startOf('day')
   const notice = notices.filter(e => e.pnt.length == 0 || e.pnt.includes(platform.current)).find(e =>
     today.isAfter(dayjs(e.start).startOf('day') - 1) &&
@@ -31,12 +32,12 @@ async function fetchAppNotice(notices) {
   if (notice.addClass) {
     document.documentElement.className += notice.addClass
   }
-  if (Array.isArray(notice.randomClass)) {
+  if (Array.isArray(notice.randomClass) && notice.randomClass.length) {
     document.documentElement.classList.add(_.sample(notice.randomClass))
   }
 }
 
-async function fetchSeasonEffects(effects) {
+async function setSeasonEffects(effects) {
   const today = dayjs().startOf('day')
   const act = effects.filter(e =>
     today.isAfter(dayjs(e.start).startOf('day') - 1) &&
@@ -55,9 +56,12 @@ export async function fetchNotices() {
       res = await resp.json()
       LocalStorage.set('PXV_NOTICES', res, 3600)
     }
-    const { notices = [], effects = [] } = res
-    fetchAppNotice(notices)
-    fetchSeasonEffects(effects)
+    const { notices = [], effects = [], buids = [], rntm = [], rnta = [] } = res
+    setAppNotice(notices)
+    setSeasonEffects(effects)
+    store.commit('addBlockUids', buids)
+    HiddenAuthors.NO_TYPE_MANGA = rntm
+    HiddenAuthors.NO_TYPE_AI = rnta
   } catch (err) {
     console.log('err: ', err)
   }

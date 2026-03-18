@@ -2,7 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from '@/lib/lodash'
 import { getSettingDef, LocalStorage, SessionStorage } from '@/utils/storage'
-import { isBlockTagHit, isSafari } from '@/utils'
+import { isSafari } from '@/utils'
+import { isArtworkNotCensored } from '@/utils/filter'
 
 Vue.use(Vuex)
 
@@ -36,14 +37,14 @@ export default new Vuex.Store({
     seasonEffects: null,
     routeHistory: SessionStorage.get('PXV_ROUTE_HISTORY', []),
     appSetting: {
-      wfType: getSettingDef('PXV_WF_TYPE', 'Masonry'),
+      wfType: getSettingDef('PXV_WF_TYPE', isMobile ? 'Masonry(CSSGrid)' : 'Masonry'),
       imgReso: getSettingDef('PXV_DTL_IMG_RES', isMobile ? 'Medium' : 'Large'),
       isLongpressBlock: getSettingDef('PXV_LONGPRESS_BLOCK', false),
       isLongpressDL: getSettingDef('PXV_LONGPRESS_DL', false),
       isEnableSwipe: getSettingDef('PXV_IMG_DTL_SWIPE', false),
       isHideRankManga: getSettingDef('PXV_HIDE_RANK_MANGA', false),
       isUseFancybox: getSettingDef('PXV_USE_FANCYBOX', false),
-      isImageFitScreen: getSettingDef('PXV_IMG_FIT_SCREEN', true),
+      isImageFitScreen: getSettingDef('PXV_IMG_FIT_SCREEN', isMobile),
       isImageCardOuterMeta: getSettingDef('PXV_IMG_META_OUTER', true),
       isDirectPximg: getSettingDef('PXV_PXIMG_DIRECT', false),
       isAutoLoadImt: getSettingDef('PXV_AUTO_LOAD_IMT', false),
@@ -51,52 +52,60 @@ export default new Vuex.Store({
       preferMediaStore: true,
       dlSubDirByAuthor: false,
       dlFileNameTpl: '{author}_{title}_{pid}_p{index}',
-      isImgLazy: false,
-      isImgLazyOb: false,
+      isImgLazy: isMobile,
       searchListMinFavNum: '5',
       isImageCardBorderRadius: true,
+      isImageCardBoxShadow: true,
       ugoiraDefDLFormat: '',
       pageTransition: defPageTransition,
       withBodyBg: true,
+      novelDefDlFormat: '',
+      novelDlRmStyle: false,
       novelDlFormat: 'txt',
       novelDefTranslate: '',
       pageFont: '',
       hideNavBarOnScroll: true,
+      manualLoadRelated: true,
+      autoPlayUgoira: false,
+      ugoiraMp4Bitrate: '4 Mbps',
+      showFpsDemo: false,
+      isAutoLoadKissT: false,
+      isVirtualList: false,
+      isUgoiraAvifSrc: false,
+      isUgoiraApngSaveAsPng: false,
+      novelFilterNoShortLen: false,
+      novelFilterTextLenMin: 100,
+      novelFilterNoLongTag: false,
+      novelFilterTagLenMax: 30,
+      novelFilterTagSplitMax: 5,
+      searchListPagination: false,
+      navBarAltStyle: isSafari(),
+      appStartPage: '',
+      isDefBookmarkPrivate: false,
+      isDefFollowPrivate: false,
+      isDefBookmarkAddTags: false,
+      isAutoFollowAfterBookmark: false,
+      isAutoDownLoadAfterBookmark: false,
+      isAutoBookmarkAfterDownload: false,
+      isLongpressPrivateBookmark: false,
+      isLongpressPrivateFollow: false,
+      imgViewHorizonScroll: false,
+      imgViewHorizonSwiper: false,
+      openArtDetailAsPopup: false,
+      isExpandMultiPArtwork: false,
       ...getSettingDef('PXV_APP_SETTING', {}),
     },
   },
   getters: {
     isLoggedIn(state) {
-      return !!state.user
+      return Boolean(state.user)
     },
     isR18On(state) {
       return state.contentSetting.r18 || state.contentSetting.r18g
     },
-    isCensored: state => artwork => {
-      if (state.blockUids.length && state.blockUids.includes(`${artwork?.author?.id}`)) {
-        return true
-      }
-
-      if (isBlockTagHit(state.blockTags, artwork?.tags)) {
-        return true
-      }
-
-      if (artwork.x_restrict == 1) {
-        if (artwork.illust_ai_type == 2) {
-          return !state.contentSetting.r18 || !state.contentSetting.ai
-        }
-        return !state.contentSetting.r18
-      }
-      if (artwork.x_restrict == 2) {
-        if (artwork.illust_ai_type == 2) {
-          return !state.contentSetting.r18g || !state.contentSetting.ai
-        }
-        return !state.contentSetting.r18g
-      }
-      if (artwork.illust_ai_type == 2) {
-        return !state.contentSetting.ai
-      }
-      return false
+    isCensored: state => artwork => !isArtworkNotCensored(artwork, state),
+    isNoOuterMeta(state) {
+      return state.appSetting.isVirtualList || ['VirtualSlide', 'Justified(Transform)'].includes(state.appSetting.wfType)
     },
     wfProps: () => ({
       gutter: '8px',
@@ -157,6 +166,11 @@ export default new Vuex.Store({
         LocalStorage.set('PXV_B_UIDS', state.blockUids.join(','))
       }
     },
+    addBlockUids(state, arr) {
+      if (Array.isArray(arr)) {
+        state.blockUids = _.uniq([...state.blockUids, ...arr])
+      }
+    },
     setIsNovelViewShrink(state, val) {
       state.isNovelViewShrink = val
     },
@@ -167,9 +181,8 @@ export default new Vuex.Store({
       state.seasonEffects = val
     },
     setAppSetting(state, obj) {
-      const setting = { ...state.appSetting, ...obj }
-      state.appSetting = setting
-      LocalStorage.set('PXV_APP_SETTING', setting)
+      state.appSetting = { ...state.appSetting, ...obj }
+      LocalStorage.set('PXV_APP_SETTING', { ...getSettingDef('PXV_APP_SETTING', {}), ...obj })
     },
     setRouteHistory(state, val) {
       state.routeHistory = val
@@ -200,5 +213,6 @@ export const novelTextConfig = Vue.observable({
   direction: 'h',
   color: '#1f1f1f',
   bg: '#ffffff',
+  indent: false,
   ...getSettingDef('PXV_TEXT_CONFIG', {}),
 })

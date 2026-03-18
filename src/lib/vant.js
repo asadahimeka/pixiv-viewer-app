@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Button from 'vant/lib/button'
+import Toast from 'vant/lib/toast'
 import Search from 'vant/lib/search'
 import Tabs from 'vant/lib/tabs'
 import Tab from 'vant/lib/tab'
@@ -35,9 +36,11 @@ import Uploader from 'vant/lib/uploader'
 import Checkbox from 'vant/lib/checkbox'
 import NoticeBar from 'vant/lib/notice-bar'
 import Card from 'vant/lib/card'
+import Pagination from 'vant/lib/pagination'
 
 export default function setupVant() {
   Vue.use(Button)
+  Vue.use(Toast)
   Vue.use(Search)
   Vue.use(Tabs)
   Vue.use(Tab)
@@ -73,4 +76,5 @@ export default function setupVant() {
   Vue.use(Checkbox)
   Vue.use(NoticeBar)
   Vue.use(Card)
+  Vue.use(Pagination)
 }

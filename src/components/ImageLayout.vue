@@ -2,7 +2,7 @@
   <div class="image-layout" :class="wfClass">
     <template v-if="isMasonry">
       <true-masonry
-        v-if="wfType == 'Masonry(CSSGrid)'"
+        v-if="!layout && wfType == 'Masonry(CSSGrid)'"
         class="true-masonry"
         :gap="{default:10}"
         :cols="masonryProps.cols"
@@ -10,7 +10,7 @@
         <slot></slot>
       </true-masonry>
       <flex-waterfall
-        v-else-if="wfType == 'Masonry(FlexOrder)'"
+        v-else-if="!layout && wfType == 'Masonry(FlexOrder)'"
         class="flex-waterfall"
         align-content="center"
         col="5"
@@ -102,29 +102,26 @@ export default {
   contain: layout paint;
 }
 
-.image-layout .image-card {
-  will-change: transform;
-  transform: translateZ(0);
-}
-
 .flex-waterfall .image-card {
   width: 4.5rem;
 }
 
-.justified-grid .image-card,
 .JustifiedLayout .image-card {
   position: absolute !important;
 }
 
-.justified-grid .image-card-wrapper,
 .JustifiedLayout .image-card-wrapper {
   height: 100%;
   padding-bottom: 0 !important;
 }
 
-.justified-grid .image,
 .JustifiedLayout .image {
   position: relative !important;
+}
+
+.JustifiedLayout > .image-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
 }
 
 .true-masonry .image-card {
