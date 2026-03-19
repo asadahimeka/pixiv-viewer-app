@@ -25,31 +25,68 @@
           <van-button v-if="novelText.next" color="#7232dd" size="small" plain block @click="toNovel(novelText.next.id)">
             {{ $t('novel.series.next') }} {{ novelText.next.title }}
           </van-button>
-          <van-button type="info" size="small" plain block @click="shareNovel">
-            {{ $t('artwork.share.share') }}
-          </van-button>
-          <van-button type="info" size="small" plain block @click="downloadNovel">
-            {{ $t('common.download') }}
-          </van-button>
-          <van-button type="info" size="small" plain block @click="showComments = true">
-            {{ $t('user.view_comments') }}
-          </van-button>
-          <template v-if="showPntBtn">
-            <van-button v-if="isNovelDefTranslateSet" type="info" size="small" plain block @click="doDefPnt">翻译</van-button>
+          <div class="series-btns-group">
+            <van-button
+              v-if="showBookmarkBtn"
+              v-longpress="showBookmarkDialog"
+              :loading="favLoading"
+              type="info"
+              size="small"
+              plain
+              @click="toggleBookmark"
+            >
+              ⭐{{ artwork.is_bookmarked ? $t('user.faved'): $t('user.fav') }}
+            </van-button>
+            <van-button type="info" size="small" plain @click="showComments = true">
+              💬{{ $t('user.view_comments') }}
+            </van-button>
+            <van-button type="info" size="small" plain @click="showShare = true">
+              🔗{{ $t('artwork.share.share') }}
+            </van-button>
+          </div>
+          <div class="series-btns-group">
+            <van-button v-if="isNovelDlFormatSet" type="info" size="small" plain @click="downloadNovel()">
+              ⬇️{{ $t('common.download') }}
+            </van-button>
             <van-popover
               v-else
-              v-model="showPntPopover"
-              :actions="pntActions"
+              v-model="showDlPopover"
+              :actions="novelDlOptions"
               trigger="click"
               placement="top"
-              style="width: 100%;"
-              @select="onPntSelect"
+              @select="downloadNovel"
             >
               <template #reference>
-                <van-button type="info" size="small" plain block>翻译</van-button>
+                <van-button type="info" size="small" plain style="width: 100%;">⬇️{{ $t('common.download') }}</van-button>
               </template>
             </van-popover>
-          </template>
+            <template v-if="showPntBtn">
+              <van-button v-if="isTranslated" type="info" size="small" plain @click="showOriginText">↩️显示原文</van-button>
+              <van-button
+                v-else-if="isNovelDefTranslateSet"
+                type="info"
+                size="small"
+                plain
+                :loading="translateLoading"
+                @click="doDefPnt"
+              >
+                🌐翻译
+              </van-button>
+              <van-popover
+                v-else
+                v-model="showPntPopover"
+                :actions="translateLoading ? [] : pntActions"
+                trigger="click"
+                placement="top"
+                @select="onPntSelect"
+              >
+                <template #reference>
+                  <van-button type="info" size="small" plain :loading="translateLoading" style="width: 100%;">🌐翻译</van-button>
+                </template>
+              </van-popover>
+            </template>
+          </div>
+          <van-button type="info" size="small" plain @click="toggleNovelConfigShow">⚙{{ $t('novel.settings.title') }}</van-button>
         </div>
         <keep-alive>
           <AuthorNovelCard v-if="artwork.author" :id="artwork.author.id" :key="artwork.id" />
@@ -81,14 +118,15 @@
 import _ from '@/lib/lodash'
 import { mapGetters } from 'vuex'
 import { ImagePreview } from 'vant'
-import api from '@/api'
+import api, { getBookmarkRestrictTags, localApi } from '@/api'
 import store from '@/store'
 import platform from '@/platform'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { PIXIV_NEXT_URL, SILICON_CLOUD_API_KEY, UA_Header } from '@/consts'
-import { getNoTranslateWords, loadImtSdk, siliconCloudTranslate } from '@/utils/translate'
+import { aiModelMap, getNoTranslateWords, isNativeTranslatorSupported, loadKISSTranslator, nativeTranslate, siliconCloudTranslate } from '@/utils/translate'
 import { copyText, downloadFile } from '@/utils'
-import { getCache, setCache } from '@/utils/storage/siteCache'
+import { convertHtmlToDoc, convertHtmlToEpub, convertHtmlToPdf, convertNovelToMarkdown, printNovel } from '@/utils/novel'
+import { getCache, setCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
 import TopBar from '@/components/TopBar'
 import NovelView from './components/NovelView.vue'
@@ -108,6 +146,15 @@ import IconTwitter from '@/assets/images/share-sheet-twi.png'
 import IconFacebook from '@/assets/images/share-sheet-facebook.png'
 
 let novelTextBak = ''
+const {
+  isDefBookmarkPrivate,
+  isDefBookmarkAddTags,
+  isLongpressPrivateBookmark,
+  isDefFollowPrivate,
+  isAutoFollowAfterBookmark,
+  isAutoDownLoadAfterBookmark,
+  isAutoBookmarkAfterDownload,
+} = store.state.appSetting
 
 export default {
   name: 'NovelDetail',
@@ -140,20 +187,21 @@ export default {
       isCollapseMeta: false,
       showComments: false,
       showPntPopover: false,
-      pntActions: [
-        { text: '加载沉浸式翻译 SDK', className: 'imt', key: 'imt' },
-        { text: 'AI 翻译(glm-4-9b)', className: 'sc', key: 'sc_glm' },
-        // { text: 'AI 翻译(GLM-4-9B-0414)', className: 'sc', key: 'sc_glm_0414' },
-        // { text: 'AI 翻译(GLM-Z1-9B-0414)', className: 'sc', key: 'sc_glm_z1' },
-        // { text: 'AI 翻译(Qwen3-8B)', className: 'sc', key: 'sc_qwen3' },
-        // { text: 'AI 翻译(Qwen2-7B)', className: 'sc', key: 'sc_qwen2' },
-        { text: 'AI 翻译(Qwen2.5-7B)', className: 'sc', key: 'sc_qwen2_5' },
-        // { text: 'AI 翻译(DS-R1-Llama-8B)', className: 'sc', key: 'sc_ds_r1_llama' },
-        // { text: 'AI 翻译(DS-R1-Qwen-7B)', className: 'sc', key: 'sc_ds_r1_qwen' },
-        { text: '微软翻译', className: 'ms', key: 'ms' },
-        { text: '谷歌翻译', className: 'gg', key: 'gg' },
-        { text: '有道翻译', className: 'yd', key: 'yd' },
-      ],
+      pntActions: [],
+      showDlPopover: false,
+      novelDlOptions: [
+        { text: 'TXT', val: 'txt' },
+        { text: 'HTML', val: 'html' },
+        { text: 'MD', val: 'md' },
+        { text: 'DOC', val: 'doc' },
+        { text: 'PDF', val: 'pdf' },
+        !store.state.isMobile && ({ text: `PDF(${i18n.t('Uf25j8CV8zHmOiUk7dn-M')})`, val: 'print' }),
+        { text: 'EPUB', val: 'epub' },
+      ].filter(Boolean),
+      showBookmarkBtn: localApi.APP_CONFIG.useLocalAppApi,
+      favLoading: false,
+      translateLoading: false,
+      isTranslated: false,
     }
   },
   head() {
@@ -166,14 +214,17 @@ export default {
   computed: {
     ...mapGetters(['isCensored']),
     showPntBtn() {
+      if (store.state.appSetting.isAutoLoadKissT) return false
       return (
-        !store.state.appSetting.isAutoLoadImt &&
         i18n.locale.includes('zh') &&
         !/中文|中国语|Chinese|中國語|中国語/.test(JSON.stringify(this.artwork.tags))
       )
     },
     isNovelDefTranslateSet() {
       return Boolean(store.state.appSetting.novelDefTranslate)
+    },
+    isNovelDlFormatSet() {
+      return Boolean(store.state.appSetting.novelDefDlFormat)
     },
   },
   watch: {
@@ -190,9 +241,16 @@ export default {
     },
   },
   mounted() {
-    if (document.querySelector('#immersive-translate-popup')) {
-      this.pntActions = this.pntActions.filter(e => e.key != 'imt')
-    }
+    this.pntActions = [
+      !document.querySelector('#kiss-translator') && ({ text: '加载 KISS Translator', className: 'imt', key: 'kiss_t' }),
+      isNativeTranslatorSupported && ({ text: 'Chrome 内置翻译', className: 'sc', key: 'native' }),
+      { text: 'AI 翻译(glm-4-9b)', className: 'sc', key: 'sc_glm' },
+      { text: 'AI 翻译(Qwen2.5-7B)', className: 'sc', key: 'sc_qwen2_5' },
+      { text: 'AI 翻译(Hunyuan-MT-7B)', className: 'sc', key: 'sc_hy_mt' },
+      { text: '微软翻译', className: 'ms', key: 'ms' },
+      { text: '谷歌翻译', className: 'gg', key: 'gg' },
+      { text: '有道翻译', className: 'yd', key: 'yd' },
+    ].filter(Boolean)
     this.init()
   },
   methods: {
@@ -245,6 +303,82 @@ export default {
           duration: 3000,
         })
       }
+    },
+    toggleBookmark() {
+      this.favLoading = true
+      if (this.artwork.is_bookmarked) {
+        localApi.novelBookmarkDelete(this.artwork.id).then(isOk => {
+          this.favLoading = false
+          if (isOk) {
+            this.artwork.is_bookmarked = false
+            toggleBookmarkCache(this.artwork, false, true)
+          } else {
+            this.$toast(this.$t('artwork.unfav_fail'))
+          }
+        })
+      } else {
+        localApi.novelBookmarkAdd(
+          this.artwork.id,
+          isDefBookmarkPrivate ? 'private' : void 0,
+          isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0
+        ).then(isOk => {
+          this.favLoading = false
+          if (isOk) {
+            this.artwork.is_bookmarked = true
+            toggleBookmarkCache(this.artwork, true, true)
+            this.autoAddFollow()
+            if (isAutoDownLoadAfterBookmark) this.downloadNovel()
+          } else {
+            this.$toast(this.$t('artwork.fav_fail'))
+          }
+        })
+      }
+    },
+    async autoAddFollow() {
+      if (!isAutoFollowAfterBookmark || this.artwork.author.is_followed) return
+      const isFollowedCacheKey = `member_is_followed_${this.artwork.author.id}`
+      if (await getCache(isFollowedCacheKey)) return
+      this.favLoading = true
+      const isOk = await localApi.userFollowAdd(this.artwork.author.id, isDefFollowPrivate ? 'private' : 'public')
+      this.favLoading = false
+      if (!isOk) {
+        this.$toast(this.$t('user.follow_fail'))
+        return
+      }
+      this.artwork.author.is_followed = true
+      await setCache(isFollowedCacheKey, true)
+      const itemKey = `memberInfo_${this.artwork.author.id}`
+      const user = await getCache(itemKey)
+      if (user) {
+        user.is_followed = true
+        await setCache(itemKey, user, 60 * 60 * 6)
+      }
+    },
+    async showBookmarkDialog(/** @type {Event} */ ev) {
+      ev.preventDefault()
+      if (this.artwork.is_bookmarked) return
+      const action = async (restrict, tags) => {
+        this.favLoading = true
+        const isOk = await localApi.novelBookmarkAdd(this.artwork.id, restrict, tags)
+        this.favLoading = false
+        if (isOk) {
+          this.artwork.is_bookmarked = true
+          toggleBookmarkCache(this.artwork, true, true)
+          this.autoAddFollow()
+          if (isAutoDownLoadAfterBookmark) this.downloadNovel()
+          if (restrict == 'private') this.$toast(this.$t('kL2NNZsLQT9TUgeEmMQk3'))
+        } else {
+          this.$toast(this.$t('artwork.fav_fail'))
+        }
+      }
+      if (isLongpressPrivateBookmark) {
+        await action('private', isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0)
+        return
+      }
+      const { restrict, tags } = await getBookmarkRestrictTags(this.artwork.tags)
+      console.log('restrict: ', restrict)
+      console.log('tags: ', tags)
+      await action(restrict, tags)
     },
     async shareNovel() {
       if (platform.isCapacitor) {
@@ -317,43 +451,87 @@ export default {
     toggleNovelConfigShow() {
       this.$refs.novelConfigRef?.toggle()
     },
-    async downloadNovel() {
-      window.umami?.track('download_novel')
-      const actions = {
-        txt: () => novelTextBak,
-        html: () => {
-          const el = document.querySelector('.novel-view').cloneNode(true)
-          el.querySelector('svg').remove()
-          return '<meta charset="utf-8">' + el.outerHTML
-        },
+    async downloadNovel(format) {
+      const ext = format?.val || store.state.appSetting.novelDefDlFormat
+      window.umami?.track('download_novel', { ext })
+      const fileName = `${getArtworkFileName(this.artwork)}`
+      const getOuterHTML = () => {
+        const el = document.querySelector('.novel-view').cloneNode(true)
+        el.querySelector('svg').remove()
+        el.style.padding = '1rem'
+        const coverBox = el.querySelector('.image-box')
+        coverBox.setAttribute('style', 'padding: 1em 0;text-align:center')
+        coverBox.insertAdjacentHTML('afterbegin', `<h1 style="font-size:1.2em;font-weight:bold;text-align:center">${this.artwork.title}</h1><p style="color:gray;text-align:center">${this.artwork.author.name}</p>`)
+        coverBox.insertAdjacentHTML('beforeend', '<hr style="margin: 1em 0;color:gray"><br>')
+        return el.outerHTML
       }
-      const ext = store.state.appSetting.novelDlFormat
-      const novelText = actions[ext]()
-      const type = ext == 'html' ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8'
-      await downloadFile(new Blob([novelText], { type }), `${getArtworkFileName(this.artwork)}.${ext}`, { subDir: 'novel' })
+      const actions = {
+        txt: async () => new Blob([novelTextBak], { type: 'text/plain;charset=utf-8' }),
+        html: async () => new Blob(['<meta charset="utf-8">' + getOuterHTML()], { type: 'text/html;charset=utf-8' }),
+        epub: async () => {
+          const el = document.querySelector('.novel_text').cloneNode(true)
+          const style = store.state.appSetting.novelDlRmStyle ? '' : el.getAttribute('style')
+          const res = await convertHtmlToEpub(el.innerHTML, style, this.artwork)
+          return res
+        },
+        print: async () => {
+          printNovel(getOuterHTML(), fileName)
+        },
+        pdf: async () => {
+          const el = document.querySelector('.novel_text').cloneNode(true)
+          el.innerHTML = el.innerHTML.split('<br>').map(e => `<p${e ? '' : ' style="padding: 1em 0"'}>${e}</p>`).join('')
+          el.querySelectorAll('img').forEach(img => {
+            img.setAttribute('crossorigin', 'anonymous')
+          })
+          el.insertAdjacentHTML('afterbegin', `<h1 style="font-size:1.2em;font-weight:bold;text-align:center">${this.artwork.title}</h1><p style="color:gray;text-align:center">${this.artwork.author.name}</p><hr style="margin: 1em 0;color:gray"><br>`)
+          const res = await convertHtmlToPdf(el, fileName)
+          return res
+        },
+        doc: async () => convertHtmlToDoc(getOuterHTML()),
+        md: async () => convertNovelToMarkdown(this.novelText, this.artwork),
+      }
+      const blob = await actions[ext]()
+      if (blob) await downloadFile(blob, `${fileName}.${ext}`, { subDir: 'novel' })
+      if (localApi.APP_CONFIG.useLocalAppApi && !this.artwork.is_bookmarked && isAutoBookmarkAfterDownload) {
+        this.favLoading = true
+        localApi.novelBookmarkAdd(
+          this.artwork.id,
+          isDefBookmarkPrivate ? 'private' : void 0,
+          isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0
+        )
+          .then(isOk => {
+            this.favLoading = false
+            if (isOk) {
+              this.artwork.is_bookmarked = true
+              toggleBookmarkCache(this.artwork, true, true)
+            } else {
+              this.$toast(this.$t('artwork.fav_fail'))
+            }
+          })
+      }
+    },
+    showOriginText() {
+      this.novelText.text = novelTextBak
+      this.isTranslated = false
     },
     doDefPnt() {
       const key = store.state.appSetting.novelDefTranslate
-      const action = this.pntActions.find(e => e.key == key)
-      if (!action) return
-      this.onPntSelect(action)
+      this.onPntSelect({ key, text: key })
     },
     async onPntSelect(action) {
+      if (this.translateLoading) return
       window.umami?.track('translate_novel', { with: action.text })
       store.commit('setIsNovelViewShrink', false)
       const fns = {
-        imt: () => loadImtSdk(),
-        sc_glm: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'glm'),
-        sc_glm_0414: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'glm_0414'),
-        sc_glm_z1: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'glm_z1'),
-        sc_qwen3: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'qwen3'),
-        sc_qwen2: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'qwen2'),
-        sc_qwen2_5: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'qwen2_5'),
-        sc_ds_r1_llama: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'ds_r1_llama'),
-        sc_ds_r1_qwen: async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), 'ds_r1_qwen'),
+        ...Object.keys(aiModelMap).reduce((acc, cur) => {
+          acc[`sc_${cur}`] = async () => this.fanyi('sc', await getNoTranslateWords(this.artwork.tags), cur)
+          return acc
+        }, {}),
         ms: async () => this.fanyi('ms', await getNoTranslateWords(this.artwork.tags)),
         gg: () => this.fanyi('gg'),
         yd: () => this.fanyi('yd'),
+        kiss_t: () => loadKISSTranslator(),
+        native: () => this.aiTranslate('', '', true),
       }
       const fn = fns[action.key]
       if (fn) {
@@ -367,6 +545,7 @@ export default {
           return
         }
 
+        this.translateLoading = true
         const loading = this.$toast.loading({
           duration: 0,
           forbidClick: true,
@@ -379,35 +558,42 @@ export default {
           if (nots) url += `&nots=${nots}`
           if (srv == 'sc' && aiModel) url += `&aimd=${aiModel}`
           res = await fetch(url, { headers: UA_Header }).then(r => r.text())
-          if (!res.includes('Translate failed')) setCache(cacheKey, res)
+          // if (!res.includes('Translate failed')) setCache(cacheKey, res)
+          if (!res.startsWith('{')) setCache(cacheKey, res)
         }
         this.novelText.text = res
         loading.clear()
+        this.translateLoading = false
+        this.isTranslated = true
       } catch (err) {
         console.log('fanyi err: ', err)
       }
     },
-    async aiTranslate(nots = '', aiModel = 'glm') {
-      const cacheKey = `novel.translate.${this.artwork.id}.sc.${aiModel}.${nots}`
+    async aiTranslate(nots = '', aiModel = 'glm', isNative = false) {
+      const cacheKey = `novel.translate.${this.artwork.id}.sc.${aiModel}.${nots}.${isNative}`
       const cacheText = await getCache(cacheKey)
       if (cacheText) {
         this.novelText.text = cacheText
         return
       }
+      this.translateLoading = true
       const notsArr = nots ? nots.split(',') : []
       const novelElement = document.querySelector('.novel_text')
       let resText = ''
       this.novelText.text = this.$t('tips.loading')
-      siliconCloudTranslate(novelTextBak, notsArr, aiModel, chunk => {
+      const callback = chunk => {
         if (chunk.done) {
           novelElement.innerHTML = resText
           this.novelText.text = resText
           setCache(cacheKey, resText)
+          this.$toast('翻译完毕')
+          this.translateLoading = false
+          this.isTranslated = true
           return
         }
 
         if (chunk.reasoning) {
-          resText += `<span style="color:gray;font-size:0.8em">${chunk.content}</span>`
+          resText = `<span style="color:gray;font-size:0.8em">思考中：${chunk.content}</span>`
         } else {
           resText += chunk.content
         }
@@ -420,7 +606,12 @@ export default {
         requestAnimationFrame(() => {
           novelElement.innerHTML = resText
         })
-      })
+      }
+      if (isNative) {
+        nativeTranslate(novelTextBak, callback)
+      } else {
+        siliconCloudTranslate(novelTextBak, notsArr, aiModel, callback)
+      }
     },
   },
 }
@@ -463,15 +654,21 @@ img[src*="https://api.moedog.org/qr/?url="]
       filter: drop-shadow(0.02667rem 0.05333rem 0.05333rem rgba(0,0,0,0.8));
 
   .series-btns
+    display flex
+    flex-direction column
+    gap 10px
     padding 0 40px
     ::v-deep
-      .van-button
-        &:not(:last-child)
-          margin-bottom 10px
-        .van-button__text
-          overflow: hidden
-          text-overflow: ellipsis
-          white-space: nowrap
+      .van-button .van-button__text
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+    &-group
+      display flex
+      flex-wrap wrap
+      gap 10px
+      > *
+        flex 1
 
   ::v-deep .van-share-sheet
     width 10rem !important
@@ -573,7 +770,15 @@ img[src*="https://api.moedog.org/qr/?url="]
       padding-right 0
       margin-bottom 0
 
-@media screen and (max-width: 1200px)
+@media screen and (min-width: 1201px)
+  .ia-cont
+    &:not(:has(.shrink)) .ia-right
+      max-height 100vh
+      overflow-y auto
+      &::-webkit-scrollbar
+        display none
+
+@media screen and (max-width: 1120px)
   .ia-cont
     display block !important
 

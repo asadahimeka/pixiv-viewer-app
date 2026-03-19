@@ -1,5 +1,5 @@
 <template>
-  <div class="artwork" :class="{ isSafari, isAutoLoadImt, isSimulatedMeta }">
+  <div class="artwork" :class="{ isSafari, isAutoLoadKissT, isSimulatedMeta }">
     <TopBar />
     <div class="share_btn" @click="share">
       <Icon class="icon" name="share" />
@@ -10,14 +10,14 @@
           <van-icon name="arrow-left" size="0.6rem" />
         </div>
       </template>
-      <div class="ia-cont">
+      <div class="ia-cont" :class="{ 'landscape-1-art': isLandscape1Art }">
         <div class="ia-left">
-          <van-loading v-if="loading" size="50px" />
+          <van-loading v-if="loading" class="i-loading" size="50px" />
           <ImageView ref="imgView" :artwork="artwork" @open-download="ugoiraDownloadPanelShow = true" />
         </div>
         <div class="ia-right">
           <van-skeleton class="skeleton" title avatar :row="5" row-width="200px" avatar-size="42px" :loading="loading">
-            <ArtworkMeta ref="artworkMeta" :artwork="artwork" :maybe-ai-author="maybeAiAuthor" @ugoira-download="showUgPanelFromDlBtn" />
+            <ArtworkMeta ref="artworkMeta" :artwork="artwork" :maybe-ai-author="maybeAiAuthor" @ugoira-download="showUgPanelFromDlBtn" @update-author-follow="updateAuthorFollow" />
           </van-skeleton>
           <keep-alive>
             <AuthorCard v-if="artwork.author" :id="artwork.author.id" :key="artwork.id" @author-change="v => maybeAiAuthor = v" />
@@ -57,7 +57,7 @@
 // import nprogress from 'nprogress'
 import { mapGetters } from 'vuex'
 import { ImagePreview } from 'vant'
-import api from '@/api'
+import api, { localApi } from '@/api'
 import store from '@/store'
 import platform from '@/platform'
 import _ from '@/lib/lodash'
@@ -65,7 +65,8 @@ import { i18n } from '@/i18n'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { SessionStorage } from '@/utils/storage'
 import { copyText, isSafari, dealStatusBarOnEnter, dealStatusBarOnLeave } from '@/utils'
-import { PIXIV_NEXT_URL, COMMON_PROXY, UA_Header } from '@/consts'
+import { ugoiraDownloadActions } from '@/utils/ugoira'
+import { PIXIV_NEXT_URL, COMMON_PROXY, PXIMG_PID_BASE, UA_Header } from '@/consts'
 import TopBar from '@/components/TopBar'
 import ImageView from './components/ImageView'
 import Meta from './components/Meta'
@@ -80,8 +81,6 @@ import IconWeb from '@/assets/images/share-sheet-web.png'
 import IconWeibo from '@/assets/images/share-sheet-weibo.png'
 import IconTwitter from '@/assets/images/share-sheet-twi.png'
 import IconFacebook from '@/assets/images/share-sheet-facebook.png'
-
-const { isAutoLoadImt, isEnableSwipe } = store.state.appSetting
 
 export default {
   name: 'Artwork',
@@ -118,23 +117,19 @@ export default {
     next()
     // }
   },
+  props: {
+    popupArt: { type: Object, default: () => null },
+  },
   data() {
     return {
       loading: true,
       artwork: {},
       ugoiraDownloadPanelShow: false,
-      ugoiraDownloadPanelActions: [
-        { name: 'ZIP', subname: i18n.t('artwork.download.zip') },
-        { name: 'GIF', subname: i18n.t('artwork.download.gif') },
-        { name: 'WebM', subname: i18n.t('artwork.download.webm') }, // chrome only
-        { name: 'APNG', subname: i18n.t('artwork.download.webm') },
-        { name: 'MP4(Browser)', subname: i18n.t('pIghtXdU8socMNNRUn5UR') },
-        { name: 'MP4(Server)', subname: i18n.t('zuVom-C8Ss8JTEDZIhzBj') },
-        { name: 'Other', subname: i18n.t('artwork.download.mp4') },
-      ],
+      ugoiraDownloadPanelActions: ugoiraDownloadActions,
       showShare: false,
       shareOptions: [
         { name: i18n.t('artwork.share.type.web'), icon: IconWeb },
+        { name: i18n.t('NpehaslwZK0m14UfYZaHO'), icon: IconLink },
         { name: i18n.t('artwork.share.type.copylink'), icon: IconLink },
         { name: i18n.t('artwork.share.type.qrcode'), icon: IconQrcode },
         { name: i18n.t('artwork.share.type.weibo'), icon: IconWeibo },
@@ -146,8 +141,7 @@ export default {
       ],
       maybeAiAuthor: false,
       isSafari: isSafari(),
-      isAutoLoadImt,
-      disableSwipe: !isEnableSwipe,
+      isAutoLoadKissT: store.state.appSetting.isAutoLoadKissT,
     }
   },
   head() {
@@ -162,6 +156,13 @@ export default {
     isSimulatedMeta() {
       return this.artwork.width == 0
     },
+    isLandscape1Art() {
+      return this.artwork?.images?.length == 1 && this.artwork?.width > this.artwork?.height
+    },
+    disableSwipe() {
+      const { isEnableSwipe, openArtDetailAsPopup } = store.state.appSetting
+      return openArtDetailAsPopup || !isEnableSwipe
+    },
   },
   watch: {
     $route() {
@@ -169,6 +170,11 @@ export default {
         this.$route.name === 'Artwork' &&
         this.$route.params.id != this.artwork.id
       ) {
+        this.init()
+      }
+    },
+    popupArt(val) {
+      if (val && val.id != this.artwork.id) {
         this.init()
       }
     },
@@ -181,11 +187,15 @@ export default {
     init() {
       this.loading = true
       this.artwork = {}
-      const id = Number(this.$route.params.id)
+      let id = Number(this.$route.params.id)
       let art = SessionStorage.get(`param_art_detail_${id}`)
       if (!art) art = this.$route.params.art
+      if (this.popupArt) {
+        art = this.popupArt
+        id = art.id
+      }
       console.log('artwork detail: ', id, art)
-      if (art && art.type != 'ugoira' && !art.images[0].o.includes('i.loli.best')) {
+      if (art && art.type != 'ugoira' && !art.images[0].o.includes(PXIMG_PID_BASE)) {
         this.artwork = art
         this.loading = false
         SessionStorage.set(`param_art_detail_${id}`, art)
@@ -197,6 +207,10 @@ export default {
       } else {
         this.getArtwork(+id)
       }
+    },
+    updateAuthorFollow(val) {
+      if (typeof val != 'boolean') return
+      this.artwork.author.is_followed = val
     },
     async getArtwork(id) {
       await this.$nextTick()
@@ -241,13 +255,13 @@ export default {
     showUgPanelFromDlBtn() {
       const { ugoiraDefDLFormat } = store.state.appSetting
       if (ugoiraDefDLFormat) {
-        this.$refs.imgView.download(ugoiraDefDLFormat)
+        this.$refs.imgView.downloadUgoira(ugoiraDefDLFormat)
         return
       }
       this.ugoiraDownloadPanelShow = true
     },
     onUgoiraDownloadPanelSelect(item) {
-      this.$refs.imgView.download(item.name)
+      this.$refs.imgView.downloadUgoira(item.name)
     },
     onSwipeOpen({ position }) {
       this.$refs.swipeCell?.close()
@@ -280,6 +294,13 @@ export default {
           } catch (error) {
             console.log('error: ', error)
           }
+        },
+        () => {
+          copyText(
+            `${this.$t('artwork.share.share')} ${this.$t('artwork.share.of_art', [this.artwork.author.name])}「${this.artwork.title}」- PID: ${this.artwork.id}`,
+            () => this.$toast(this.$t('tips.copylink.succ')),
+            err => this.$toast(this.$t('tips.copy_err') + err)
+          )
         },
         () => {
           copyText(
@@ -420,6 +441,12 @@ img[src*="https://api.moedog.org/qr/?url="]
   width 0.7rem
   height 100%
 
+.i-loading
+  position: absolute;
+  top: 4rem;
+  width: 100%;
+  text-align: center;
+
 .ia-cont
   display flex
   align-items flex-start
@@ -439,6 +466,10 @@ img[src*="https://api.moedog.org/qr/?url="]
       height: auto !important
       min-width 300px
       min-height 300px
+      &:has(.season-effect)
+        width: fit-content !important
+        margin-left auto
+        margin-right auto
       &:not(:last-child)
         margin-bottom 10px
 
@@ -465,12 +496,23 @@ img[src*="https://api.moedog.org/qr/?url="]
     padding-top 1rem
     background none
 
-@media screen and (max-width: 1200px)
+@media screen and (min-width: 1600px)
+  .ia-cont
+    &.landscape-1-art
+      align-items center
+      .ia-left
+        margin-top -.2rem
+      .ia-right
+        min-height 100vh
+@media screen and (max-width: 1120px)
   .ia-cont
     display block !important
 
   .ia-left
+    display block !important
+    align-items unset !important
     width 100% !important
+    max-height max-content !important
     margin 0 auto !important
     padding 0 !important
 
@@ -481,22 +523,68 @@ img[src*="https://api.moedog.org/qr/?url="]
       box-shadow none !important
 
   .ia-right
-    max-width unset !important
+    position relative !important
+    max-width 100% !important
     padding-right 0 !important
     .artwork-meta
       margin-top 10px !important
 
-@media screen and (max-width: 600px)
-  .ia-left
-    ::v-deep .image
-      width 100% !important
-      max-height unset !important
+  &.landscape-1-art
+    display: flex !important
+    flex-direction: column
+    .ia-left
+      display flex !important
+      justify-content center !important
+      align-items center !important
+      min-height 55vh
+    .ia-right
+      position: relative
+      width: 100% !important
+      max-width: 100% !important
+
+@media screen and (min-width: 1121px)
+  .ia-cont
+    &:not(:has(.shrink)) .ia-right
+      max-height 100vh
+      overflow-y auto
+      &::-webkit-scrollbar
+        display none
+
+.ia-cont .ia-left
+  ::v-deep .image-view.horizon-scroll
+    display flex
+    align-items center
+    gap 0.1rem
+    height 96vh
+    max-height 96vh
+    padding-left 2rem
+    overflow-x auto
+    .image-box
+      width max-content !important
+      min-width max-content !important
+      margin-bottom 0.1rem !important
+      &:has(.image[lazy="loading"])
+        width 9rem !important
+        min-width 9rem !important
+    .image
+      max-width unset !important
+      max-height 94vh !important
+      margin 0 !important
+    @media screen and (max-width: 600px)
+      height 80vh
+      max-height 80vh
+      padding-left 0
+      .image-box
+        aspect-ratio auto !important
+      .image
+        max-width 95vw !important
+        max-height 79vh !important
 
 .artwork
   ::v-deep .top-bar-wrap
     width 2rem
     background none
-  &.isSafari, &.isAutoLoadImt
+  &.isSafari, &.isAutoLoadKissT
     .image-view.loaded
       min-height auto
     .ia-right ::v-deep .artwork-meta
@@ -505,7 +593,7 @@ img[src*="https://api.moedog.org/qr/?url="]
       border-radius 20px
       .tag.translated
         color #808080
-      @media screen and (max-width: 1200px)
+      @media screen and (max-width: 1120px)
         margin 0.26667rem 0.13333rem !important
       .shrink::after
         background: linear-gradient(to top, #f5f5f5, rgba(255,255,255,0));

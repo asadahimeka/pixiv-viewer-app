@@ -1,27 +1,28 @@
 <template>
-  <div ref="related" class="related">
+  <div ref="related" class="related" :style="manualLoadRelated?'min-height:120px':''">
     <van-cell class="cell" :border="false">
       <template #title>
         <Icon class="icon heart" name="heart" />
         <span class="title">{{ $t('common.related') }}</span>
+        <van-button
+          v-if="manualLoadRelated && !showList"
+          size="small"
+          class="load_rel_btn"
+          @click="init()"
+        >
+          {{ $t('7KdpxnZMAURov4JetAfvV') }}
+        </van-button>
       </template>
     </van-cell>
-    <van-list
+    <van-loading v-if="!manualLoadRelated && !showList" size="64px" style="width: 64px;margin: 20px auto;" />
+    <ImageList
       v-if="showList"
-      v-model="loading"
-      :loading-text="$t('tips.loading')"
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="$t('tips.no_more')"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getRelated()"
-    >
-      <wf-cont>
-        <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
-      </wf-cont>
-    </van-list>
-    <van-loading v-else size="64px" style="width: 64px;margin: 20px auto;" />
+      :error="error"
+      :on-load-more="getRelated"
+    />
   </div>
 </template>
 
@@ -29,12 +30,15 @@
 import _ from '@/lib/lodash'
 import api from '@/api'
 import { tryURL } from '@/utils'
-import ImageCard from '@/components/ImageCard'
+import ImageList from '@/components/ImageList.vue'
+import store from '@/store'
+
+const { manualLoadRelated } = store.state.appSetting
 
 export default {
   name: 'Related',
   components: {
-    ImageCard,
+    ImageList,
   },
   props: {
     artwork: {
@@ -51,10 +55,11 @@ export default {
       loading: false,
       finished: false,
       nextUrl: null,
+      manualLoadRelated,
     }
   },
   mounted() {
-    this.setObserver()
+    if (!manualLoadRelated) this.setObserver()
   },
   methods: {
     setObserver() {
@@ -71,15 +76,17 @@ export default {
       }, options)
       ob.observe(this.$refs.related)
     },
-    url(id, index) {
-      return api.url(id, index)
+    init() {
+      this.reset()
+      this.showList = true
+      this.getRelated()
     },
     reset() {
       this.curPage = 1
       this.artList = []
     },
     getRelated: _.throttle(async function () {
-      if (!this.artwork.id) return
+      if (!this.artwork.id || this.loading || this.finished) return
       console.log('this.nextUrl: ', this.nextUrl)
       this.loading = true
       const nextUrl = tryURL(this.nextUrl)
@@ -105,18 +112,6 @@ export default {
         this.error = true
       }
     }, 1500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
-    init() {
-      this.reset()
-      this.showList = true
-      this.getRelated()
-    },
   },
 }
 </script>
@@ -124,8 +119,14 @@ export default {
 <style lang="stylus" scoped>
 .related {
   min-height: 72vh;
+
   .cell {
     padding: 0 8px 20px 8px;
+  }
+
+  .load_rel_btn {
+    margin-left: 0.2rem;
+    vertical-align: 0.5em;
   }
 
   .card-box {

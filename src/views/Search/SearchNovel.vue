@@ -31,16 +31,21 @@
       </div>
     </div>
     <div v-if="focus" class="search-dropdown">
+      <div v-if="keywords.trim()" class="pid-n-uid">
+        <div class="keyword" @click="onSearch">{{ $t('search.seach_tag') }} {{ keywords.trim() }} </div>
+        <template v-if="showR18OrSafeQuickTag">
+          <div class="keyword" @click="onSearch('R18')">{{ $t('pL1gF_vTo1c_iF5GpBIDA') }} {{ keywords.trim() }} </div>
+          <div class="keyword" @click="onSearch('safe')">{{ $t('IxG-Y2odr_0OKUJbaqV0-') }} {{ keywords.trim() }} </div>
+        </template>
+        <template v-for="n in pidOrUidList">
+          <div :key="'n_' + n" class="keyword" @click="toArtwork(n)">→ {{ $t('common.novel') }} ID: {{ n }} </div>
+        </template>
+      </div>
       <div v-if="keywords.trim() && autoCompleteTagList.length" class="search-history">
         <div class="title-bar">{{ $t('search.autocomplete') }}</div>
         <div v-for="tag in autoCompleteTagList" :key="tag" class="keyword" @click="searchTag(tag)">
           {{ tag }}
         </div>
-      </div>
-      <div v-if="pidOrUidList.length" class="pid-n-uid">
-        <template v-for="n in pidOrUidList">
-          <div :key="'n_' + n" class="keyword" @click="toArtwork(n)">→ {{ $t('common.novel') }} ID: {{ n }} </div>
-        </template>
       </div>
       <div v-if="!keywords.trim() && searchHistory.length > 0" class="search-history">
         <div class="title-bar">
@@ -58,9 +63,54 @@
       <div class="com_sel_tab" @click="$router.replace('/search')">{{ $t('common.illust_manga') }}</div>
       <div class="com_sel_tab cur">{{ $t('common.novel') }}</div>
       <div class="com_sel_tab" @click="$router.replace('/search_user')">{{ $t('common.user') }}</div>
+      <div class="com_sel_tab" @click="$router.replace('/collection')">{{ $t('dZ93cWZJ03hu5emsVwgjA') }}</div>
     </div>
     <div class="list-wrap" :class="{ focus: focus }" :style="{ paddingTop: keywords.trim() ? '1.6rem' : '2.6rem' }">
-      <PopularPreviewNovel v-if="(isSelfHibi && showPopPreview && keywords.trim())" :word="keywords" />
+      <div v-show="keywords.trim()" class="search_params">
+        <van-dropdown-menu class="search_param_sel" active-color="#f2c358">
+          <template v-if="!showPopPreview">
+            <van-dropdown-item v-model="searchParams.mode" :options="searchModes" />
+            <van-dropdown-item v-model="searchParams.sort" :options="searchOrders" />
+          </template>
+          <van-dropdown-item
+            ref="s_date"
+            :title="searchParams.start_date? searchParams.start_date + '~' + searchParams.end_date : $t('common.date')"
+            :lazy-render="false"
+            @open="onSelDateOpen"
+          >
+            <van-calendar
+              ref="selDate"
+              color="#f2c358"
+              class="sel_search_date"
+              type="range"
+              :confirm-text="$t('common.confirm')"
+              :confirm-disabled-text="$t('common.confirm')"
+              :default-date="searchDateVals"
+              :poppable="false"
+              :show-title="false"
+              :min-date="minDate"
+              :max-date="maxDate"
+              @confirm="v => { searchDateVals = v; $refs.s_date.toggle() }"
+            />
+            <div style="width: 9.4rem;margin: 5px auto 10px">
+              <van-button
+                style="height: 36px;"
+                block
+                round
+                @click="() => { searchDateVals = [null, null]; $refs.s_date.toggle() }"
+              >
+                {{ $t('common.reset') }}
+              </van-button>
+            </div>
+          </van-dropdown-item>
+          <template v-if="!showPopPreview">
+            <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
+            <van-dropdown-item v-model="searchParams.duration" :options="searchDuration" />
+            <van-dropdown-item v-if="showNonCNLangParam" v-model="nonCNLang" :options="nonCNLangOptions" />
+          </template>
+        </van-dropdown-menu>
+      </div>
+      <PopularPreviewNovel v-if="(isSelfHibi && showPopPreview && keywords.trim())" ref="popPreview" :word="keywords" :params="searchParams" />
       <van-list
         v-else-if="keywords.trim()"
         v-model="loading"
@@ -86,15 +136,19 @@
 </template>
 
 <script>
-import TagsNovel from './components/TagsNovel'
+import dayjs from 'dayjs'
 import { mapState, mapActions } from 'vuex'
 import _ from '@/lib/lodash'
-import api from '@/api'
+import api, { localApi } from '@/api'
+import store from '@/store'
 import { notSelfHibiApi } from '@/consts'
+import { mintVerify, BLOCK_SEARCH_WORD_RE, BLOCK_INPUT_WORDS, BLOCK_LAST_WORD_RE } from '@/utils/filter'
+import { i18n, isCNLocale } from '@/i18n'
+import { detectLanguage } from '@/utils/novel'
+import { sleep } from '@/utils'
+import TagsNovel from './components/TagsNovel'
 import NovelCard from '@/components/NovelCard.vue'
 import PopularPreviewNovel from './components/PopularPreviewNovel.vue'
-import { mintVerify, BLOCK_SEARCH_WORD_RE } from '@/utils/filter'
-import { i18n } from '@/i18n'
 
 export default {
   name: 'Search',
@@ -115,22 +169,101 @@ export default {
       error: false,
       loading: false,
       finished: false,
-      maskShow: false,
       autoCompleteTagList: [],
       showPopPreview: false,
       isSelfHibi: !notSelfHibiApi,
+      usersIriTag: '',
+      usersIriTags: [
+        { text: this.$t('7PnT90lP_mZTPfL3Uwlhl'), value: '' },
+        ...[30000, 20000, 10000, 7500, 5000, 1000, 500, 250, 100].map(e => {
+          return { text: i18n.t('8SuotxAmYS7l1QCfLz0Yv', [e]), value: `${e}users入り` }
+        }),
+      ],
+      // minDate: new Date('2007/09/13'),
+      minDate: dayjs().subtract(1, 'year').toDate(),
+      maxDate: new Date(),
+      searchParams: {
+        mode: 'partial_match_for_tags',
+        sort: 'date_desc',
+        duration: '',
+        start_date: '',
+        end_date: '',
+      },
+      searchDateVals: [null, null],
+      searchModes: [
+        { text: this.$t('search.mode.partial'), value: 'partial_match_for_tags' },
+        { text: this.$t('search.mode.exact'), value: 'exact_match_for_tags' },
+        { text: this.$t('-cm0i-Kb6i1rhmSk3FXnf'), value: 'text' },
+        { text: this.$t('vCd3kQ1QluX-OCbnI2v_6'), value: 'keyword' },
+      ],
+      searchOrders: [
+        { text: this.$t('search.date.desc'), value: 'date_desc' },
+        { text: this.$t('search.date.asc'), value: 'date_asc' },
+      ],
+      searchDuration: [
+        { text: this.$t('search.dura.ph'), value: '' },
+        { text: this.$t('search.dura.day'), value: 'within_last_day' },
+        { text: this.$t('search.dura.week'), value: 'within_last_week' },
+        { text: this.$t('search.dura.month'), value: 'within_last_month' },
+      ],
+      showNonCNLangParam: localApi.APP_CONFIG.useLocalAppApi && isCNLocale(),
+      nonCNLang: 'no',
+      nonCNLangOptions: [
+        { text: '显示非中文', value: 'no' },
+        { text: '隐藏非中文', value: 'yes' },
+      ],
     }
   },
-  head: {
-    title: i18n.t('search.search'),
+  head() {
+    return {
+      title: this.$t('search.search'),
+    }
   },
   computed: {
     ...mapState(['searchHistory']),
+    isLoggedIn() {
+      return store.getters.isLoggedIn
+    },
     pidOrUidList() {
       return this.keywords.match(/(\d+)/g) || []
     },
+    showR18OrSafeQuickTag() {
+      return store.getters.isR18On &&
+        !this.pidOrUidList.length &&
+        !this.keywords.includes('R-18')
+    },
   },
   watch: {
+    usersIriTag(val) {
+      // window.umami?.track('search_novel_usersIriTag', { val })
+      this.reset()
+      this.doSearch(this.keywords)
+    },
+    nonCNLang(val) {
+      window.umami?.track('search_novel_nonCNLang', { val })
+      this.reset()
+      this.doSearch(this.keywords)
+    },
+    searchParams: {
+      deep: true,
+      handler(val) {
+        console.log('val: ', val)
+        // window.umami?.track('search_novel_params', { val })
+        if (this.showPopPreview) {
+          this.$refs.popPreview.getList()
+        } else {
+          this.reset()
+          this.doSearch(this.keywords)
+        }
+      },
+    },
+    searchDateVals(vals) {
+      console.log('vals: ', vals)
+      Object.assign(this.searchParams, {
+        start_date: vals[0] && dayjs(vals[0]).format('YYYY-MM-DD'),
+        end_date: vals[1] && dayjs(vals[1]).format('YYYY-MM-DD'),
+      })
+    },
     $route() {
       if (!['SearchNovel', 'SearchNovelKeyword'].includes(this.$route.name)) {
         return
@@ -211,6 +344,9 @@ export default {
         this.search(keywords)
       }
     },
+    onSelDateOpen() {
+      this.$refs.selDate.scrollToDate(this.searchDateVals[0] || this.maxDate)
+    },
     search(keywords) {
       keywords = keywords.trim()
       console.log('search keywords: ', keywords)
@@ -227,7 +363,7 @@ export default {
       this.$router.push(`/search_novel/${encodeURIComponent(keywords)}`)
       this.showPopPreview = false
     },
-    doSearch: _.throttle(async function (val) {
+    doSearch: async function (val) {
       val = val || this.keywords
       this.keywords__ = val
       val = val.trim()
@@ -247,28 +383,63 @@ export default {
 
       this.setSearchHistory(val)
 
+      if (!(this.$store.state.contentSetting.r18 || this.$store.state.contentSetting.r18g)) {
+        if (BLOCK_INPUT_WORDS.some(e => e.test(val))) {
+          this.artList = []
+          this.finished = true
+          this.curPage = 1
+          return
+        }
+        val += ' -R-18 -R18 -18+'
+      } else if (this.searchParams.mode == 'text') {
+        val = val.replace(/ -?R-18/g, '')
+      }
+      if (this.usersIriTag) val += ' ' + this.usersIriTag
+      const params = _.pickBy(this.searchParams, Boolean)
+      if (!this.$store.state.contentSetting.ai) {
+        params.search_ai_type = 1
+      }
+
       this.loading = true
-      const res = await api.searchNovel(val, this.curPage)
+      const res = await api.searchNovel(val, this.curPage, params)
       if (res.status === 0) {
         if (res.data.length) {
-          const artList = _.uniqBy([
-            ...this.artList,
-            ...res.data,
-          ], 'id')
+          let artList = res.data
 
-          if (!artList.length) {
-            this.finished = true
-            return
+          if (this.usersIriTag) {
+            const match = this.usersIriTag.match(/(\d+)/)
+            artList = artList.filter(e => e.like > Number(match && match[0]))
           }
 
-          this.artList = artList
+          if (this.nonCNLang == 'yes') {
+            artList = artList.filter(e => detectLanguage(e.title + e.caption).language == 'zh')
+          }
 
-          this.curPage++
-          // if (this.curPage > 9) this.finished = true
-        } else {
-          this.finished = true
+          if (this.keywords__.includes(' R-18')) {
+            artList = artList.filter(e => e.x_restrict > 0)
+          }
+
+          if (this.keywords__.includes(' -R-18')) {
+            artList = artList.filter(e => e.x_restrict == 0)
+          }
+
+          if (artList.length < 10) {
+            console.log('------------- sleep')
+            await sleep(800)
+          }
+
+          this.artList = _.uniqBy([
+            ...this.artList,
+            ...artList,
+          ], 'id')
         }
         this.loading = false
+        if (res.hasNext === false) {
+          this.finished = true
+        } else {
+          this.curPage++
+          if (!this.isLoggedIn && this.curPage > 5) this.finished = true
+        }
       } else {
         this.$toast({
           message: res.msg,
@@ -276,7 +447,7 @@ export default {
         this.loading = false
         this.error = true
       }
-    }, 2500),
+    },
     toArtwork(id) {
       this.$router.push({
         name: 'NovelDetail',
@@ -289,6 +460,9 @@ export default {
         this.autoCompleteTagList = []
         return
       }
+      if (BLOCK_LAST_WORD_RE.test(this.lastWord)) {
+        return
+      }
       const res = await api.getTagsAutocomplete(this.lastWord)
       if (res.status == 0) {
         this.autoCompleteTagList = res.data
@@ -297,11 +471,13 @@ export default {
     onFocus() {
       this.focus = true // 获取焦点
     },
-    onSearch() {
+    onSearch(searchType) {
       console.log('onSearch: ', this.keywords)
       this.focus = false
-      // document.querySelector('.app-main')?.scrollTo(0, 0)
-      this.keywords += ' '
+      let words = this.keywords
+      if (searchType == 'R18') words = words.trim() + ' R-18'
+      if (searchType == 'safe') words = words.trim() + ' -R-18'
+      this.keywords = words + ' '
       this.$router.push(`/search_novel/${encodeURIComponent(this.keywords.trim())}`)
       this.reset()
       this.doSearch(this.keywords)
@@ -317,10 +493,6 @@ export default {
     },
     clearHistory() {
       this.setSearchHistory(null)
-    },
-    switchImageSearchShow(flag) {
-      if (!flag) this.$refs.imageSearch.reset()
-      this.maskShow = flag
     },
     ...mapActions(['setSearchHistory']),
   },
@@ -567,6 +739,34 @@ export default {
   font-size 36px
   padding 20px
 
+.search_params
+  position relative
+  top -24px
+  @media screen and (max-width: 1280px)
+    overflow-x: auto;
+    &::-webkit-scrollbar
+      display none
+    ::v-deep .van-dropdown-menu
+      padding-bottom 0.3rem
+
+.search_param_sel
+  height 70px
+
+  ::v-deep .van-dropdown-menu__title
+    font-size 0.24rem
+  ::v-deep .van-dropdown-menu__bar
+    background none
+    height 100% !important
+    @media screen and (max-width: 1280px)
+      .van-dropdown-menu__item
+        min-width: max-content;
+        padding: 0 0.2rem;
+
+.sel_search_date
+  width 750px !important
+  height 455PX
+  margin: 0 auto;
+
 .users-iri-sel
   position absolute
   top 30px
@@ -589,7 +789,7 @@ export default {
   position: fixed;
   top: calc(120px + var(--status-bar-height));
   left 0
-  z-index: 4;
+  z-index: 14;
   width 100%
   background: #fff
 

@@ -23,7 +23,6 @@ import api from '@/api'
 import _ from '@/lib/lodash'
 import ImageSlide from '@/components/ImageSlide.vue'
 import { mintVerify, BLOCK_SEARCH_WORD_RE } from '@/utils/filter'
-import { i18n } from '@/i18n'
 
 export default {
   name: 'SearchUserRes',
@@ -52,8 +51,10 @@ export default {
       },
     }
   },
-  head: {
-    title: i18n.t('search.search_user'),
+  head() {
+    return {
+      title: this.$t('search.search_user'),
+    }
   },
   activated() {
     this.init()

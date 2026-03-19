@@ -2,56 +2,70 @@
   <div
     ref="view"
     class="image-view"
-    :class="{ shrink: isShrink, loaded: artwork.images, censored }"
+    :class="{
+      shrink: isShrink,
+      loaded: !!artwork.images,
+      overlong,
+      censored,
+      'horizon-scroll': isHorizonScroll,
+    }"
     @click="showFull"
+    @wheel="handleWheel"
   >
-    <div
-      v-for="(url, index) in artwork.images"
-      :key="index"
-      class="image-box"
-    >
-      <!-- :style="index === 0 ? { width: `${displayWidth}px`, height: `${displayWidth / (artwork.width / artwork.height)}px` } : null" -->
-      <!-- :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}" -->
-      <!-- <van-button
-        v-if="artwork.illust_ai_type != 2 && maybeAiAuthor"
-        class="check-ai-btn"
-        color="linear-gradient(to right, #ff758c 0%, #ff7eb3 100%)"
-        size="mini"
-        @click="checkAI(url.l)"
+    <swiper v-if="isImgViewSwiper" ref="mySwiper" :options="swiperOption">
+      <swiper-slide v-for="(url, index) in artwork.images" :key="index" class="image-box">
+        <Pximg
+          :src="getImgUrl(url)"
+          :alt="`${artwork.title} - Page ${index + 1}`"
+          :style="isLargeWebp && index==0 ? 'view-transition-name: artwork-cover' : ''"
+          class="image"
+          @click.native.stop="view(index)"
+        />
+      </swiper-slide>
+      <div slot="pagination" class="swiper-pagination"></div>
+      <div slot="button-prev" class="swiper-button-prev"></div>
+      <div slot="button-next" class="swiper-button-next"></div>
+    </swiper>
+    <template v-else>
+      <div
+        v-for="(url, index) in artwork.images"
+        :key="index"
+        class="image-box"
+        :style="index == 0 && artworkRatio > 0.6 ? `--ratio:${artworkRatio}` : ''"
       >
-        AI Check
-      </van-button> -->
-      <!-- v-if="lazy" -->
-      <Pximg
-        v-longpress="isLongpressDL?e => downloadArtwork(e, index):null"
-        :src="getImgUrl(url)"
-        :alt="`${artwork.title} - Page ${index + 1}`"
-        class="image"
-        nobg
-        @click.native.stop="view(index)"
-        @contextmenu.native="preventContext"
-      />
-      <div v-if="seasonEffectSrc" class="season-effect" :style="`--bg:url(${seasonEffectSrc})`"></div>
-      <!-- <img
-        v-else
-        :src="getImgUrl(url)"
-        :alt="`${artwork.title} - Page ${index + 1}`"
-        class="image"
-        :style="{ width: displayWidth, height: ((artwork.width / displayWidth) * artwork.height) * (artwork.width / artwork.height) }"
-        @click.stop="view(index, isCensored(artwork))"
-      > -->
-      <canvas
-        v-if="artwork.type === 'ugoira'"
-        id="ugoira"
-        ref="ugoira"
-        class="ugoira"
-        :width="artwork.width"
-        :height="artwork.height"
-        @click="openDownloadPanel()"
-      ></canvas>
-    </div>
+        <!-- <van-button
+          v-if="artwork.illust_ai_type != 2 && maybeAiAuthor"
+          class="check-ai-btn"
+          color="linear-gradient(to right, #ff758c 0%, #ff7eb3 100%)"
+          size="mini"
+          @click="checkAI(url.l)"
+        >
+          AI Check
+        </van-button> -->
+        <Pximg
+          v-longpress="isLongpressDL ? e => downloadArtwork(e, index) : () => {}"
+          :src="getImgUrl(url)"
+          :alt="`${artwork.title} - Page ${index + 1}`"
+          :style="isLargeWebp && index==0 ? 'view-transition-name: artwork-cover' : ''"
+          class="image"
+          nobg
+          @click.native.stop="view(index)"
+          @contextmenu.native="preventContext"
+        />
+        <div v-if="seasonEffectSrc" class="season-effect" :style="`--bg:url(${seasonEffectSrc})`"></div>
+        <canvas
+          v-if="showUgoiraControl"
+          id="ugoira"
+          ref="ugoira"
+          class="ugoira"
+          :width="artwork.width"
+          :height="artwork.height"
+          @click="openDownloadPanel()"
+        ></canvas>
+      </div>
+    </template>
     <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4" />
-    <div v-if="artwork.type === 'ugoira'" class="ugoira-controls">
+    <div v-if="showUgoiraControl" class="ugoira-controls">
       <div v-if="ugoiraPlaying" class="btn-pause" @click="drawCanvas('pause')">
         <Icon class="pause" name="pause" scale="6" />
       </div>
@@ -69,19 +83,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import { Dialog, ImagePreview } from 'vant'
-import nprogress from 'nprogress'
-// import JSZip from 'jszip'
-// import GIF from 'gif.js'
-// import tsWhammy from 'ts-whammy'
-// import { encode as encodeMP4 } from 'modern-mp4'
-import api from '@/api'
-import { BASE_URL, UA_Header } from '@/consts'
-import { sleep, fancyboxShow, loadScript, downloadFile } from '@/utils'
 import store from '@/store'
+import { COMMON_IMAGE_PROXY, ugoiraAvifSrc } from '@/consts'
+import { fancyboxShow, downloadFile } from '@/utils'
 import { getArtworkFileName } from '@/store/actions/filename'
-import platform from '@/platform'
+import { downloadUgoira, loadUgoira } from '@/utils/ugoira'
 
-const { isLongpressDL, imgReso } = store.state.appSetting
+const { isLongpressDL, imgReso, autoPlayUgoira, isUgoiraAvifSrc } = store.state.appSetting
 
 export default {
   props: {
@@ -99,26 +107,59 @@ export default {
       progressShow: false,
       progress: 0,
       isLongpressDL,
+      isLargeWebp: imgReso == 'Large(WebP)',
+      isUgoiraAvifSrc,
+      swiperOption: {
+        mousewheel: true,
+        keyboard: true,
+        touchMoveStopPropagation: true,
+        pagination: {
+          el: '.image-view .swiper-pagination',
+          dynamicBullets: true,
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.image-view .swiper-button-next',
+          prevEl: '.image-view .swiper-button-prev',
+        },
+      },
     }
   },
   computed: {
-    original() {
-      return this.artwork.images.map(url => url.o)
-    },
     ...mapGetters(['isCensored']),
     censored() {
       return this.isCensored(this.artwork)
     },
+    original() {
+      return this.artwork.images.map(url => url.o)
+    },
+    artworkRatio() {
+      return this.artwork.width / this.artwork.height
+    },
     seasonEffectSrc() {
-      const effects = this.$store.state.seasonEffects
-      let src = ''
-      this.artwork.tags?.some(t => {
-        const act = effects?.find(e => e.tag == t.name)
-        if (!act) return false
-        src = act.src
-        return true
-      })
-      return src
+      const tagNames = this.artwork.tags?.map(t => t.name) || []
+      const match = store.state.seasonEffects?.find(e => tagNames.includes(e.tag))
+      if (match?.src) return match.src
+      if (this.artwork.seasonal_effect) return COMMON_IMAGE_PROXY + this.artwork.seasonal_effect
+      return ''
+    },
+    showUgoiraControl() {
+      return this.artwork.type === 'ugoira' && !isUgoiraAvifSrc
+    },
+    overlong() {
+      return this.artwork?.images?.length > 2 && !this.isHorizonScroll && !this.isImgViewSwiper
+    },
+    isHorizonScroll() {
+      return this.artwork?.images?.length > 1 &&
+        !this.showUgoiraControl &&
+        store.state.appSetting.imgViewHorizonScroll &&
+        !store.state.appSetting.imgViewHorizonSwiper
+    },
+    isImgViewSwiper() {
+      return this.artwork?.images?.length > 1 &&
+        !this.showUgoiraControl &&
+        store.state.appSetting.imgViewHorizonSwiper &&
+        !store.state.appSetting.imgViewHorizonScroll
     },
   },
   watch: {
@@ -136,10 +177,14 @@ export default {
   },
   methods: {
     getImgUrl(urls) {
+      if (this.artwork.type == 'ugoira' && isUgoiraAvifSrc) {
+        return ugoiraAvifSrc(this.artwork.id)
+      }
       const urlMap = {
-        Medium: urls.l,
-        Large: urls.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/'),
-        Original: urls.o,
+        'Medium': urls.l,
+        'Large(WebP)': urls.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/c/1200x1200_90_webp/'),
+        'Large': urls.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/'),
+        'Original': urls.o,
       }
       return urlMap[imgReso] || urls.l
     },
@@ -148,6 +193,16 @@ export default {
         this.$toast({
           message: this.$t('common.content.hide'),
           icon: require('@/icons/ban-view.svg'),
+        })
+        return
+      }
+      if (this.artwork.type == 'ugoira' && isUgoiraAvifSrc) {
+        ImagePreview({
+          className: 'image-preview',
+          images: [ugoiraAvifSrc(this.artwork.id)],
+          startPosition: 0,
+          closeOnPopstate: true,
+          closeable: true,
         })
         return
       }
@@ -186,11 +241,17 @@ export default {
         confirmButtonText: this.$t('common.confirm'),
       }).catch(() => 'cancel')
       if (res != 'confirm') return
+      window.umami?.track('download_artwork_longpress')
       await this.$nextTick()
       await downloadFile(src, fileName, { subDir: store.state.appSetting.dlSubDirByAuthor ? this.artwork.author.name : undefined })
     },
     showFull() {
-      if (this.isShrink) this.isShrink = false
+      if (this.isShrink) {
+        this.isShrink = false
+        this.$nextTick(() => {
+          this.$refs.view?.scrollTo({ top: 0 })
+        })
+      }
     },
     // async checkAI(url) {
     //   const loading = this.$toast.loading({
@@ -211,55 +272,31 @@ export default {
     //     this.$toast('Error: ' + err.message)
     //   }
     // },
-    async ugoiraMetadata() {
-      const res = await api.ugoiraMetadata(this.artwork.id)
-      if (res.status === 0) {
-        return Object.freeze(res.data)
-      } else {
-        this.$toast({
-          message: res.msg,
-        })
-      }
-    },
-    async playUgoira() {
+    async playUgoira(action) {
+      const dontPlay = action == 'dontPlay'
       if (this.progressShow) return
-
       if (this.ugoira) {
-        this.drawCanvas('play')
+        !dontPlay && this.drawCanvas('play')
         return
       }
-
-      const ugoira = await this.ugoiraMetadata()
-      this.ugoira = {
-        zip: ugoira.zip,
-        frames: ugoira.frames.reduce((res, frame) => {
-          res[frame.file] = frame
-          return res
-        }, {}),
+      if (dontPlay) {
+        this.$toast.loading({
+          message: this.$t('tips.loading'),
+          duration: 0,
+          forbidClick: true,
+        })
       }
 
       try {
         this.progressShow = true
-        nprogress.start()
-        const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
-        const resp = await fetchFn(ugoira.zip, { headers: UA_Header })
-        if (!resp.ok) throw new Error(this.$t('D8R2062pjASZe9mgvpeLr'))
-        const respData = await resp.blob()
-        nprogress.done()
-        const { default: JSZip } = await import('jszip')
-        const jszip = new JSZip()
-        const zip = await jszip.loadAsync(respData)
-        const files = Object.keys(zip.files)
-        await Promise.all(files.map(async name => {
-          const blob = await zip.file(name).async('blob')
-          const bmp = await createImageBitmap(blob)
-          this.ugoira.frames[name].blob = blob
-          this.ugoira.frames[name].bmp = bmp
-        }))
+        const meta = await loadUgoira(this.artwork.id, progress => {
+          this.progress = progress.loaded / progress.total
+        })
+        this.ugoira = meta
         this.progressShow = false
-        this.drawCanvas('play')
+        dontPlay ? this.$toast.clear(true) : this.drawCanvas('play')
       } catch (err) {
-        nprogress.done()
+        this.progressShow = false
         this.resetUgoira()
         this.$toast({
           message: err.message,
@@ -268,32 +305,21 @@ export default {
     },
     drawCanvas(action) {
       const ctx = this.$refs.ugoira[0].getContext('2d')
-      // console.log(ctx);
       const { width, height } = this.artwork
-
       const frames = Object.values(this.ugoira.frames)
-
       const draw = () => {
         this.curIndex++
         setTimeout(
           () => {
             if (!this.ugoira || !this.ugoiraPlaying) return
-
-            // const imgUri = URL.createObjectURL(frames[this.curIndex - 1].data);
-            // const imgData = new Image();
-            // imgData.onload = () => {
             ctx.clearRect(0, 0, width, height)
             ctx.drawImage(frames[this.curIndex - 1].bmp, 0, 0, width, height)
-
             if (this.curIndex >= frames.length) this.curIndex = 0
             draw()
-            // };
-            // imgData.src = imgUri;
           },
           this.curIndex === 0 ? 0 : frames[this.curIndex - 1].delay
         )
       }
-
       if (action === 'play') {
         this.ugoiraPlaying = true
         draw()
@@ -301,155 +327,23 @@ export default {
         this.ugoiraPlaying = false
       }
     },
-    async downloadZIP() {
-      await downloadFile(this.ugoira.zip, `${getArtworkFileName(this.artwork)}.zip`, { subDir: 'ugoira' })
-    },
-    // ref: https://github.com/xuejianxianzun/PixivBatchDownloader/blob/master/src/ts/ConvertUgoira/ToAPNG.ts
-    async downloadAPNG() {
-      this.$toast(this.$t('tip.down_wait'))
-
-      if (!window.UPNG) {
-        await loadScript(`${BASE_URL}static/js/pako_deflate.min.js`)
-        await loadScript(`${BASE_URL}static/js/UPNG.min.js`)
+    async downloadUgoira(type) {
+      if (this.progressShow) {
+        this.$toast(this.$t('tips.loading'))
+        return
       }
-
-      await sleep(200)
-
-      const { width, height } = this.artwork
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d', { willReadFrequently: true })
-
-      let images = []
-      const delays = []
-      Object.values(this.ugoira.frames).forEach(frame => {
-        ctx.drawImage(frame.bmp, 0, 0)
-        images.push(ctx.getImageData(0, 0, width, height).data.buffer)
-        delays.push(frame.delay)
-      })
-
-      const pngFile = window.UPNG.encode(images, width, height, 0, delays)
-      const blob = new Blob([pngFile], { type: 'image/vnd.mozilla.apng' })
-
-      images = null
-
-      await downloadFile(blob, `${getArtworkFileName(this.artwork)}.apng`, { subDir: 'ugoira' })
-    },
-    async downloadWebM() {
-      this.$toast(this.$t('tip.down_wait'))
-      await sleep(200)
-
-      const { width, height } = this.artwork
-
-      const cacheCanvas = document.createElement('canvas')
-      cacheCanvas.width = width
-      cacheCanvas.height = height
-      const ctx = cacheCanvas.getContext('2d')
-
-      // const encoder = new global.Whammy.Video()
-      // Object.values(this.ugoira.frames).forEach(frame => {
-      //   ctx.clearRect(0, 0, width, height)
-      //   ctx.drawImage(frame.bmp, 0, 0, width, height)
-      //   encoder.add(ctx, frame.delay)
-      // })
-      // const webm = encoder.compile()
-
-      const images = []
-      let duration = 0
-      Object.values(this.ugoira.frames).forEach(frame => {
-        ctx.clearRect(0, 0, width, height)
-        ctx.drawImage(frame.bmp, 0, 0, width, height)
-        images.push(ctx.canvas.toDataURL('image/webp'))
-        duration += frame.delay
-      })
-
-      const { default: tsWhammy } = await import('ts-whammy')
-      const webm = tsWhammy.fromImageArrayWithOptions(images, { duration: duration / 1000 })
-
-      await downloadFile(webm, `${getArtworkFileName(this.artwork)}.webm`, { subDir: 'ugoira' })
-    },
-    async downloadGIF() {
-      this.$toast(this.$t('tip.down_wait'))
-
-      let images = Object.values(this.ugoira.frames)
-      let offset = 1
-      if (images.length >= 100) {
-        // 抽帧间隔
-        offset = 2
-        images = images.filter((_, idx) => idx % offset === 0) // 抽帧
-        // .map(frame => URL.createObjectURL(frame.blob));
+      if (isUgoiraAvifSrc) {
+        await this.playUgoira('dontPlay')
       }
-
-      const { width, height } = this.artwork
-
-      const cacheCanvas = document.createElement('canvas')
-      cacheCanvas.width = width
-      cacheCanvas.height = height
-      const ctx = cacheCanvas.getContext('2d')
-
-      const { default: GIF } = await import('gif.js')
-      const gif = new GIF({
-        workers: 10,
-        quality: 10,
-        width,
-        height,
-        workerScript: `${BASE_URL}static/js/gif.worker.js`,
-      })
-      Object.values(images).forEach(frame => {
-        ctx.clearRect(0, 0, width, height)
-        ctx.drawImage(frame.bmp, 0, 0, width, height)
-        gif.addFrame(ctx, { copy: true, delay: frame.delay * offset })
-      })
-      gif.on('finished', async blob => {
-        await downloadFile(blob, `${getArtworkFileName(this.artwork)}.gif`, { subDir: 'ugoira' })
-      })
-      gif.render()
-    },
-    // ref: https://github.com/FreeNowOrg/PixivNow/blob/master/src/utils/UgoiraPlayer.ts#L195
-    async downloadMP4() {
-      this.$toast(this.$t('tip.down_wait'))
-
-      const { width, height } = this.artwork
-      let frames = Object.values(this.ugoira.frames).map(frame => ({
-        data: frame.bmp,
-        duration: frame.delay,
-      }))
-      this.resetUgoira()
-      const { encode } = await import('modern-mp4')
-      const mp4File = await encode({ frames, width, height, audio: false })
-      const blob = new Blob([mp4File], { type: 'video/mp4' })
-      frames = null
-      await downloadFile(blob, `${getArtworkFileName(this.artwork)}.mp4`, { subDir: 'ugoira' })
-    },
-    download(type) {
-      const needPlay = !['MP4(Server)', 'Other'].includes(type)
+      const needPlay = !['MP4(Server)', 'AVIF', 'Other'].includes(type)
       if (!this.ugoira && needPlay) {
         this.$toast(this.$t('artwork.download.ugoira.tip'))
         return
       }
-      window.umami?.track('download_ugoira', { dl_type: type })
-      const actions = {
-        'ZIP': () => this.downloadZIP(),
-        'GIF': () => this.downloadGIF(),
-        'WebM': () => this.downloadWebM(),
-        'APNG': () => this.downloadAPNG(),
-        'MP4(Browser)': () => this.downloadMP4(),
-        'MP4(Server)': () => window.open(`https://ugoira-mp4-dl.cocomi.eu.org/${this.artwork.id}`, '_blank', 'noopener'),
-        'Other': () => window.open(`https://ugoira.cocomi.eu.org/?id=${this.artwork.id}`, '_blank', 'noopener'),
-      }
-      try {
-        actions[type]?.()
-      } catch (err) {
-        window.umami?.track('download_ugoira_err', { error: err.message })
-        this.$toast({
-          message: this.$t('H_rYWoPA0uI7TU4YCbIz0'),
-        })
-      }
+      await downloadUgoira(type, this.ugoira, this.artwork, () => this.resetUgoira())
     },
     openDownloadPanel() {
       if (this.progressShow) return
-
       if (this.ugoira) {
         this.$emit('open-download')
       } else {
@@ -463,16 +357,29 @@ export default {
       this.progress = 0
       this.progressShow = false
     },
+    handleWheel(e) {
+      if (!this.isHorizonScroll || store.state.isMobile) return
+      e.preventDefault()
+      e.stopPropagation()
+      this.$refs.view.scrollLeft += e.deltaY * 2
+    },
     init() {
+      if (this.artwork.images && this.artwork.images.length >= 3 && !this.isHorizonScroll && !this.isImgViewSwiper) {
+        this.isShrink = true
+      } else {
+        this.isShrink = false
+      }
+      if (this.isHorizonScroll && this.$refs.view) {
+        this.$refs.view.scrollLeft = 0
+      }
+      if (this.isImgViewSwiper) {
+        this.$refs.mySwiper?.$swiper?.slideTo(0)
+      }
       this.resetUgoira()
       this.$nextTick(() => {
-        // this.displayWidth = document.getElementById('app').getBoundingClientRect().width
-        // this.displayHeight = this.displayWidth / (this.artwork.width / this.artwork.height)
         setTimeout(() => {
-          if (this.artwork.images && this.artwork.images.length >= 3) {
-            this.isShrink = true
-          } else {
-            this.isShrink = false
+          if (this.artwork.type == 'ugoira' && autoPlayUgoira && !isUgoiraAvifSrc) {
+            this.playUgoira()
           }
         }, 0)
       })
@@ -486,6 +393,17 @@ export default {
   position: relative;
   min-height: 600px;
   // background-color: #fafafa;
+  padding-bottom 10PX
+
+  ::v-deep .swiper-container {
+    padding-bottom 0.2rem
+    .swiper-button-prev, .swiper-button-next {
+      background none
+    }
+    .swiper-pagination-bullets {
+      bottom 0
+    }
+  }
 
   &.censored {
     pointer-events: none;
@@ -499,6 +417,7 @@ export default {
   &.shrink {
     max-height: 1000px;
     overflow: hidden;
+    overflow: clip;
 
     &::after {
       content: '';
@@ -635,6 +554,16 @@ export default {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  background: var(--bg) no-repeat center center / contain;
+  background: var(--bg) no-repeat center center / cover;
+}
+@media screen and (max-width: 600px) {
+  .ia-cont .ia-left .image-view.loaded.overlong:not(.shrink) {
+    height: 80vh;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .ia-cont .ia-left .image-box:first-child {
+    aspect-ratio: var(--ratio);
+  }
 }
 </style>

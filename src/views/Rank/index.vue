@@ -29,7 +29,8 @@
         >
           <div class="filter-favs-actions">
             <span @click="isFilterFavs=!isFilterFavs">{{ isFilterFavs ? $t('hHPMdWCYd_B2r9F0icW5Y') : $t('KS3utA342Q7yr0mOFARV-') }}</span>
-            <span @click="isHideManga=!isHideManga">{{ isHideManga ? $t('KBTp7zyXO4ckXvh14iu0K') : $t('1VVoNDWxcoBn236bEV-_H') }}</span>
+            <span v-if="actRankCat == '0'" @click="isHideManga=!isHideManga">{{ isHideManga ? $t('KBTp7zyXO4ckXvh14iu0K') : $t('1VVoNDWxcoBn236bEV-_H') }}</span>
+            <span @click="changeExpandArtMulti">{{ expandArtworkMulti ? $t('skzCJPKUWOVtXHRV3puwB') : $t('dDeCBvfHPUoQt48l5Gr3D') }}</span>
           </div>
           <template #reference>
             <van-icon name="filter-o" class="filter-favs-icon" />
@@ -38,6 +39,9 @@
         <span v-else>
           <van-icon name="filter-o" class="filter-favs-icon" @click="showFilterFavsPop = true" />
         </span>
+        <span v-if="actRankCat == '0'" style="display: inline-block;cursor: pointer;margin: -.1rem 0 0 .2rem;" @click="toggleSlide">
+          <Icon name="swiper-symbol" scale="2.5" />
+        </span>
       </template>
       <span style="display: inline-block;cursor: pointer;">
         <div class="calendar" @click="isDatePickerShow = true">
@@ -45,28 +49,18 @@
         </div>
       </span>
     </div>
-    <van-list
-      v-model="loading"
-      class="rank-list"
-      :loading-text="$t('tips.loading')"
+    <ImageList
+      v-if="showImageList"
+      list-class="rank-list"
+      item-key="_key"
+      :force-layout="forceSlideLayout ? 'VirtualSlide' : ''"
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="$t('tips.no_more')"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getRankList"
-    >
-      <wf-cont>
-        <ImageCard
-          v-for="(art, i) in artList"
-          :key="art.id"
-          mode="all"
-          :artwork="art"
-          :index="i + 1"
-          @click-card="toArtwork(art)"
-        />
-      </wf-cont>
-    </van-list>
+      :error="error"
+      :on-load-more="getRankList"
+      :image-card-props="it => ({ index: it._index })"
+    />
     <van-calendar
       ref="calendar"
       v-model="isDatePickerShow"
@@ -82,20 +76,20 @@
       :show-confirm="false"
       @confirm="v => { date = v; isDatePickerShow = false }"
     />
-    <van-loading v-show="loading" class="loading" :size="'50px'" />
+    <van-loading v-show="loading" class="loading-fixed" size="50px" />
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
-import ImageCard from '@/components/ImageCard'
-import Nav from './components/Nav'
 import _ from '@/lib/lodash'
-import api from '@/api'
-import { i18n } from '@/i18n'
-import { isAiIllust } from '@/utils/filter'
-import { getCache } from '@/utils/storage/siteCache'
 import store from '@/store'
+import api, { localApi } from '@/api'
+import { i18n } from '@/i18n'
+import { HiddenAuthors, isAiIllust } from '@/utils/filter'
+import { getCache } from '@/utils/storage/siteCache'
+import Nav from './components/Nav'
+import ImageList from '@/components/ImageList.vue'
 
 const getRankMenus = () => ({
   daily: { name: i18n.t('rank.day'), io: 'day', cat: '0' },
@@ -133,15 +127,13 @@ const getRankMenus = () => ({
 const getRankCatLabels = () => [i18n.t('common.overall'), i18n.t('common.illust'), i18n.t('common.ugoira'), i18n.t('common.manga'), i18n.t('common.novel')]
 const getRankCatActions = () => getRankCatLabels().map((e, i) => ({ text: e, _v: i.toString() }))
 
-const AUTHORS_NO_TYPE_MANGA = [19585163, 16776564, 1453344, 18923, 18688682, 16106315, 10760589]
-const AUTHORS_NO_TYPE_AI = [10758107, 88598928, 31909437, 21470736, 14225123, 60651589, 127064402, 87931615, 95485582, 101555203, 20557152]
 const isHideManga = store.state.appSetting.isHideRankManga
 
 export default {
   name: 'Rank',
   components: {
     RankNav: Nav,
-    ImageCard,
+    ImageList,
   },
   data() {
     const maxDate = dayjs().subtract(new Date().getHours() > 14 ? 1 : 2, 'days').toDate()
@@ -158,13 +150,15 @@ export default {
       finished: false,
       menus: getRankMenus(),
       showRankCat: false,
-      actRankCat: '1',
+      actRankCat: '0',
       rankCatLabels: getRankCatLabels(),
       rankCatActions: getRankCatActions(),
       showFilterFavsBtn: localApi.APP_CONFIG.useLocalAppApi,
       showFilterFavsPop: false,
       isFilterFavs: false,
       isHideManga,
+      showImageList: true,
+      forceSlideLayout: false,
     }
   },
   head() {
@@ -179,6 +173,9 @@ export default {
     dateNum() {
       return dayjs(this.date).date()
     },
+    expandArtworkMulti() {
+      return store.state.appSetting.isExpandMultiPArtwork
+    },
   },
   watch: {
     $route() {
@@ -191,8 +188,8 @@ export default {
     },
     date(val, old) {
       if (val !== old) {
+        document.documentElement.scrollTo({ top: 0, behavior: 'smooth' })
         this.init()
-        // window.umami?.track('change_rank_date', { rank_date: val?.toLocaleDateString() })
       }
     },
     isFilterFavs(val) {
@@ -212,6 +209,14 @@ export default {
     this.showFilterFavsPop = false
   },
   methods: {
+    toggleSlide() {
+      window.umami?.track('img_list_toggle_slide')
+      this.showImageList = false
+      this.forceSlideLayout = !this.forceSlideLayout
+      this.$nextTick(() => {
+        this.showImageList = true
+      })
+    },
     onRankCatSel({ _v }) {
       if (_v == '4') {
         this.$router.replace('/rank_novel/day')
@@ -225,6 +230,11 @@ export default {
       document.documentElement.scrollTo({ top: 0, behavior: 'smooth' })
       this.showFilterFavsPop = false
       this.init()
+    },
+    changeExpandArtMulti() {
+      store.commit('setAppSetting', { isExpandMultiPArtwork: !this.expandArtworkMulti })
+      window.umami?.track('rank_expand_multi_change', { val: this.expandArtworkMulti })
+      this.onFilterFavsChange()
     },
     reset() {
       const { type = 'daily' } = this.$route.params
@@ -242,7 +252,8 @@ export default {
     getIOType(type) {
       return this.menu[type] ? this.menu[type].io : null
     },
-    getRankList: _.throttle(async function () {
+    getRankList: async function () {
+      if (this.loading || this.finished) return
       this.loading = true
       const type = this.getIOType(this.curType)
       let res
@@ -262,17 +273,17 @@ export default {
             artList = artList.filter(e => {
               if (e.type == 'manga') return false
               if (/漫画|描き方|お絵かきTIPS|manga/.test(JSON.stringify(e.tags))) return false
-              if (AUTHORS_NO_TYPE_MANGA.includes(+e.author.id)) return false
+              if (HiddenAuthors.NO_TYPE_MANGA.includes(+e.author.id)) return false
               return true
             })
           }
-          if (!this.menu[this.curType]?.x) {
-            artList = artList.filter(e => !/R-?18|18\+/i.test(JSON.stringify(e.tags)))
+          if (!this.menu[this.curType].x && !store.getters.isR18On) {
+            artList = artList.filter(e => e.x_restrict == 0 && !/R-?18|18\+/i.test(JSON.stringify(e.tags)))
           }
-          if (!this.menu[this.curType]?.ai) {
+          if (!this.menu[this.curType].ai) {
             artList = artList.filter(e => {
               if (isAiIllust(e)) return false
-              if (AUTHORS_NO_TYPE_AI.includes(+e.author.id)) return false
+              if (HiddenAuthors.NO_TYPE_AI.includes(+e.author.id)) return false
               return true
             })
           }
@@ -280,10 +291,25 @@ export default {
             const favMap = await getCache('local.fav.map', {})
             artList = artList.filter(e => !(favMap[e.id] || e.is_bookmarked))
           }
+          if (this.expandArtworkMulti) {
+            artList = artList.map(e => {
+              if (e.images.length == 1 || e.images.length > 10) return e
+              return e.images.map((img, i) => ({
+                ...e,
+                count: 1,
+                images: [img],
+                _key: `${e.id}_${i}`,
+                _index: `${e._index}-${i + 1}`,
+                _art: e,
+              }))
+            }).flat()
+          }
+          artList = artList.map(e => ({ ...e, _key: e._key || `${e.id}` }))
+          console.log('artList: ', artList)
           this.artList = _.uniqBy([
             ...this.artList,
             ...artList,
-          ], 'id')
+          ], '_key')
           this.curPage++
         }
         this.loading = false
@@ -294,16 +320,6 @@ export default {
         this.loading = false
         this.error = true
       }
-    }, 1500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
-    showPopup() {
-      this.isDatePickerShow = true
     },
   },
 }

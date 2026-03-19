@@ -25,13 +25,19 @@
     </div>
     <div v-if="focus" class="search-dropdown">
       <div v-if="keywords.trim()" class="pid-n-uid">
-        <div class="keyword" @click="onSearch">{{ $t('search.seach_tag') }} {{ keywords.trim() }} </div>
+        <div class="keyword" @click="onSearch">{{ $t('search.seach_tag') }} {{ keywords }} </div>
         <template v-if="isR18On && !pidOrUidList.length">
-          <div class="keyword" @click="onSearch('R18')">{{ $t('pL1gF_vTo1c_iF5GpBIDA') }} {{ keywords.trim() }} </div>
-          <div class="keyword" @click="onSearch('safe')">{{ $t('IxG-Y2odr_0OKUJbaqV0-') }} {{ keywords.trim() }} </div>
+          <div class="keyword" @click="onSearch('R18')">{{ $t('pL1gF_vTo1c_iF5GpBIDA') }} {{ keywords }} </div>
+          <div class="keyword" @click="onSearch('safe')">{{ $t('IxG-Y2odr_0OKUJbaqV0-') }} {{ keywords }} </div>
         </template>
-        <div v-if="isSelfHibi" class="keyword" @click="searchUser">
-          {{ $t('search.search_user') }} {{ keywords.trim() }}
+        <div class="keyword" @click="searchNovelTag">
+          {{ $t('0JnI5_DBdR8YNUHsS-mJr') }} {{ keywords }}
+        </div>
+        <div class="keyword" @click="searchUser">
+          {{ $t('search.search_user') }} {{ keywords }}
+        </div>
+        <div class="keyword" @click="searchCollectionTag">
+          {{ $t('9y6HjIgJZ9CzHOEy8UKr1') }} {{ keywords }}
         </div>
       </div>
       <div v-if="pidOrUidList.length" class="pid-n-uid">
@@ -39,12 +45,12 @@
           <div :key="'p_' + n" class="keyword" @click="toPidPage(n)">→ {{ $t('common.illust_manga') }} ID: {{ n }} </div>
           <div :key="'u_' + n" class="keyword" @click="toUidPage(n)">→ {{ $t('common.user') }} ID: {{ n }} </div>
           <div :key="'n_' + n" class="keyword" @click="toNovelPage(n)">→ {{ $t('common.novel') }} ID: {{ n }} </div>
-          <!-- <div :key="'s_' + n" class="keyword" @click="toSpotlightPage(n)">→ 特辑 ID: {{ n }} </div> -->
+          <div v-if="n.length<6" :key="'s_' + n" class="keyword" @click="toSpotlightPage(n)">→ 特辑 ID: {{ n }} </div>
         </template>
       </div>
       <div v-if="keywords.trim() && autoCompleteTagList.length" class="search-history">
         <div class="title-bar">{{ $t('search.autocomplete') }}</div>
-        <div v-for="tag in autoCompleteTagList" :key="tag" class="keyword" @click="searchTag(tag)">
+        <div v-for="(tag, i) in autoCompleteTagList" :key="tag+i" class="keyword" @click="searchTag(tag)">
           {{ tag }}
         </div>
       </div>
@@ -60,14 +66,15 @@
         </div>
       </div>
     </div>
-    <ImageSearch v-show="!focus && !keywords.trim()" ref="imageSearch" key="container" />
+    <ImageSearch v-show="!focus && !keywords.trim()" />
     <div class="com_sel_tabs" :style="focus?'opacity:0;pointer-events:none':''">
       <div class="com_sel_tab cur">{{ $t('common.illust_manga') }}</div>
       <div class="com_sel_tab" @click="$router.replace('/search_novel')">{{ $t('common.novel') }}</div>
       <div class="com_sel_tab" @click="$router.replace('/search_user')">{{ $t('common.user') }}</div>
+      <div class="com_sel_tab" @click="$router.replace('/collection')">{{ $t('dZ93cWZJ03hu5emsVwgjA') }}</div>
     </div>
     <div class="list-wrap" :class="{ focus: focus }" :style="{ paddingTop: '2.6rem' }">
-      <Tags @search="searchTag" />
+      <Tags @search="tag => searchTag(tag, true)" />
       <div class="mask" @click="focus = false"></div>
     </div>
   </div>
@@ -78,7 +85,6 @@ import _ from '@/lib/lodash'
 import { mapState, mapActions } from 'vuex'
 import { notSelfHibiApi } from '@/consts'
 import { BLOCK_LAST_WORD_RE } from '@/utils/filter'
-import { i18n } from '@/i18n'
 import api from '@/api'
 import store from '@/store'
 import Tags from './components/Tags'
@@ -96,13 +102,14 @@ export default {
       keywordsList: [], // 关键词搜索框分词列表（空格分割）
       lastWord: '', // 正在输入的关键词
       focus: false, // 编辑框是否获取焦点
-      imageSearchShow: true,
       autoCompleteTagList: [],
       isSelfHibi: !notSelfHibiApi,
     }
   },
-  head: {
-    title: i18n.t('search.search'),
+  head() {
+    return {
+      title: this.$t('search.search'),
+    }
   },
   computed: {
     ...mapState(['searchHistory']),
@@ -160,12 +167,14 @@ export default {
         this.search(keywords)
       }
     },
-    async search(keywords) {
+    async search(keywords, isQueryTagStory = false) {
       this.reset()
       keywords = keywords.trim()
       console.log('search keywords: ', keywords)
-
-      this.$router.push(`/search/${encodeURIComponent(keywords)}`)
+      this.$router.push({
+        path: `/search/${encodeURIComponent(keywords)}`,
+        query: isQueryTagStory ? { tss: '1' } : {},
+      })
     },
     onSearchInput: _.debounce(async function () {
       if (notSelfHibiApi) return
@@ -176,6 +185,11 @@ export default {
       const id = this.lastWord.match(/https?:\/\/.+\/artworks\/(\d+)/i)?.[1]
       if (id) {
         this.toPidPage(id)
+        return
+      }
+      const uid = this.lastWord.match(/https?:\/\/.+\/users\/(\d+)/i)?.[1]
+      if (uid) {
+        this.toUidPage(uid)
         return
       }
       if (BLOCK_LAST_WORD_RE.test(this.lastWord)) {
@@ -198,12 +212,18 @@ export default {
       if (searchType == 'safe') words = words.trim() + ' -R-18'
       this.$router.push(`/search/${encodeURIComponent(words.trim())}`)
     },
-    searchTag(keywords) {
+    searchTag(keywords, isQueryTagStory = false) {
       console.log('------- searchTag: ', keywords)
-      this.search(keywords + ' ')
+      this.search(keywords + ' ', isQueryTagStory)
     },
-    async searchUser() {
+    searchUser() {
       this.$router.push(`/search_user/${encodeURIComponent(this.keywords.trim())}`)
+    },
+    searchNovelTag() {
+      this.$router.push(`/search_novel/${encodeURIComponent(this.keywords.trim())}`)
+    },
+    searchCollectionTag() {
+      this.$router.push(`/collections?tags%5B%5D=${encodeURIComponent(this.keywords.trim())}`)
     },
     toPidPage(id) {
       this.reset()
@@ -510,5 +530,15 @@ export default {
       float none !important
       width fit-content
       margin: 0px 12px 12px 0
+      font-size: 0.36rem
+      @media screen and (max-width: 600px)
+        display: flex
+        justify-content: center
+        align-items: center
+        width: 100%;
+        max-width: 100%;
+        height: 0.65rem;
+        margin-right: 0;
+        font-size: 0.4rem
 
 </style>

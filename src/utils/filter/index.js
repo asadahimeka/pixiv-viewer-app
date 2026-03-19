@@ -2,14 +2,43 @@ import ACFilter from './ACFilter'
 import store from '@/store'
 import { getCache, setCache } from '../storage/siteCache'
 
-const re1 = /漫画|描き方|お絵かきTIPS|manga|BL|スカラマシュ|散兵|恋与深空/i
-const re2 = /R-?18|恋童|ペド|幼女|萝莉|loli|小学生|BL|腐|スカラマシュ|散兵|恋与深空/i
+const aiTags = [
+  'ai',
+  'ai生成',
+  'ai生成作品',
+  'ai作画',
+  'aiイラスト',
+  'aigenerated',
+  'ai-generated',
+  'ai-assisted',
+  'ai辅助',
+  'aiアシスタンス',
+  'ai_generated',
+  'ai+ps',
+  'aiart',
+  'aiartwork',
+  'aigirl',
+  'ai作品',
+  'ai生成イラスト',
+  'ai画像',
+  'ai绘画',
+  'novelai',
+  'novelaidiffusion',
+  'stablediffusion',
+]
+
+export function isAiIllust(artwork) {
+  return artwork.illust_ai_type == 2 || !!artwork.tags?.some(e => aiTags.includes(e.name?.toLowerCase()))
+}
 
 export const HiddenAuthors = {
   HOME_BLOCKED: [24517, 14002767, 16776564, 33333, 423251, 27526, 13150573, 119489738, 62477370],
   NO_TYPE_MANGA: [],
   NO_TYPE_AI: [],
 }
+
+const re1 = /漫画|描き方|お絵かきTIPS|manga|BL|スカラマシュ|散兵|恋与深空/i
+const re2 = /R-?18|恋童|ペド|幼女|萝莉|loli|小学生|BL|腐|スカラマシュ|散兵|恋与深空/i
 
 export function filterHomeIllust(e) {
   if (e.type == 'manga') return false
@@ -107,37 +136,10 @@ export function filterCensoredCollections(list = []) {
   })
 }
 
-const aiTags = [
-  'ai',
-  'ai生成',
-  'ai生成作品',
-  'ai作画',
-  'aiイラスト',
-  'aigenerated',
-  'ai-generated',
-  'ai-assisted',
-  'ai辅助',
-  'aiアシスタンス',
-  'ai_generated',
-  'ai+ps',
-  'aiart',
-  'aiartwork',
-  'aigirl',
-  'ai作品',
-  'ai生成イラスト',
-  'ai画像',
-  'ai绘画',
-  'novelai',
-  'novelaidiffusion',
-  'stablediffusion',
-]
-export function isAiIllust(artwork) {
-  return artwork.illust_ai_type == 2 || !!artwork.tags?.some(e => aiTags.includes(e.name?.toLowerCase()))
-}
-
 /** @type {ACFilter} */
 let acFilter
 const presetWords = ['vpn', '推荐', '好用', '梯子', '机场', 'clash', '下载']
+
 export async function mintVerify(word = '', forceCheck = false) {
   if (presetWords.some(e => word.toLowerCase().includes(e.toLowerCase()))) {
     return false
@@ -152,6 +154,7 @@ export async function mintVerify(word = '', forceCheck = false) {
     return true
   }
 }
+
 export async function mintFilter(word = '') {
   try {
     await ensureACFilter()
@@ -162,12 +165,27 @@ export async function mintFilter(word = '') {
     return word
   }
 }
+
+async function fetchTxt(url, timeout = 5000) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const res = await fetch(url, { signal: controller.signal })
+    return await res.text()
+  } catch (e) {
+    return ''
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function ensureACFilter() {
   if (!acFilter) {
     let filterWords = await getCache('sensitive~filter~words')
     if (!filterWords) {
-      const resp = await fetch('https://hibiapi.cocomi.eu.org/sensitive-words-filter/words.txt')
-      filterWords = (await resp.text()).split('\n').concat(presetWords)
+      const res = await fetchTxt('https://hibiapi.cocomi.eu.org/sensitive-words-filter/words.txt', 1e4)
+      filterWords = res.split('\n').concat(presetWords)
       setCache('sensitivefilterwords', filterWords, -1)
     }
     acFilter = new ACFilter(filterWords)

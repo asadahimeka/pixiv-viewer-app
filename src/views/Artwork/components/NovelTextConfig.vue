@@ -1,17 +1,30 @@
 <template>
   <van-action-sheet v-model="showSettings" class="setting-actions" :title="$t('novel.settings.title')" :overlay="false">
     <div class="configs">
-      <div class="conf-title">{{ $t('novel.settings.text.size') }}</div>
-      <div class="conf-inp">
-        <van-slider v-model="novelTextConfig.size" :min="12" :max="36" class="conf-slider" @change="onSizeChange">
-          <template #button>
-            <div class="van-slider__button">{{ novelTextConfig.size }}</div>
-          </template>
-        </van-slider>
+      <div class="conf-fcont">
+        <div class="conf-fitem">
+          <div class="conf-title">{{ $t('novel.settings.text.size') }}</div>
+          <div class="conf-inp">
+            <van-slider v-model="novelTextConfig.size" :min="12" :max="36" class="conf-slider" @change="onSizeChange">
+              <template #button>
+                <div class="van-slider__button">{{ novelTextConfig.size }}</div>
+              </template>
+            </van-slider>
+          </div>
+        </div>
+        <div class="conf-fitem" style="flex: 0.3;text-align: center;">
+          <div class="conf-title">{{ $t('BL3mClhoBiB1ETwTnJpqV') }}</div>
+          <div class="conf-inp" style="padding-right: 0.26667rem;">
+            <van-switch v-model="novelTextConfig.indent" size="18" />
+          </div>
+        </div>
       </div>
       <div class="conf-fcont">
         <div class="conf-fitem">
-          <div class="conf-title">{{ $t('novel.settings.text.font') }}</div>
+          <div class="conf-title">
+            <span>{{ $t('novel.settings.text.font') }}</span>
+            <a href="javascript:;" style="float: right;margin-top: 2PX;font-size: 0.8em;" @click="openFontSelect">{{ $t('k8lr4kQuHztU5VK45a39z') }}</a>
+          </div>
           <div class="conf-inp">
             <van-radio-group v-model="novelTextConfig.font" direction="horizontal">
               <van-radio name="sans-serif" style="font-family: sans-serif;">{{ $t('novel.settings.text.sans') }}</van-radio>
@@ -26,6 +39,7 @@
             <van-radio-group v-model="novelTextConfig.direction" direction="horizontal">
               <van-radio name="h">{{ $t('novel.settings.text.direct_h') }}</van-radio>
               <van-radio name="v">{{ $t('novel.settings.text.direct_v') }}</van-radio>
+              <van-radio name="hc">{{ $t('novel.settings.text.direct_hc') }}</van-radio>
             </van-radio-group>
           </div>
         </div>
@@ -85,18 +99,23 @@
           </div>
         </div>
       </div>
+
+      <PageFontSelect ref="pageFontSelRef" dont-set-doc-prop :current-font="novelTextConfig.font" @change="novelTextConfig.font = $event" />
     </div>
   </van-action-sheet>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Toast } from 'vant'
 import { i18n } from '@/i18n'
 import { LocalStorage } from '@/utils/storage'
 import { novelTextConfig } from '@/store'
+import PageFontSelect from './PageFontSelect.vue'
+import { loadCustomFont } from '@/utils/font'
 
 const showSettings = ref(false)
+const pageFontSelRef = ref()
 const textColorPresets = ref([
   ['#ffffff', '#1f1f1f'],
   ['#fafafa', '#1f1f1f'],
@@ -112,6 +131,18 @@ watch(
   },
   { deep: true }
 )
+
+onMounted(() => {
+  console.log('-------------------------NovelTextConfig mounted', novelTextConfig.font)
+  if (!['inherit', 'sans-serif', 'serif'].includes(novelTextConfig.font)) {
+    loadCustomFont(novelTextConfig.font, true)
+  }
+  // window.umami?.track('novelTextConfig', novelTextConfig)
+})
+
+function openFontSelect() {
+  pageFontSelRef.value?.open()
+}
 
 function onSizeChange(value) {
   Toast(i18n.t('tips.current_value') + value)

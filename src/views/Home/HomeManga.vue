@@ -4,24 +4,24 @@
       <div class="com_sel_tab" @click="$router.replace('/')">{{ $t('common.illust') }}</div>
       <div class="com_sel_tab cur">{{ $t('common.manga') }}</div>
       <div class="com_sel_tab" @click="$router.replace('/home_novel')">{{ $t('common.novel') }}</div>
-      <div v-t="'g4JWYmBbfeweCBkRSgGNw'" class="com_sel_tab" @click="$router.push('/lives')"></div>
+      <!-- <div v-t="'g4JWYmBbfeweCBkRSgGNw'" class="com_sel_tab" @click="$router.push('/lives')"></div> -->
     </div>
     <div class="home-m">
       <MangaRankCard />
       <MangaRecommendCard v-if="isSelfHibi" />
       <RandomManga />
-      <LatestMangaCard v-if="isSelfHibi" />
+      <LatestMangaCard v-if="isSelfHibi&& notVirtualList" />
     </div>
   </div>
 </template>
 
 <script>
+import store from '@/store'
 import { notSelfHibiApi } from '@/consts'
 import LatestMangaCard from './components/LatestMangaCard.vue'
 import MangaRankCard from './components/MangaRankCard.vue'
 import MangaRecommendCard from './components/MangaRecommendCard.vue'
 import RandomManga from './components/RandomManga.vue'
-import { i18n } from '@/i18n'
 
 export default {
   name: 'HomeIllust',
@@ -36,8 +36,15 @@ export default {
       isSelfHibi: !notSelfHibiApi,
     }
   },
-  head: {
-    title: i18n.t('common.manga'),
+  head() {
+    return {
+      title: this.$t('common.manga'),
+    }
+  },
+  computed: {
+    notVirtualList() {
+      return !store.state.appSetting.wfType.startsWith('Virtual')
+    },
   },
 }
 </script>

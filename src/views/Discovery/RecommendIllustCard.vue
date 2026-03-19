@@ -74,7 +74,11 @@ export default {
     },
   },
   mounted() {
-    this.getRankList()
+    this.$nextTick(() => {
+      requestAnimationFrame(() => {
+        this.getRankList()
+      })
+    })
   },
   methods: {
     async getRankList() {
@@ -123,6 +127,9 @@ export default {
   .card-box {
     // padding: 0 12px;
     height: 365px;
+    @media screen and (max-width: 500px) {
+      height 4.64rem
+    }
 
     .swipe-wrap {
       height: 100%;
@@ -134,7 +141,7 @@ export default {
         margin-right: 12px;
 
         @media screen and (max-width: 500px) {
-          width 4.65rem
+          width 4.5rem
         }
 
         &:last-child {

@@ -3,55 +3,65 @@
     <top-bar />
     <h3 class="af_title">
       {{ $t('common.discovery') }}
-      <div class="clear-ih" @click="getArtList">
-        <Icon name="random" scale="2" />
+      <div class="clear-ih">
+        <span @click="toggleSlide">
+          <Icon name="swiper-symbol" />
+        </span>
+        <span @click="getArtList">
+          <Icon name="random" scale="2" />
+        </span>
       </div>
     </h3>
-    <wf-cont layout="Grid">
+    <ImageList
+      v-if="showImageList"
+      list-class="artwork-list"
+      :force-layout="forceSlideLayout ? 'VirtualSlide' : 'Grid'"
+      :list="artList"
+      :loading="loading"
+      :finished="true"
+      :error="false"
+      :on-load-more="() => {}"
+    />
+    <!-- <wf-cont layout="Grid">
       <ImageCard v-for="art in artList" :key="art.id" mode="all" square :artwork="art" @click-card="toArtwork(art)" />
-    </wf-cont>
+    </wf-cont> -->
     <van-loading v-show="loading" class="loading" :size="'50px'" />
     <van-empty v-if="!loading && !artList.length" :description="$t('tips.no_data')" />
   </div>
 </template>
 
 <script>
-import TopBar from '@/components/TopBar'
-import ImageCard from '@/components/ImageCard'
 import api from '@/api'
-import { SessionStorage } from '@/utils/storage'
+import TopBar from '@/components/TopBar'
+import ImageList from '@/components/ImageList.vue'
 
 export default {
   name: 'Discovery',
   components: {
     TopBar,
-    ImageCard,
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.isFromDetail = ['Artwork', 'Users'].includes(from.name)
-    })
+    ImageList,
   },
   data() {
     return {
       loading: false,
       artList: [],
-      isFromDetail: false,
+      showImageList: true,
+      forceSlideLayout: false,
     }
   },
   head() {
     return { title: this.$t('common.discovery') }
   },
-  activated() {
-    // document.querySelector('.app-main')?.scrollTo({ top: 0 })
-    this.init()
+  mounted() {
+    this.getArtList()
   },
   methods: {
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
+    toggleSlide() {
+      window.umami?.track('img_list_toggle_slide')
+      this.showImageList = false
+      this.forceSlideLayout = !this.forceSlideLayout
+      this.$nextTick(() => {
+        this.showImageList = true
       })
     },
     async getArtList() {
@@ -67,15 +77,6 @@ export default {
         })
       }
       this.loading = false
-    },
-    init() {
-      if (this.isFromDetail && this.artList.length) return
-      const list = SessionStorage.get('discovery.illusts')
-      if (list) {
-        this.artList = list
-      } else {
-        this.getArtList()
-      }
     },
   },
 }
@@ -105,10 +106,15 @@ export default {
     margin-top: 2rem;
     text-align: center;
 
+  ::v-deep .bookmark
+    display none
+
   ::v-deep .top-bar-wrap
     width 30%
     padding-top 20px
     background transparent
+  ::v-deep .van-list__finished-text
+    display none
 
   .card-box
     padding: 0 12px

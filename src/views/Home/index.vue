@@ -6,10 +6,11 @@
         <h1 class="app-title">Pixiv Viewer</h1>
       </div>
       <div class="sel-tabs flex">
+        <div v-if="isAppLogin" v-t="'nav.home'" class="com_sel_tab" @click="$router.replace('/home_all')"></div>
         <div v-t="'common.illust'" class="com_sel_tab cur"></div>
         <div v-t="'common.manga'" class="com_sel_tab" @click="$router.replace('/home_manga')"></div>
         <div v-t="'common.novel'" class="com_sel_tab" @click="$router.replace('/home_novel')"></div>
-        <div v-t="'g4JWYmBbfeweCBkRSgGNw'" class="com_sel_tab" @click="$router.push('/lives')"></div>
+        <div v-if="!isAppLogin" v-t="'dZ93cWZJ03hu5emsVwgjA'" class="com_sel_tab" @click="$router.push('/collection')"></div>
       </div>
       <div class="home-search">
         <van-search v-model="term" :placeholder="placeholder" shape="round" @search="onSearch" />
@@ -20,14 +21,21 @@
         <RankCard />
         <SpotlightCard />
       </div>
-      <Recomm4U v-if="isWebLogin" />
+      <template v-if="isAppLogin">
+        <div class="rec-cards">
+          <DiscoveryCard />
+          <RandomIllustCard />
+        </div>
+        <RecommendIllustHome />
+      </template>
+      <WebRecommCards v-else-if="isWebLogin" />
       <template v-else>
         <div v-if="isSelfHibi" class="rec-cards">
-          <RecommendIllustCard />
           <DiscoveryCard />
+          <RecommendIllustCard />
         </div>
         <RandomIllust />
-        <LatestIllustCard v-if="isSelfHibi" />
+        <LatestIllustCard v-if="isSelfHibi && notVirtualList" />
       </template>
     </div>
   </div>
@@ -35,16 +43,19 @@
 
 <script>
 import _ from '@/lib/lodash'
+import store from '@/store'
+import api, { localApi } from '@/api'
+import { notSelfHibiApi } from '@/consts'
+import { existsSessionId } from '@/api/user'
 import RankCard from './components/RankCard.vue'
 import SpotlightCard from '../Spotlights/SpotlightCard.vue'
 import DiscoveryCard from '../Discovery/DiscoveryCard.vue'
 import RecommendIllustCard from '../Discovery/RecommendIllustCard.vue'
+import RecommendIllustHome from '../Discovery/RecommendIllustHome.vue'
 import RandomIllust from './components/RandomIllust.vue'
+import RandomIllustCard from './components/RandomIllustCard.vue'
 import LatestIllustCard from '../Discovery/LatestIllustCard.vue'
-import Recomm4U from './components/Recomm4U.vue'
-import { notSelfHibiApi } from '@/consts'
-import { existsSessionId } from '@/api/user'
-import api from '@/api'
+import WebRecommCards from './components/WebRecommCards.vue'
 
 const isWebLogin = existsSessionId()
 
@@ -55,22 +66,32 @@ export default {
     SpotlightCard,
     DiscoveryCard,
     RecommendIllustCard,
+    RecommendIllustHome,
     RandomIllust,
+    RandomIllustCard,
     LatestIllustCard,
-    Recomm4U,
+    WebRecommCards,
   },
   data() {
     return {
       isSelfHibi: !notSelfHibiApi,
+      isAppLogin: localApi.APP_CONFIG.useLocalAppApi,
       isWebLogin,
       term: '',
       tags: [],
       placeholder: '',
     }
   },
-  head: {
-    title: 'Pixiv Viewer - Yet Another Pixiv Illustration & Novel Viewer',
-    titleTemplate: null,
+  head() {
+    return {
+      title: `Pixiv Viewer - ${this.$t('setting.app_desc')}`,
+      titleTemplate: null,
+    }
+  },
+  computed: {
+    notVirtualList() {
+      return !store.state.appSetting.wfType.startsWith('Virtual')
+    },
   },
   activated() {
     this.placeholder = _.sample(this.tags)
@@ -82,7 +103,7 @@ export default {
     async initSearch() {
       const res = await api.getTags()
       if (res.status === 0) {
-        this.tags = res.data.map(e => e.name)
+        this.tags = res.data.map(e => e.name).filter(e => !this.$store.state.blockTags.includes(e))
         this.placeholder = _.sample(this.tags)
       }
     },

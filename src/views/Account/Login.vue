@@ -32,7 +32,7 @@
       <van-cell><a href="https://www.nanoka.top/posts/e78ef86/" target="_blank">🔗https://www.nanoka.top/posts/e78ef86/</a></van-cell>
       <van-cell><a href="https://github.com/Tsuk1ko/pxder#%E5%87%86%E5%A4%87" target="_blank">🔗https://github.com/Tsuk1ko/pxder</a></van-cell>
       <van-cell><a href="https://github.com/mixmoe/HibiAPI/issues/53" target="_blank">🔗https://github.com/mixmoe/HibiAPI/issues/53</a></van-cell>
-      <van-field v-model="appConfig.refreshToken" label="RefreshToken：" label-width="2.75rem" :placeholder="$t('login.t.d3')" />
+      <van-field v-model.trim="appConfig.refreshToken" label="RefreshToken：" label-width="2.75rem" :placeholder="$t('login.t.d3')" />
       <van-cell>
         <div class="flex">
           <span style="margin-right: 0.3rem">{{ $t('setting.other.direct_mode.proxy.title') }}</span>
@@ -51,6 +51,7 @@
 
 <script>
 import { Dialog } from 'vant'
+import { localApi } from '@/api'
 import platform from '@/platform'
 import PixivAuth from '@/api/client/pixiv-auth'
 import { getLoginURL } from '@/api/client/login'

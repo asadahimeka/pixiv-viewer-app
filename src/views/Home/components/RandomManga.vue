@@ -6,39 +6,35 @@
         <span class="title">{{ $t('common.random_view') }}</span>
       </template>
     </van-cell>
-    <van-list
-      v-model="loading"
-      class="artwork-list"
-      :loading-text="$t('tips.loading')"
+    <div v-if="isR18On" class="nifs-list-cont" style="display:flex;justify-content:flex-end;margin:0.2rem 0 0.4rem">
+      <van-radio-group v-model="restrict" direction="horizontal">
+        <van-radio name="safe">{{ $t('q3dZB--IevljTdxWdrQMC') }}</van-radio>
+        <van-radio name="r18">R18</van-radio>
+      </van-radio-group>
+    </div>
+    <ImageList
+      list-class="artwork-list"
+      vwtf-no-top
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="$t('tips.no_more')"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getRankList"
-    >
-      <wf-cont>
-        <ImageCard
-          v-for="art in artList"
-          :key="art.id"
-          mode="all"
-          :artwork="art"
-          @click-card="toArtwork(art)"
-        />
-      </wf-cont>
-    </van-list>
+      :error="error"
+      :on-load-more="getRankList"
+    />
   </div>
 </template>
 
 <script>
-import ImageCard from '@/components/ImageCard'
-import api from '@/api'
-import _ from '@/lib/lodash'
 import dayjs from 'dayjs'
+import { mapGetters } from 'vuex'
+import _ from '@/lib/lodash'
+import api from '@/api'
+import ImageList from '@/components/ImageList.vue'
+
 export default {
   name: 'RandomManga',
   components: {
-    ImageCard,
+    ImageList,
   },
   data() {
     return {
@@ -47,14 +43,33 @@ export default {
       error: false,
       loading: false,
       finished: false,
-      rankModes: ['day_manga', 'week_manga', 'month_manga', 'week_rookie_manga'],
+      restrict: 'safe',
     }
   },
-  methods: {
-    url(id, index) {
-      return api.url(id, index)
+  computed: {
+    ...mapGetters(['isR18On']),
+    rankModes() {
+      return this.restrict == 'r18'
+        ? ['day_r18_manga', 'week_r18_manga']
+        : ['day_manga', 'week_manga', 'month_manga', 'week_rookie_manga']
     },
+  },
+  watch: {
+    restrict(val) {
+      window.umami?.track('random_manga_restrict', { val })
+      this.curPage = 1
+      this.artList = []
+      this.finished = false
+      this.loading = false
+      this.getRankList()
+    },
+  },
+  created() {
+    this.getRankList()
+  },
+  methods: {
     getRankList: _.throttle(async function () {
+      if (this.loading || this.finished) return
       this.loading = true
       const mode = _.sample(this.rankModes)
       const date = dayjs().subtract(_.random(2, 14), 'days').format('YYYY-MM-DD')
@@ -76,13 +91,6 @@ export default {
         this.error = true
       }
     }, 1500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
   },
 }
 </script>

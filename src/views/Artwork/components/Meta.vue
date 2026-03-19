@@ -4,7 +4,7 @@
     <div class="mask">
       <canvas ref="mask" class="mask-text"></canvas>
     </div>
-    <div class="author-info" :class="{ is_novel: isNovel, isAutoLoadImt }">
+    <div class="author-info" :class="{ is_novel: isNovel, isAutoLoadKissT }">
       <Pximg
         v-if="!isNovel"
         class="avatar"
@@ -18,10 +18,16 @@
           <router-link :to="`/novel/series/${artwork.series.id}`">{{ artwork.series.title }}</router-link>
         </div>
         <h2 class="title">{{ artwork.title }}</h2>
-        <div v-if="!isNovel && artwork.series && artwork.series.id" class="series is_illust" :title="artwork.series.title">
-          <router-link :to="`/user/${artwork.author.id}/series/${artwork.series.id}`">{{ artwork.series.title }}</router-link>
+        <div
+          v-if="!isNovel && artwork.series && artwork.series.id"
+          class="series is_illust"
+          :title="artwork.series.title"
+        >
+          <router-link :to="`/user/${artwork.author.id}/series/${artwork.series.id}`">
+            {{ artwork.series.title }}
+          </router-link>
         </div>
-        <div class="author" :class="{is_followed:artwork.author.is_followed}" @click="toAuthor(artwork.author.id)">
+        <div class="author" :class="{ is_followed: artwork.author.is_followed }" @click="toAuthor(artwork.author.id)">
           {{ artwork.author.name }}
         </div>
       </div>
@@ -53,24 +59,31 @@
       >
         https://pixiv.net/n/{{ artwork.id }}
       </a>
-      <a
-        v-else
-        target="_blank"
-        rel="noreferrer"
-        :href="'https://www.pixiv.net/artworks/' + artwork.id"
-      >
+      <a v-else target="_blank" rel="noreferrer" :href="'https://www.pixiv.net/artworks/' + artwork.id">
         https://pixiv.net/i/{{ artwork.id }}
       </a>
     </div>
     <div class="whid">
+      <span v-if="artwork.images && artwork.images.length > 1">{{ artwork.images.length }}P</span>
       <span v-if="!isNovel">{{ artwork.width }}×{{ artwork.height }}</span>
-      <span @click="copyId(artwork.id)">{{ isNovel?'': 'P' }}ID:{{ artwork.id }}<Icon name="copy" style="margin-left: 1px;" /></span>
+      <span @click="copyId(artwork.id)">{{ isNovel ? '' : 'P' }}ID:{{ artwork.id }}
+        <Icon name="copy" style="margin-left: 1px;" />
+      </span>
       <span
         v-longpress="() => onUidLongpress(artwork.author)"
         @click="copyId(artwork.author.id)"
         @contextmenu="preventContext"
-      >UID:{{ artwork.author.id }}<Icon name="copy" style="margin-left: 1px;" /></span>
+      >
+        UID:{{ artwork.author.id }}
+        <Icon name="copy" style="margin-left: 1px;" />
+      </span>
     </div>
+    <template v-if="artwork.event_banners">
+      <div v-for="banner in artwork.event_banners" :key="banner.tap_url" class="event_banner">
+        <img :src="commonProxy(banner.icon_url)" alt="">
+        <a @click="$router.push(banner.tap_url.replace('pixiv:/', ''))">{{ banner.title }}</a>
+      </div>
+    </template>
     <ul class="tag-list" :class="{ censored }">
       <li v-if="isAiIllust">
         <van-tag class="x_tag" size="large" color="#FFB11B">{{ $t('common.ai_gen') }}</van-tag>
@@ -91,24 +104,26 @@
         >
           #{{ tag.name }}
         </li>
-        <li v-if="showTranslatedTags && tag.translated_name" :key="ti + tag.translated_name + '_2'" class="tag translated" @click="toSearch(tag.translated_name)">
+        <li
+          v-if="showTranslatedTags && tag.translated_name"
+          :key="ti + tag.translated_name + '_2'"
+          class="tag translated"
+          @click="toSearch(tag.translated_name)"
+        >
           {{ tag.translated_name }}
         </li>
       </template>
     </ul>
     <div :class="{ shrink: isShrink }" @click="isShrink = false">
-      <div
-        class="caption"
-        :class="{ censored }"
-        @click.stop.prevent="handleClick($event)"
-        v-html="artwork.caption"
-      ></div>
+      <div class="caption" :class="{ censored }" @click.stop.prevent="handleClick($event)" v-html="artwork.caption">
+      </div>
       <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4" />
     </div>
     <template v-if="!isNovel">
       <div v-show="isBtnsShow" class="meta_btns" :class="{ censored }">
         <van-button
           v-if="isLoggedIn"
+          v-longpress="showBookmarkDialog"
           size="small"
           :loading="favLoading"
           :icon="bookmarkId ? 'like' : 'like-o'"
@@ -117,7 +132,7 @@
           style="margin-right: 0.15rem;"
           @click="toggleBookmark"
         >
-          {{ bookmarkId ? $t('user.faved'): $t('user.fav') }}
+          {{ bookmarkId ? $t('user.faved') : $t('user.fav') }}
         </van-button>
         <van-button
           type="info"
@@ -130,23 +145,10 @@
         >
           {{ $t('common.download') }}
         </van-button>
-        <van-button
-          type="info"
-          icon="comment-o"
-          size="small"
-          plain
-          color="#005CAF"
-          @click="showComments = true"
-        >
+        <van-button type="info" icon="comment-o" size="small" plain color="#005CAF" @click="showComments = true">
           <span>{{ $t('user.view_comments') }}</span>
         </van-button>
-        <van-popup
-          v-model="showComments"
-          class="comments-popup"
-          position="right"
-          get-container="body"
-          closeable
-        >
+        <van-popup v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
           <template v-if="showComments">
             <p class="comments-title">{{ $t('hGqGftQ7v772prEac1hbJ') }}</p>
             <CommentsArea :id="artwork.id" :count="0" :limit="10" />
@@ -160,17 +162,28 @@
 <script>
 import { mapGetters } from 'vuex'
 import { Dialog } from 'vant'
+import _ from '@/lib/lodash'
+import store from '@/store'
 import { copyText, isSafari, downloadFile, formatIntlDate, formatIntlNumber } from '@/utils'
 import { i18n, isCNLocale } from '@/i18n'
 import { isIllustBookmarked, addBookmark, removeBookmark } from '@/api/user'
-import { localApi } from '@/api'
-import { toggleBookmarkCache } from '@/utils/storage/siteCache'
+import { getBookmarkRestrictTags, localApi } from '@/api'
+import { getCache, setCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
 import { isAiIllust } from '@/utils/filter'
-import CommentsArea from './Comment/CommentsArea.vue'
-import store from '@/store'
 import { getArtworkFileName } from '@/store/actions/filename'
+import { COMMON_IMAGE_PROXY } from '@/consts'
+import CommentsArea from './Comment/CommentsArea.vue'
 
-const { isAutoLoadImt } = store.state.appSetting
+const {
+  isAutoLoadKissT,
+  isDefBookmarkPrivate,
+  isDefBookmarkAddTags,
+  isLongpressPrivateBookmark,
+  isDefFollowPrivate,
+  isAutoFollowAfterBookmark,
+  isAutoDownLoadAfterBookmark,
+  isAutoBookmarkAfterDownload,
+} = store.state.appSetting
 
 export default {
   name: 'ArtworkMeta',
@@ -195,7 +208,7 @@ export default {
       bookmarkId: null,
       favLoading: false,
       showComments: false,
-      isAutoLoadImt,
+      isAutoLoadKissT,
     }
   },
   computed: {
@@ -210,7 +223,7 @@ export default {
       return isAiIllust(this.artwork)
     },
     isBtnsShow() {
-      return !this.artwork?.images.some(e => e.o.includes('common/images/limit_unknown_360.png'))
+      return !this.artwork?.images.some(e => e.o.includes('common/images/limit'))
     },
   },
   watch: {
@@ -235,6 +248,9 @@ export default {
     this.drawMask()
   },
   methods: {
+    commonProxy(src) {
+      return COMMON_IMAGE_PROXY + src
+    },
     convertToK(val) {
       if (!val) return '-'
       if (isCNLocale()) return val
@@ -278,27 +294,81 @@ export default {
           })
       } else {
         localApi.APP_CONFIG.useLocalAppApi
-          ? localApi.illustBookmarkAdd(this.artwork.id).then(isOk => {
-            this.favLoading = false
-            if (isOk) {
-              this.bookmarkId = true
-              toggleBookmarkCache(this.artwork, true)
-            } else {
-              this.$toast(this.$t('artwork.fav_fail'))
-            }
-          })
-          : addBookmark(this.artwork.id).then(({ data, error }) => {
-            this.favLoading = false
-            if (error) {
-              this.$toast(this.$t('artwork.fav_fail'))
-            } else {
-              this.bookmarkId = data?.last_bookmark_id || null
-            }
-          })
+          ? localApi.illustBookmarkAdd(
+            this.artwork.id,
+            isDefBookmarkPrivate ? 'private' : void 0,
+            isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0
+          )
+            .then(isOk => {
+              this.favLoading = false
+              if (isOk) {
+                this.bookmarkId = true
+                toggleBookmarkCache(this.artwork, true)
+                this.autoAddFollow()
+                if (isAutoDownLoadAfterBookmark) this.downloadArtwork()
+              } else {
+                this.$toast(this.$t('artwork.fav_fail'))
+              }
+            })
+          : addBookmark(this.artwork.id)
+            .then(({ data, error }) => {
+              this.favLoading = false
+              if (error) {
+                this.$toast(this.$t('artwork.fav_fail'))
+              } else {
+                this.bookmarkId = data?.last_bookmark_id || null
+              }
+            })
       }
     },
+    async autoAddFollow() {
+      if (!isAutoFollowAfterBookmark || this.artwork.author.is_followed) return
+      const isFollowedCacheKey = `member_is_followed_${this.artwork.author.id}`
+      if (await getCache(isFollowedCacheKey)) return
+      this.favLoading = true
+      const isOk = await localApi.userFollowAdd(this.artwork.author.id, isDefFollowPrivate ? 'private' : 'public')
+      this.favLoading = false
+      if (!isOk) {
+        this.$toast(this.$t('user.follow_fail'))
+        return
+      }
+      this.$emit('update-author-follow', true)
+      await setCache(isFollowedCacheKey, true)
+      const itemKey = `memberInfo_${this.artwork.author.id}`
+      const user = await getCache(itemKey)
+      if (user) {
+        user.is_followed = true
+        await setCache(itemKey, user, 60 * 60 * 6)
+      }
+    },
+    async showBookmarkDialog(/** @type {Event} */ ev) {
+      ev.preventDefault()
+      if (this.bookmarkId || !localApi.APP_CONFIG.useLocalAppApi) return
+      const action = async (restrict, tags) => {
+        this.favLoading = true
+        const isOk = await localApi.illustBookmarkAdd(this.artwork.id, restrict, tags)
+        this.favLoading = false
+        if (isOk) {
+          this.bookmarkId = true
+          toggleBookmarkCache(this.artwork, true)
+          this.autoAddFollow()
+          if (isAutoDownLoadAfterBookmark) this.downloadArtwork()
+          if (restrict == 'private') this.$toast(this.$t('kL2NNZsLQT9TUgeEmMQk3'))
+        } else {
+          this.$toast(this.$t('artwork.fav_fail'))
+        }
+      }
+      if (isLongpressPrivateBookmark) {
+        await action('private', isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0)
+        return
+      }
+      const { restrict, tags } = await getBookmarkRestrictTags(this.artwork.tags)
+      console.log('restrict: ', restrict)
+      console.log('tags: ', tags)
+      await action(restrict, tags)
+    },
     async drawMask() {
-      if (this.isAutoLoadImt || isSafari()) return
+      if (this.isAutoLoadKissT || isSafari()) return
       if (this.isNovel) return
 
       await this.$nextTick()
@@ -322,9 +392,10 @@ export default {
       // txt = new Array(w * 2).join(txt + " ");
       const h = Math.sqrt(width ** 2 + height ** 2) * 2
       console.log(w, Math.ceil(h / txtHeight))
+      const n = navigator.userAgent.includes('Mobile') ? 3 : 1.7
       for (let i = 0; i < h / txtHeight; i++) {
         for (let j = 0; j < w; j++) {
-          if (i === Math.floor(h / txtHeight / 2) && j === 2) {
+          if (i === Math.floor(h / txtHeight / n) && j === 2) {
             ctx.fillStyle = 'rgba(0,0,0,.13)'
           } else {
             ctx.fillStyle = 'rgba(0,0,0,.05)'
@@ -336,19 +407,14 @@ export default {
     handleClick(e) {
       if (e.target.tagName === 'A') {
         let url = e.target.href
-        if (url.startsWith('pixiv://users')) {
+        if (url.startsWith('pixiv://')) {
           url = url.replace('pixiv:/', '')
         }
-        if (url.startsWith('pixiv://illusts')) {
-          url = url.replace('pixiv://illusts', '/artworks')
-        }
-        if (url.startsWith('pixiv://novels')) {
-          url = url.replace('pixiv://novels', '/novel')
-        }
-        if (url.startsWith('/')) {
-          this.$router.push(url)
-        } else {
+        const to = this.$router.resolve(url)
+        if (to.route.name == 'NotFound') {
           window.open(url, '_blank', 'noreferrer')
+        } else {
+          this.$router.push(to.href)
         }
       }
     },
@@ -367,6 +433,7 @@ export default {
       return false
     },
     onTagLongpress(tag) {
+      console.log('=================tag: ', tag)
       Dialog.confirm({
         title: this.$t('LEaBJrLF0DUhyTe6-fKYT'),
         message: tag,
@@ -401,13 +468,32 @@ export default {
         this.$emit('ugoira-download')
         return
       }
-      const len = this.artwork.images.length
+      if (localApi.APP_CONFIG.useLocalAppApi && !this.bookmarkId && isAutoBookmarkAfterDownload) {
+        this.favLoading = true
+        localApi.illustBookmarkAdd(
+          this.artwork.id,
+          isDefBookmarkPrivate ? 'private' : void 0,
+          isDefBookmarkAddTags ? this.artwork.tags.map(e => e.name) : void 0
+        )
+          .then(isOk => {
+            this.favLoading = false
+            if (isOk) {
+              this.bookmarkId = true
+              toggleBookmarkCache(this.artwork, true)
+            } else {
+              this.$toast(this.$t('artwork.fav_fail'))
+            }
+          })
+      }
+      const artwork = _.cloneDeep(this.artwork)
+      const len = artwork.images.length
+      window.umami?.track('download_artwork_btn', { len })
       for (let index = 0; index < len; index++) {
-        const item = this.artwork.images[index]
-        const fileName = `${getArtworkFileName(this.artwork, index)}.${item.o.split('.').pop()}`
+        const item = artwork.images[index]
+        const fileName = `${getArtworkFileName(artwork, index)}.${item.o.split('.').pop()}`
         await downloadFile(item.o, fileName, {
           message: `${this.$t('tip.downloading')} (${index + 1}/${len})`,
-          subDir: store.state.appSetting.dlSubDirByAuthor ? this.artwork.author.name : undefined,
+          subDir: store.state.appSetting.dlSubDirByAuthor ? artwork.author.name : undefined,
         })
       }
     },
@@ -532,7 +618,7 @@ export default {
 
     .mask-text {
       width: 100%;
-      height: 100%;
+      height: 72vh;
     }
   }
 
@@ -598,7 +684,7 @@ export default {
     }
 
     &.is_novel,
-    &.isAutoLoadImt {
+    &.isAutoLoadKissT {
       .author {
         margin-top 20px
         font-size 24px
@@ -618,7 +704,7 @@ export default {
       }
     }
 
-    &.isAutoLoadImt {
+    &.isAutoLoadKissT {
       .avatar {
         display none
       }
@@ -686,6 +772,23 @@ export default {
       display inline-block
       margin-right 10px
       padding 6px 4px
+    }
+  }
+
+  .event_banner {
+    display flex
+    align-items center
+    gap 10px
+    margin 20px 0
+    img {
+      width 40px
+    }
+    a {
+      font-size 1.2em
+      cursor pointer
+      &:hover {
+        text-decoration underline
+      }
     }
   }
 

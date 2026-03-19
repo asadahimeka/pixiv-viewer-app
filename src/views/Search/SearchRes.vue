@@ -25,32 +25,37 @@
       <div
         v-if="(isSelfHibi && keywords.trim() && artList.length)"
         class="show_pop_icon"
-        @click="(showPopPreview = !showPopPreview)"
+        @click="togglePopPreview"
       >
         <Icon class="icon" name="popular" />
       </div>
     </div>
     <div v-if="focus" class="search-dropdown">
       <div v-if="keywords.trim()" class="pid-n-uid">
-        <div class="keyword" @click="onSearch">{{ $t('search.seach_tag') }} {{ keywords.trim() }} </div>
+        <div class="keyword" @click="onSearch">{{ $t('search.seach_tag') }} {{ keywords }} </div>
         <template v-if="showR18OrSafeQuickTag">
-          <div class="keyword" @click="onSearch('R18')">{{ $t('pL1gF_vTo1c_iF5GpBIDA') }} {{ keywords.trim() }} </div>
-          <div class="keyword" @click="onSearch('safe')">{{ $t('IxG-Y2odr_0OKUJbaqV0-') }} {{ keywords.trim() }} </div>
+          <div class="keyword" @click="onSearch('R18')">{{ $t('pL1gF_vTo1c_iF5GpBIDA') }} {{ keywords }} </div>
+          <div class="keyword" @click="onSearch('safe')">{{ $t('IxG-Y2odr_0OKUJbaqV0-') }} {{ keywords }} </div>
         </template>
-        <div v-if="isSelfHibi" class="keyword" @click="searchUser">
-          {{ $t('search.search_user') }} {{ keywords.trim() }}
+        <div class="keyword" @click="searchNovelTag">
+          {{ $t('0JnI5_DBdR8YNUHsS-mJr') }} {{ keywords }}
+        </div>
+        <div class="keyword" @click="searchUser">
+          {{ $t('search.search_user') }} {{ keywords }}
+        </div>
+        <div class="keyword" @click="searchCollectionTag">
+          {{ $t('9y6HjIgJZ9CzHOEy8UKr1') }} {{ keywords }}
         </div>
       </div>
       <div v-if="pidOrUidList.length" class="pid-n-uid">
         <template v-for="n in pidOrUidList">
           <div :key="'p_' + n" class="keyword" @click="toPidPage(n)">→ {{ $t('common.artwork') }} ID: {{ n }} </div>
           <div :key="'u_' + n" class="keyword" @click="toUidPage(n)">→ {{ $t('common.user') }} ID: {{ n }} </div>
-          <!-- <div :key="'s_' + n" class="keyword" @click="toSpotlightPage(n)">→ 特辑 ID: {{ n }} </div> -->
         </template>
       </div>
       <div v-if="keywords.trim() && autoCompleteTagList.length" class="search-history">
         <div class="title-bar">{{ $t('search.autocomplete') }}</div>
-        <div v-for="tag in autoCompleteTagList" :key="tag" class="keyword" @click="searchTag(tag)">
+        <div v-for="(tag, i) in autoCompleteTagList" :key="tag+i" class="keyword" @click="searchTag(tag)">
           {{ tag }}
         </div>
       </div>
@@ -68,19 +73,24 @@
     </div>
     <div class="list-wrap" :class="{ focus: focus }" :style="{ paddingTop: keywords.trim() ? '1.6rem' : '2.6rem' }">
       <div v-show="keywords.trim()" class="search_params">
-        <van-dropdown-menu class="search_param_sel" active-color="#f2c358">
+        <van-dropdown-menu class="search_param_sel" :class="{ showPopPreview }" active-color="#f2c358">
           <template v-if="!showPopPreview">
             <van-dropdown-item v-model="searchParams.mode" :options="searchModes" />
-            <van-dropdown-item v-model="searchParams.order" :options="searchOrders" />
-            <van-dropdown-item v-model="searchParams.duration" :options="searchDuration" />
             <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
+            <van-dropdown-item v-model="searchParams.order" :options="searchOrders" />
           </template>
-          <van-dropdown-item ref="s_date" :title="$t('common.date')" :lazy-render="false" @open="onSelDateOpen">
+          <van-dropdown-item
+            ref="s_date"
+            :title="searchParams.start_date ? searchParams.start_date + '~' + searchParams.end_date : $t('common.date')"
+            :lazy-render="false"
+            @open="onSelDateOpen"
+          >
             <van-calendar
               ref="selDate"
               color="#f2c358"
               class="sel_search_date"
               type="range"
+              lazy-render
               :confirm-text="$t('common.confirm')"
               :confirm-disabled-text="$t('common.confirm')"
               :default-date="searchDateVals"
@@ -101,27 +111,58 @@
               </van-button>
             </div>
           </van-dropdown-item>
+          <template v-if="!showPopPreview">
+            <van-dropdown-item v-model="searchDurationParam" :options="searchDurations" @change="handleDurationChange" />
+            <van-dropdown-item v-model="searchParams.search_ai_type" :disabled="!isAIOn" :options="searchAIOptions" />
+            <van-dropdown-item v-model="searchParams.searchR18Type" :disabled="!isR18On" :options="searchR18Options" />
+            <van-dropdown-item v-model="searchParams.ratioFilter" :options="ratioOptions" />
+          </template>
         </van-dropdown-menu>
       </div>
       <PopularPreview v-if="showPopPreview && keywords.trim()" ref="popPreview" :word="keywords" :params="searchParams" />
-      <van-list
-        v-else-if="keywords.trim()"
-        v-model="loading"
-        class="result-list"
-        :loading-text="$t('tips.loading')"
-        :finished="finished"
-        :error.sync="error"
-        :immediate-check="false"
-        :offset="800"
-        :finished-text="$t('tips.no_more')"
-        :error-text="$t('tips.net_err')"
-        @load="doSearch"
-      >
-        <wf-cont>
-          <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
-        </wf-cont>
-      </van-list>
-      <van-loading v-show="keywords.trim() && artList.length == 0 && !finished" class="loading" :size="'50px'" />
+      <template v-else-if="keywords.trim()">
+        <van-tabs v-model="actSearchQuickTab" class="search-quick-tabs" :swipeable="false">
+          <van-tab :title="$t('common.illust_manga')" />
+          <van-tab :title="$t('common.novel')" :to="searchNovelTag('isLink')" />
+          <van-tab :title="$t('common.user')" :to="searchUser('isLink')" />
+          <van-tab :title="$t('dZ93cWZJ03hu5emsVwgjA')" :to="searchCollectionTag('isLink')" />
+        </van-tabs>
+        <TagStorySlides v-if="$route.query.tss" :tag="keywords.trim()" />
+        <div v-if="$route.query.tss" class="tag-story-divider"></div>
+        <ImageList
+          :list-class="`result-list${isPagination ? ' is-pagination' : ''}`"
+          :list="artList"
+          :loading="loading"
+          :finished="finished"
+          :error="error"
+          :on-load-more="onLoadMore"
+        />
+      </template>
+      <van-loading v-if="isPagination && loading" size="50px" style="position: absolute;top: 48vh;left: 50%;transform: translateX(-50%)" />
+      <div v-if="isPagination && !showPopPreview" style="display: flex;justify-content: center;">
+        <van-pagination
+          :value="curPage"
+          :items-per-page="30"
+          :page-count="totalPages"
+          :show-page-size="pageBtnNum"
+          @change="onPageChange"
+        >
+          <template #prev-text>
+            <van-icon name="arrow-left" />
+          </template>
+          <template #next-text>
+            <van-icon name="arrow" />
+          </template>
+        </van-pagination>
+        <van-field
+          type="digit"
+          maxlength="3"
+          placeholder="Go"
+          style="width: 1.7rem;height: 40px;"
+          @keydown.enter="onPageChange(+$event.target.value)"
+        />
+      </div>
+      <van-loading v-if="!isPagination && keywords.trim() && artList.length == 0 && !finished" class="loading" :size="'50px'" />
       <div class="mask" @click="focus = false"></div>
     </div>
   </div>
@@ -134,18 +175,21 @@ import dayjs from 'dayjs'
 import api from '@/api'
 import store from '@/store'
 import { notSelfHibiApi } from '@/consts'
-import { mintVerify, BLOCK_INPUT_WORDS, BLOCK_LAST_WORD_RE, BLOCK_SEARCH_WORD_RE, BLOCK_RESULT_RE } from '@/utils/filter'
+import { mintVerify, BLOCK_INPUT_WORDS, BLOCK_LAST_WORD_RE, BLOCK_SEARCH_WORD_RE, BLOCK_RESULT_RE, isAiIllust } from '@/utils/filter'
 import { i18n } from '@/i18n'
-import ImageCard from '@/components/ImageCard'
+import { sleep } from '@/utils'
+import ImageList from '@/components/ImageList.vue'
 import PopularPreview from './components/PopularPreview.vue'
+import TagStorySlides from './components/TagStorySlides.vue'
 
 const ARTWORK_LINK_RE = /https?:\/\/.+\/artworks\/(\d+)/i
 
 export default {
   name: 'SearchRes',
   components: {
-    ImageCard,
+    ImageList,
     PopularPreview,
+    TagStorySlides,
   },
   data() {
     return {
@@ -167,16 +211,18 @@ export default {
           return { text: i18n.t('8SuotxAmYS7l1QCfLz0Yv', [e]), value: `${e}users入り` }
         }),
       ],
-      minDate: new Date('2007/09/13'),
+      // minDate: new Date('2007/09/13'),
+      minDate: dayjs().subtract(1, 'year').toDate(),
       maxDate: new Date(),
       searchParams: {
         mode: 'partial_match_for_tags',
         order: 'date_desc',
-        duration: '',
         start_date: '',
         end_date: '',
+        search_ai_type: '',
+        searchR18Type: '',
+        ratioFilter: '',
       },
-      searchDateVals: [null, null],
       searchModes: [
         { text: this.$t('search.mode.partial'), value: 'partial_match_for_tags' },
         { text: this.$t('search.mode.exact'), value: 'exact_match_for_tags' },
@@ -186,21 +232,57 @@ export default {
         { text: this.$t('search.date.desc'), value: 'date_desc' },
         { text: this.$t('search.date.asc'), value: 'date_asc' },
       ],
-      searchDuration: [
+      searchDurationParam: '',
+      searchDateVals: [null, null],
+      searchDurations: [
         { text: this.$t('search.dura.ph'), value: '' },
         { text: this.$t('search.dura.day'), value: 'within_last_day' },
         { text: this.$t('search.dura.week'), value: 'within_last_week' },
         { text: this.$t('search.dura.month'), value: 'within_last_month' },
+        { text: this.$t('MA6IA3Iad77L-GFmI1G2e'), value: 'within_last_half_year' },
+        { text: this.$t('AHbKrrnigwX4uyEuNTLhD'), value: 'within_last_year' },
+      ],
+      searchR18Options: [
+        { text: this.$t('ZrjYwXfoy-1VsGd5GPUaG'), value: '' },
+        { text: this.$t('KaQ9vCtHFcDpPCx80CpoW'), value: 'R' },
+        { text: this.$t('q3dZB--IevljTdxWdrQMC'), value: 'S' },
+      ],
+      searchAIOptions: [
+        { text: this.$t('D3kINSMv_LLXKunaXRBkY'), value: '' },
+        { text: this.$t('VTewlLtKnSV8muyw35y8P'), value: '1' },
+      ],
+      ratioOptions: [
+        { text: this.$t('60rHZkbSVyvMXR5mxfOUS'), value: '' },
+        { text: this.$t('4qZPW5NFW8YYDwkKtrKjz'), value: 'w>h' },
+        { text: this.$t('lveNeJo4VKOxFL7t6wvN_'), value: 'w=h' },
+        { text: this.$t('Fe6ZIApJoqbXO5UU5S001'), value: 'w<h' },
       ],
       showPopPreview: false,
       isSelfHibi: !notSelfHibiApi,
+      totalPages: 166,
+      pageBtnNum: document.documentElement.clientWidth / 80,
+      actSearchQuickTab: 0,
     }
   },
-  head: {
-    title: i18n.t('search.search'),
+  head() {
+    return {
+      title: this.$t('search.search'),
+    }
   },
   computed: {
     ...mapState(['searchHistory']),
+    isLoggedIn() {
+      return store.getters.isLoggedIn
+    },
+    isR18On() {
+      return store.getters.isR18On
+    },
+    isAIOn() {
+      return store.state.contentSetting.ai
+    },
+    searchListMinFavNum() {
+      return Number(store.state.appSetting.searchListMinFavNum)
+    },
     pidOrUidList() {
       return this.keywords.match(/(\d+)/g) || []
     },
@@ -209,16 +291,22 @@ export default {
         !this.pidOrUidList.length &&
         !this.keywords.includes('R-18')
     },
+    isPagination() {
+      const { isVirtualList, searchListPagination } = store.state.appSetting
+      return !isVirtualList && searchListPagination
+    },
   },
   watch: {
-    usersIriTag() {
+    usersIriTag(val) {
+      // window.umami?.track('search_illust_usersIriTag', { val })
       this.reset()
       this.doSearch(this.keywords)
     },
     searchParams: {
       deep: true,
       handler(val) {
-        console.log('val: ', val)
+        console.log('searchParams: ', val)
+        // window.umami?.track('search_illust_params', { val })
         if (this.showPopPreview) {
           this.$refs.popPreview.getList()
         } else {
@@ -228,7 +316,10 @@ export default {
       },
     },
     searchDateVals(vals) {
-      console.log('vals: ', vals)
+      console.log('searchDateVals: ', vals)
+      if (!(Array.isArray(vals) && vals[2])) {
+        this.searchDurationParam = ''
+      }
       Object.assign(this.searchParams, {
         start_date: vals[0] && dayjs(vals[0]).format('YYYY-MM-DD'),
         end_date: vals[1] && dayjs(vals[1]).format('YYYY-MM-DD'),
@@ -262,6 +353,7 @@ export default {
     },
     $route() {
       if (this.$route.name != 'SearchKeyword') return
+      this.actSearchQuickTab = 0
       const keyword = (this.$route.params.keyword || '').trim()
       console.log('watch route SearchKeyword: ', keyword)
       console.log('watch route this.keywords: ', this.keywords)
@@ -270,7 +362,11 @@ export default {
       this.showPopPreview = false
       this.keywords = keyword + ' '
       this.reset()
-      this.doSearch(this.keywords)
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.doSearch(this.keywords)
+        })
+      })
     },
   },
   mounted() {
@@ -280,7 +376,11 @@ export default {
     this.showPopPreview = false
     this.keywords = keyword + ' '
     this.reset()
-    this.doSearch(this.keywords)
+    this.$nextTick(() => {
+      requestAnimationFrame(() => {
+        this.doSearch(this.keywords)
+      })
+    })
   },
   // activated() {
   //   console.log('-------------activated: SearchKeyword')
@@ -295,6 +395,23 @@ export default {
   //   this.doSearch(this.keywords)
   // },
   methods: {
+    onLoadMore() {
+      if (this.isPagination) {
+        this.loading = false
+        this.finished = true
+        return
+      }
+      this.doSearch()
+    },
+    onPageChange(page) {
+      console.log('page: ', page)
+      if (!page) return
+      document.documentElement.scrollTo({ top: 0, behavior: 'smooth' })
+      this.curPage = page
+      this.loading = false
+      this.artList = []
+      this.doSearch()
+    },
     reset() {
       this.curPage = 1
       this.artList = []
@@ -315,10 +432,38 @@ export default {
         this.search(keywords)
       }
     },
+    handleDurationChange(val) {
+      console.log('handleDurationChange: ', val)
+      if (!val) {
+        this.searchDateVals = [null, null, true]
+        return
+      }
+      const today = dayjs()
+      /** @type {Record<string, () => dayjs.Dayjs>} */
+      const startDateMap = {
+        within_last_day: () => today.subtract(1, 'day'),
+        within_last_week: () => today.subtract(7, 'days'),
+        within_last_month: () => today.subtract(1, 'month'),
+        within_last_half_year: () => today.subtract(6, 'months'),
+        within_last_year: () => today.subtract(1, 'year'),
+      }
+      const startDate = startDateMap[val] && startDateMap[val]()
+      if (!startDate) return
+      this.searchDateVals = [startDate.toDate(), today.toDate(), true]
+    },
     onSelDateOpen() {
       // this.$nextTick(() => {
       this.$refs.selDate.scrollToDate(this.searchDateVals[0] || this.maxDate)
       // })
+    },
+    togglePopPreview() {
+      this.showPopPreview = !this.showPopPreview
+      if (!this.showPopPreview) {
+        this.$nextTick(() => {
+          this.reset()
+          this.doSearch(this.keywords)
+        })
+      }
     },
     async search(keywords) {
       keywords = keywords.trim()
@@ -340,7 +485,7 @@ export default {
       this.reset()
       this.doSearch(this.keywords)
     },
-    doSearch: _.throttle(async function (val) {
+    doSearch: async function (val) {
       val = val || this.keywords
       this.keywords__ = val
       val = val.trim()
@@ -360,7 +505,7 @@ export default {
 
       this.setSearchHistory(val)
 
-      if (!(this.$store.state.contentSetting.r18 || this.$store.state.contentSetting.r18g)) {
+      if (!this.isR18On) {
         if (BLOCK_INPUT_WORDS.some(e => e.test(val))) {
           this.artList = []
           this.finished = true
@@ -373,49 +518,69 @@ export default {
       }
       if (this.usersIriTag) val += ' ' + this.usersIriTag
       const params = _.pickBy(this.searchParams, Boolean)
-      if (!this.$store.state.contentSetting.ai) {
-        params.search_ai_type = 1
+      delete params.searchR18Type
+      delete params.ratioFilter
+      if (!this.isAIOn || val.includes(' -AI')) {
+        params.search_ai_type = 1 // 不显示AI作品
       }
+      if (this.loading || (!this.isPagination && this.finished)) return
       this.loading = true
       const res = await api.search(val, this.curPage, params)
       if (res.status === 0) {
         if (res.data.length) {
-          let artList = _.uniqBy([
-            ...this.artList,
-            ...res.data,
-          ], 'id')
-
-          if (!artList.length) {
-            this.finished = true
-            return
-          }
+          let artList = res.data
 
           if (this.usersIriTag) {
             const match = this.usersIriTag.match(/(\d+)/)
             artList = artList.filter(e => e.like > Number(match && match[0]))
           }
 
-          if (this.keywords__.includes(' R-18')) {
+          if (this.searchParams.searchR18Type == 'R' || this.keywords__.includes(' R-18')) {
             artList = artList.filter(e => e.x_restrict > 0)
           }
 
-          if (this.keywords__.includes(' -R-18')) {
+          if (this.searchParams.searchR18Type == 'S' || this.keywords__.includes(' -R-18')) {
             artList = artList.filter(e => e.x_restrict == 0)
+          }
+
+          if (this.searchParams.search_ai_type == '1' || this.keywords__.includes(' -AI')) {
+            artList = artList.filter(e => !isAiIllust(e))
+          }
+
+          const { ratioFilter } = this.searchParams
+          if (ratioFilter) {
+            artList = artList.filter(e => {
+              if (ratioFilter == 'w>h') return e.width > e.height
+              if (ratioFilter == 'w=h') return e.width == e.height
+              if (ratioFilter == 'w<h') return e.width < e.height
+              return true
+            })
           }
 
           artList = artList.filter(e => {
             return !(
-              e.like < Number(store.state.appSetting.searchListMinFavNum) ||
+              e.like < this.searchListMinFavNum ||
               BLOCK_RESULT_RE.test(JSON.stringify(e.tags)) ||
               BLOCK_RESULT_RE.test(e.title) ||
               BLOCK_RESULT_RE.test(e.caption)
             )
           })
 
-          this.artList = artList
+          if (artList.length < 10) {
+            console.log('------------- sleep')
+            await sleep(800)
+          }
 
-          this.curPage++
-          // if (this.curPage > 9) this.finished = true
+          if (this.isPagination) {
+            this.artList = artList
+          } else {
+            this.artList = _.uniqBy([
+              ...this.artList,
+              ...artList,
+            ], 'id')
+            this.curPage++
+            if (!this.isLoggedIn && this.curPage > 5) this.finished = true
+          }
         } else {
           this.finished = true
         }
@@ -424,10 +589,11 @@ export default {
         this.$toast({
           message: res.msg,
         })
+        await sleep(800)
         this.loading = false
         this.error = true
       }
-    }, 1000),
+    },
     toArtwork(art) {
       this.$store.dispatch('setGalleryList', this.artList)
       this.$router.push({
@@ -476,8 +642,20 @@ export default {
         this.search(keywords + ' ')
       }
     },
-    async searchUser() {
-      this.$router.push(`/search_user/${encodeURIComponent(this.keywords.trim())}`)
+    searchUser(isLink) {
+      const link = `/search_user/${encodeURIComponent(this.keywords.trim())}`
+      if (isLink == 'isLink') return link
+      this.$router.push(link)
+    },
+    searchNovelTag(isLink) {
+      const link = `/search_novel/${encodeURIComponent(this.keywords.trim())}`
+      if (isLink == 'isLink') return link
+      this.$router.push(link)
+    },
+    searchCollectionTag(isLink) {
+      const link = `/collections?tags%5B%5D=${encodeURIComponent(this.keywords.trim())}`
+      if (isLink == 'isLink') return link
+      this.$router.push(link)
     },
     toPidPage(id) {
       this.keywords = ''
@@ -490,12 +668,6 @@ export default {
       this.keywordsList = []
       this.lastWord = ''
       this.$router.push(`/users/${id}`)
-    },
-    toSpotlightPage(id) {
-      this.keywords = ''
-      this.keywordsList = []
-      this.lastWord = ''
-      this.$router.push(`/spotlight/${id}`)
     },
     clearHistory() {
       this.setSearchHistory(null)
@@ -670,18 +842,24 @@ export default {
     z-index: 5;
   }
 
-  .com_sel_tabs {
-    position fixed
-    z-index 3
-    left 50%
-    width 100%
-    transform translateX(-50%)
-    top calc(120px + var(--status-bar-height))
-    margin-bottom 0
-    padding 0px 0px 20px
-    // backdrop-filter: saturate(200%) blur(10PX);
-    // background: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 1)
+  .search-quick-tabs {
+    width 10rem
+    margin 0 auto 0.5rem
+
+    ::v-deep .van-tabs__nav {
+      background none
+    }
+
+    &+.tag-story-divider {
+      display none
+    }
+  }
+
+  .tag-story-divider {
+    width: 200px;
+    height: 1px;
+    margin: 0.5rem auto;
+    background: #ccc;
   }
 
   .list-wrap {
@@ -748,18 +926,60 @@ export default {
 .search_params
   position relative
   top -24px
+  @media screen and (max-width: 1280px)
+    overflow-x: auto;
+    &::-webkit-scrollbar
+      display none
+    ::v-deep .van-dropdown-menu
+      padding-bottom 0.3rem
+  @media screen and (min-width: 1281px)
+    ::v-deep .van-dropdown-menu:not(.showPopPreview)
+      >div:nth-child(2) .van-dropdown-item__content
+        width: 14.5vw
+        border-bottom-right-radius: 8PX
+      >div:nth-child(3) .van-dropdown-item__content
+        width: 12.5vw
+        left: 12.5vw
+        border-bottom-left-radius: 8PX
+        border-bottom-right-radius: 8PX
+      >div:nth-child(4) .van-dropdown-item__content
+        width: 12.5vw
+        left: 12.5vw*2
+        border-bottom-left-radius: 8PX
+        border-bottom-right-radius: 8PX
+      >div:nth-child(6) .van-dropdown-item__content
+        width: 12.5vw
+        left: 12.5vw*4
+        border-bottom-left-radius: 8PX
+        border-bottom-right-radius: 8PX
+      >div:nth-child(7) .van-dropdown-item__content
+        width: 12.5vw
+        left: 12.5vw*5
+        border-bottom-left-radius: 8PX
+        border-bottom-right-radius: 8PX
+      >div:nth-child(8) .van-dropdown-item__content
+        width: 12.5vw
+        left: 12.5vw*6
+        border-bottom-left-radius: 8PX
+        border-bottom-right-radius: 8PX
+      >div:nth-child(9) .van-dropdown-item__content
+        width: 12.5vw
+        left: unset
+        right 0
+        border-bottom-left-radius: 8PX
 
 .search_param_sel
   height 70px
 
   ::v-deep .van-dropdown-menu__title
-    font-size 0.24rem
+    font-size 0.26rem
   ::v-deep .van-dropdown-menu__bar
     background none
     height 100% !important
-    .van-dropdown-menu__item:first-child,
-    .van-dropdown-menu__item:nth-child(2)
-      flex 1.3
+    @media screen and (max-width: 1280px)
+      .van-dropdown-menu__item
+        min-width: max-content;
+        padding: 0 0.2rem;
 
 .sel_search_date
   width 750px !important
@@ -787,4 +1007,13 @@ export default {
       width fit-content
       margin: 0px 12px 12px 0
 
+.search .list-wrap .result-list.is-pagination
+  margin-bottom 0.5rem
+  ::v-deep .van-list__finished-text
+    display none
+</style>
+<style scoped>
+.search_param_sel ::v-deep .van-dropdown-menu__title {
+  font-size: max(0.26rem, 12PX);
+}
 </style>

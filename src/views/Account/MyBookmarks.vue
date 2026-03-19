@@ -1,39 +1,29 @@
 <template>
   <div class="favorite">
-    <van-list
-      v-model="loading"
-      :loading-text="$t('tips.loading')"
+    <BookmarkTags v-if="isAppLogin" type="illust" @update-sel-tag="updateSelTag" @update-restrict="updateRestrict" />
+    <ImageList
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="$t('tips.no_more')"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getMemberFavorite()"
-    >
-      <wf-cont>
-        <ImageCard
-          v-for="art in artList"
-          :key="art.id"
-          mode="all"
-          :artwork="art"
-          @click-card="toArtwork(art)"
-        />
-      </wf-cont>
-    </van-list>
+      :error="error"
+      :on-load-more="getMemberFavorite"
+    />
   </div>
 </template>
 
 <script>
 import _ from '@/lib/lodash'
 import { mapState } from 'vuex'
-import ImageCard from '@/components/ImageCard'
+import ImageList from '@/components/ImageList.vue'
+import BookmarkTags from '@/views/Account/components/BookmarkTags.vue'
 import { getBookmarkIllusts } from '@/api/user'
-import api from '@/api'
+import api, { localApi } from '@/api'
 
 export default {
   name: 'MyBookmarks',
   components: {
-    ImageCard,
+    ImageList,
+    BookmarkTags,
   },
   data() {
     return {
@@ -43,6 +33,9 @@ export default {
       error: false,
       loading: false,
       finished: false,
+      isAppLogin: localApi.APP_CONFIG.useLocalAppApi,
+      restrict: 'public',
+      bookmarkTag: '',
     }
   },
   computed: {
@@ -56,7 +49,22 @@ export default {
       }
     },
   },
+  created() {
+    this.reset()
+    this.getMemberFavorite()
+  },
   methods: {
+    updateRestrict(val) {
+      this.restrict = val
+      this.bookmarkTag = ''
+      this.reset()
+      this.getMemberFavorite()
+    },
+    updateSelTag(val) {
+      this.bookmarkTag = val
+      this.reset()
+      this.getMemberFavorite()
+    },
     reset() {
       this.next = 0
       this.curPage = 0
@@ -65,12 +73,12 @@ export default {
       this.finished = false
     },
     getMemberFavorite() {
-      localApi.APP_CONFIG.useLocalAppApi
+      this.isAppLogin
         ? this.getBookmarks()
         : this.getBookmarksWeb()
     },
     getBookmarksWeb: _.throttle(async function () {
-      if (!this.user?.id) return
+      if (!this.user?.id || this.loading || this.finished) return
       this.loading = true
       const res = await getBookmarkIllusts(this.curPage, this.user.id)
       if (res.status === 0) {
@@ -90,10 +98,13 @@ export default {
       }
     }, 1500),
     getBookmarks: _.throttle(async function () {
-      if (!this.user?.id) return
+      if (!this.user?.id || this.loading || this.finished) return
       if (this.next == null) return
       this.loading = true
-      const res = await api.getMemberFavorite(this.user.id, this.next, true)
+      const options = {}
+      if (this.restrict) options.restrict = this.restrict
+      if (this.bookmarkTag) options.tag = this.bookmarkTag
+      const res = await api.getMemberFavorite(this.user.id, this.next, true, options)
       if (res.status === 0) {
         this.next = res.data.next
         this.artList = _.uniqBy([
@@ -110,13 +121,6 @@ export default {
         this.error = true
       }
     }, 1500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
   },
 }
 </script>

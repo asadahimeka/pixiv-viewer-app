@@ -1,5 +1,5 @@
 <template>
-  <div class="search">
+  <div class="search search-user">
     <div class="search-bar-wrap">
       <van-search
         v-model="keywords"
@@ -20,6 +20,7 @@
       <div class="com_sel_tab" @click="$router.replace('/search')">{{ $t('common.illust_manga') }}</div>
       <div class="com_sel_tab" @click="$router.replace('/search_novel')">{{ $t('common.novel') }}</div>
       <div class="com_sel_tab cur">{{ $t('common.user') }}</div>
+      <div class="com_sel_tab" @click="$router.replace('/collection')">{{ $t('dZ93cWZJ03hu5emsVwgjA') }}</div>
     </div>
     <div class="list-wrap">
       <RecommUser />
@@ -30,7 +31,6 @@
 <script>
 import { mintVerify, BLOCK_SEARCH_WORD_RE } from '@/utils/filter'
 import RecommUser from './components/RecommUser.vue'
-import { i18n } from '@/i18n'
 
 export default {
   name: 'SearchUser',
@@ -42,8 +42,10 @@ export default {
       keywords: '',
     }
   },
-  head: {
-    title: i18n.t('search.search_user'),
+  head() {
+    return {
+      title: this.$t('search.search_user'),
+    }
   },
   methods: {
     async onSearch() {
@@ -82,6 +84,12 @@ export default {
       .van-search__content {
         background #f5f5f5
       }
+
+      .van-search__action {
+        margin-left 5PX
+        border-radius 10PX
+      }
+
     }
 
     .search-bar {

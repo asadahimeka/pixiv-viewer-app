@@ -1,40 +1,38 @@
 <template>
   <div class="HomeRecommIllust illusts">
     <top-bar />
-    <h3 class="af_title">{{ $t('common.recomm_art') }}</h3>
-    <wf-cont>
-      <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
-    </wf-cont>
-    <van-loading v-if="!showLoadMoreBtn && loading" class="loading" :size="'50px'" />
-    <van-empty v-if="!loading && !artList.length" :description="$t('tips.no_data')" />
-    <div v-if="showLoadMoreBtn && !finished" class="flex-c" style="margin: .5rem 0;">
-      <van-button
-        size="small"
-        loading-size="1em"
-        :loading-text="$t('tips.loading')"
-        :loading="loading"
-        @click="loadMore"
-      >
-        {{ $t('tips.load_more') }}
-      </van-button>
-    </div>
+    <h3 class="af_title">
+      {{ $t('common.recomm_art') }}
+      <div class="clear-ih" @click="toggleSlide">
+        <Icon name="swiper-symbol" scale="1.5" />
+      </div>
+    </h3>
+    <ImageList
+      v-if="showImageList"
+      :force-layout="forceSlideLayout ? 'VirtualSlide' : ''"
+      :list="artList"
+      :loading="loading"
+      :finished="finished"
+      :on-load-more="loadMore"
+    />
+    <van-loading v-show="loading" class="loading-fixed" size="50px" />
   </div>
 </template>
 
 <script>
 import _ from '@/lib/lodash'
-import api from '@/api'
+import api, { localApi } from '@/api'
 import { filterRecommIllust, filterCensoredIllust } from '@/utils/filter'
 import { tryURL } from '@/utils'
 import TopBar from '@/components/TopBar'
-import ImageCard from '@/components/ImageCard'
+import ImageList from '@/components/ImageList.vue'
 import { SessionStorage } from '@/utils/storage'
 
 export default {
   name: 'RecommendIllust',
   components: {
     TopBar,
-    ImageCard,
+    ImageList,
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
@@ -49,6 +47,8 @@ export default {
       finished: false,
       nextUrl: null,
       showLoadMoreBtn: localApi.APP_CONFIG.useLocalAppApi,
+      showImageList: true,
+      forceSlideLayout: false,
     }
   },
   head() {
@@ -58,14 +58,21 @@ export default {
     this.init()
   },
   methods: {
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
+    toggleSlide() {
+      window.umami?.track('img_list_toggle_slide')
+      this.showImageList = false
+      this.forceSlideLayout = !this.forceSlideLayout
+      this.$nextTick(() => {
+        this.showImageList = true
       })
     },
     async loadMore() {
+      console.log('load-more')
+      if (!this.showLoadMoreBtn) {
+        this.finished = true
+        return
+      }
+      if (this.loading || this.finished) return
       console.log('this.nextUrl: ', this.nextUrl)
       const params = {}
       const u = tryURL(this.nextUrl)
@@ -94,6 +101,7 @@ export default {
       this.loading = false
     },
     async getArtList() {
+      if (this.loading || this.finished) return
       this.loading = true
       this.artList = []
       const res = await api.getRecommendedIllust()
@@ -110,6 +118,7 @@ export default {
     },
     init() {
       if (this.isFromDetail && this.artList.length) return
+      this.artList = []
       const list = SessionStorage.get('recommended.illust')
       console.log('list: ', list)
       if (list) {
@@ -130,6 +139,13 @@ export default {
   margin-bottom 40px
   text-align center
   font-size 28px
+
+  .clear-ih
+    position absolute
+    top 50%
+    right 20px
+    transform translateY(-50%)
+    cursor pointer
 
 .illusts
   position relative

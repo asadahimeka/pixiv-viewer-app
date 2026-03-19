@@ -5,41 +5,44 @@
         <Icon class="icon random" name="random" />
         <span class="title">{{ $t('common.random_view') }}</span>
       </template>
+      <template #right-icon>
+        <span style="cursor:pointer" @click="toggleSlide">
+          <Icon class="icon" name="swiper-symbol" />
+        </span>
+      </template>
     </van-cell>
-    <van-list
-      v-model="loading"
-      class="artwork-list"
-      :loading-text="$t('tips.loading')"
+    <div v-if="isR18On" class="nifs-list-cont" style="display:flex;justify-content:flex-end;margin:0.2rem 0 0.4rem">
+      <van-radio-group v-model="restrict" direction="horizontal">
+        <van-radio name="safe">{{ $t('q3dZB--IevljTdxWdrQMC') }}</van-radio>
+        <van-radio name="r18">R18</van-radio>
+      </van-radio-group>
+    </div>
+    <ImageList
+      v-if="showImageList"
+      list-class="artwork-list"
+      vwtf-no-top
+      :force-layout="forceSlideLayout ? 'VirtualSlide' : ''"
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="$t('tips.no_more')"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getRankList"
-    >
-      <wf-cont>
-        <ImageCard
-          v-for="art in artList"
-          :key="art.id"
-          mode="all"
-          :artwork="art"
-          @click-card="toArtwork(art)"
-        />
-      </wf-cont>
-    </van-list>
+      :error="error"
+      :on-load-more="getRankList"
+    />
   </div>
 </template>
 
 <script>
-import ImageCard from '@/components/ImageCard'
-import api from '@/api'
-import _ from '@/lib/lodash'
 import dayjs from 'dayjs'
+import { mapGetters } from 'vuex'
+import _ from '@/lib/lodash'
+import api from '@/api'
 import { filterHomeIllust } from '@/utils/filter'
+import ImageList from '@/components/ImageList.vue'
+
 export default {
   name: 'RandomIllust',
   components: {
-    ImageCard,
+    ImageList,
   },
   data() {
     return {
@@ -48,14 +51,46 @@ export default {
       error: false,
       loading: false,
       finished: false,
-      rankModes: ['day', 'week', 'month', 'week_original', 'day_male'],
+      showImageList: true,
+      forceSlideLayout: false,
+      restrict: 'safe',
     }
   },
+  computed: {
+    ...mapGetters(['isR18On', 'isLoggedIn']),
+    rankModes() {
+      return this.restrict == 'r18'
+        ? ['day_r18', 'day_male_r18', 'week_r18']
+        : ['day', 'week', 'month', 'week_rookie', 'week_original', 'day_male']
+    },
+    pageLimit() {
+      return this.isLoggedIn ? 10 : 5
+    },
+  },
+  watch: {
+    restrict(val) {
+      window.umami?.track('random_illust_restrict', { val })
+      this.curPage = 1
+      this.artList = []
+      this.finished = false
+      this.loading = false
+      this.getRankList()
+    },
+  },
+  created() {
+    this.getRankList()
+  },
   methods: {
-    url(id, index) {
-      return api.url(id, index)
+    toggleSlide() {
+      window.umami?.track('img_list_toggle_slide')
+      this.showImageList = false
+      this.forceSlideLayout = !this.forceSlideLayout
+      this.$nextTick(() => {
+        this.showImageList = true
+      })
     },
     getRankList: _.throttle(async function () {
+      if (this.loading || this.finished) return
       this.loading = true
       const mode = _.sample(this.rankModes)
       const date = dayjs().subtract(_.random(2, 14), 'days').format('YYYY-MM-DD')
@@ -68,7 +103,7 @@ export default {
 
         this.loading = false
         this.curPage++
-        if (this.curPage > 9) this.finished = true
+        if (this.curPage > this.pageLimit) this.finished = true
       } else {
         this.$toast({
           message: res.msg,
@@ -77,13 +112,6 @@ export default {
         this.error = true
       }
     }, 1500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
   },
 }
 </script>
