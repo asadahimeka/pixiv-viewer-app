@@ -773,6 +773,16 @@ html
     --status-bar-height: var(--safe-area-top, 20px)
     --nav-bar-height: var(--safe-area-bottom, 0px)
 
+.android
+  padding-bottom var(--nav-bar-height)
+  .fancybox__toolbar
+    bottom: var(--nav-bar-height)
+  @media screen and (max-width: 1120px)
+    #app .main-layout:not(.navbar-alt-style) .nav-container
+      height calc(1.33333rem + var(--nav-bar-height))
+    #app .navbar-alt-style .nav-container .nav-bar
+      transform: translateY(calc(-1 * var(--nav-bar-height)))
+
 .ios
   .artwork .top-bar-wrap,
   .users .top-bar-wrap

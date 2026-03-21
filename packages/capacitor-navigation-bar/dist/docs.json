@@ -1,0 +1,251 @@
+{
+  "api": {
+    "name": "NavigationBarPlugin",
+    "slug": "navigationbarplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "show",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Display the navigation bar.",
+        "complexTypes": [],
+        "slug": "show"
+      },
+      {
+        "name": "hide",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Hide the navigation bar.",
+        "complexTypes": [],
+        "slug": "hide"
+      },
+      {
+        "name": "setColor",
+        "signature": "(options: ColorParameters) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "ColorParameters"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options"
+          }
+        ],
+        "docs": "Change the color of the navigation bar.\r\n*Support alpha hexadecimal numbers.",
+        "complexTypes": [
+          "ColorParameters"
+        ],
+        "slug": "setcolor"
+      },
+      {
+        "name": "setTransparency",
+        "signature": "(options: { isTransparent: boolean; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ isTransparent: boolean; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "isTransparent"
+          }
+        ],
+        "docs": "Set the Transparency",
+        "complexTypes": [],
+        "slug": "settransparency"
+      },
+      {
+        "name": "getColor",
+        "signature": "() => Promise<{ color: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ color: string; }>",
+        "tags": [],
+        "docs": "Gets the current color of the navigation bar in Hexadecimal.",
+        "complexTypes": [],
+        "slug": "getcolor"
+      },
+      {
+        "name": "addListener",
+        "signature": "(event: NavigationBarPluginEvents.SHOW, listenerFunc: () => void) => PluginListenerHandle",
+        "parameters": [
+          {
+            "name": "event",
+            "docs": "The event",
+            "type": "NavigationBarPluginEvents.SHOW"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "Callback",
+            "type": "() => void"
+          }
+        ],
+        "returns": "PluginListenerHandle",
+        "tags": [
+          {
+            "name": "param",
+            "text": "event The event"
+          },
+          {
+            "name": "param",
+            "text": "listenerFunc Callback"
+          }
+        ],
+        "docs": "Event fired after navigation bar is displayed",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "NavigationBarPluginEvents"
+        ],
+        "slug": "addlistener"
+      },
+      {
+        "name": "addListener",
+        "signature": "(event: NavigationBarPluginEvents.HIDE, listenerFunc: () => void) => PluginListenerHandle",
+        "parameters": [
+          {
+            "name": "event",
+            "docs": "The event",
+            "type": "NavigationBarPluginEvents.HIDE"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "Callback",
+            "type": "() => void"
+          }
+        ],
+        "returns": "PluginListenerHandle",
+        "tags": [
+          {
+            "name": "param",
+            "text": "event The event"
+          },
+          {
+            "name": "param",
+            "text": "listenerFunc Callback"
+          }
+        ],
+        "docs": "Event fired after navigation bar is hidden",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "NavigationBarPluginEvents"
+        ],
+        "slug": "addlistener"
+      },
+      {
+        "name": "addListener",
+        "signature": "(event: NavigationBarPluginEvents.COLOR_CHANGE, listenerFunc: (returnObject: { color: string; }) => void) => PluginListenerHandle",
+        "parameters": [
+          {
+            "name": "event",
+            "docs": "The event",
+            "type": "NavigationBarPluginEvents.COLOR_CHANGE"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "Callback",
+            "type": "(returnObject: { color: string; }) => void"
+          }
+        ],
+        "returns": "PluginListenerHandle",
+        "tags": [
+          {
+            "name": "param",
+            "text": "event The event"
+          },
+          {
+            "name": "param",
+            "text": "listenerFunc Callback"
+          }
+        ],
+        "docs": "Event fired after navigation bar color is changed",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "NavigationBarPluginEvents"
+        ],
+        "slug": "addlistener"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "ColorParameters",
+      "slug": "colorparameters",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "color",
+          "tags": [],
+          "docs": "Sets the new color of the navigation bar.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "darkButtons",
+          "tags": [],
+          "docs": "Sets whether the default navigation bar buttons should be black or white.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "PluginListenerHandle",
+      "slug": "pluginlistenerhandle",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "remove",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "() => Promise<void>"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "NavigationBarPluginEvents",
+      "slug": "navigationbarpluginevents",
+      "members": [
+        {
+          "name": "SHOW",
+          "value": "'onShow'",
+          "tags": [],
+          "docs": "Called after the navigation bar is displayed"
+        },
+        {
+          "name": "HIDE",
+          "value": "'onHide'",
+          "tags": [],
+          "docs": "Called after navigation bar is hidden"
+        },
+        {
+          "name": "COLOR_CHANGE",
+          "value": "'onColorChange'",
+          "tags": [],
+          "docs": "Called after navigation bar color is changed"
+        }
+      ]
+    }
+  ]
+}

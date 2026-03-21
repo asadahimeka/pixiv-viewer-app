@@ -23,37 +23,6 @@
     />
     <van-cell
       center
-      title="Materixiv (Android)"
-      is-link
-      label="Pixiv app with Material Design."
-      @click="openLink('https://github.com/onlymash/materixiv')"
-    />
-    <van-cell
-      center
-      is-link
-      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
-    >
-      <template #title> <s>Pixiv-Shaft (Android)</s> </template>
-      <template #label> <s>Pixiv 第三方 Android 客户端。</s> </template>
-    </van-cell>
-    <van-cell
-      center
-      is-link
-      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Slinky')"
-    >
-      <template #title> <s>Clover (Android)</s> </template>
-      <template #label> <s>全新的第三方 pixiv 客户端。</s> </template>
-    </van-cell>
-    <van-cell
-      center
-      is-link
-      @click="openLink('https://github.com/git-xiaocao/pixiv_func_mobile')"
-    >
-      <template #title> <s>Pixiv Func (Android,Windows)</s> </template>
-      <template #label> <s>功能齐全的Pixiv第三方客户端 免代理 支持查看动图查看直播</s> </template>
-    </van-cell>
-    <van-cell
-      center
       title="Pixeval (Windows)"
       is-link
       label="Wow. Yet another Pixiv client!"
@@ -82,6 +51,37 @@
     />
     <van-cell
       center
+      title="Materixiv (Android)"
+      is-link
+      label="Pixiv app with Material Design."
+      @click="openLink('https://github.com/onlymash/materixiv')"
+    />
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
+    >
+      <template #title> <s>Pixiv-Shaft (Android)</s> </template>
+      <template #label> <s>Pixiv 第三方 Android 客户端。</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Slinky')"
+    >
+      <template #title> <s>Clover (Android)</s> </template>
+      <template #label> <s>全新的第三方 pixiv 客户端。</s> </template>
+    </van-cell>
+    <!-- <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/git-xiaocao/pixiv_func_mobile')"
+    >
+      <template #title> <s>Pixiv Func (Android,Windows)</s> </template>
+      <template #label> <s>功能齐全的Pixiv第三方客户端 免代理 支持查看动图查看直播</s> </template>
+    </van-cell> -->
+    <van-cell
+      center
       title="PixivCollection (Windows)"
       is-link
       label="Pixiv本地收藏夹图片管理"
@@ -96,17 +96,26 @@
     />
     <van-cell
       center
-      title="Boorusphere (Android)"
       is-link
-      label="Simple, content-focused booru viewer for Android"
       @click="openLink('https://github.com/nullxception/boorusphere')"
-    />
+    >
+      <template #title> <s>Boorusphere (Android)</s> </template>
+      <template #label> <s>Simple, content-focused booru viewer for Android</s> </template>
+    </van-cell>
     <van-cell
       center
-      title="Flexbooru (Android)"
       is-link
-      label="A booru client for Android, support Danbooru, Moebooru, Gelbooru, Shimmie, etc."
       @click="openLink('https://github.com/flexbooru/flexbooru')"
+    >
+      <template #title> <s>Flexbooru (Android)</s> </template>
+      <template #label> <s>A booru client for Android, support Danbooru, Moebooru, Gelbooru, Shimmie, etc.</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="BooruHub (Android)"
+      is-link
+      label="轻松发现和管理您最喜欢的 Booru 图像板"
+      @click="openLink('https://play.google.com/store/apps/details?id=onlymash.flexbooru.play')"
     />
     <van-cell
       center
@@ -117,10 +126,18 @@
     />
     <van-cell
       center
-      title="NClientV2 (Android)"
       is-link
-      label="An unofficial NHentai android client."
       @click="openLink('https://github.com/Dar9586/NClientV2')"
+    >
+      <template #title> <s>NClientV2 (Android)</s> </template>
+      <template #label> <s>An unofficial NHentai android client.</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="NClientV3 (Android)"
+      is-link
+      label="An unofficial NHentai android client"
+      @click="openLink('https://github.com/maxwai/NClientV3')"
     />
     <van-cell
       center
@@ -131,10 +148,18 @@
     />
     <van-cell
       center
-      title="PicaComic (Android,Windows)"
       is-link
-      label="Unofficial picacg app built with flutter/使用 Flutter 构建的跨平台 Picacg App"
       @click="openLink('https://github.com/wgh136/PicaComic')"
+    >
+      <template #title> <s>PicaComic (Android,Windows)</s> </template>
+      <template #label> <s>Unofficial picacg app built with flutter/使用 Flutter 构建的跨平台 Picacg App</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="venera (Android,iOS,Linux,macOS,Windows)"
+      is-link
+      label="A comic app"
+      @click="openLink('https://github.com/venera-app/venera')"
     />
     <van-cell
       center
@@ -145,17 +170,33 @@
     />
     <van-cell
       center
-      title="Tachiyomi (Android)"
       is-link
-      label="Free and open source manga reader for Android."
-      @click="openLink('https://github.com/tachiyomiorg/tachiyomi')"
-    />
+      @click="openLink('https://github.com/tachiyomiorg')"
+    >
+      <template #title> <s>Tachiyomi (Android)</s> </template>
+      <template #label> <s>Free and open source manga reader for Android.</s> </template>
+    </van-cell>
     <van-cell
       center
       title="TachiyomiJ2K (Android)"
       is-link
       label="TachiyomiJ2K is a free and open source manga reader for Android 6.0 and above. Based on the original Tachiyomi"
       @click="openLink('https://github.com/Jays2Kings/tachiyomiJ2K')"
+    />
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/KotatsuApp/Kotatsu')"
+    >
+      <template #title> <s>Kotatsu (Android)</s> </template>
+      <template #label> <s>Manga reader for Android</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="全是漫画 (Android)"
+      is-link
+      label="https://github.com/hongchacha/cartoon"
+      @click="openLink('https://github.com/hongchacha/cartoon')"
     />
     <van-cell
       center
@@ -167,32 +208,12 @@
     </van-cell>
     <van-cell
       center
-      title="Kotatsu (Android)"
       is-link
-      label="Manga reader for Android"
-      @click="openLink('https://kotatsu.app/')"
-    />
-    <van-cell
-      center
-      title="全是漫画 (Android)"
-      is-link
-      label="https://github.com/hongchacha/cartoon"
-      @click="openLink('https://github.com/hongchacha/cartoon')"
-    />
-    <van-cell
-      center
-      title="kobi (Android,iOS,macOS,Windows,Linux)"
-      is-link
-      label="拷贝漫画客户端"
       @click="openLink('https://github.com/niuhuan/kobi')"
-    />
-    <van-cell
-      center
-      title="HamsterHelper (Windows)"
-      is-link
-      label="仓鼠助手,p站pixiv图片下载收藏管理器"
-      @click="openLink('https://github.com/HamsterHelper/HamsterHelper')"
-    />
+    >
+      <template #title> <s>kobi (Android,iOS,macOS,Windows,Linux)</s> </template>
+      <template #label> <s>拷贝漫画客户端</s> </template>
+    </van-cell>
     <van-cell
       center
       title="Neko Anime (Android)"
@@ -237,20 +258,6 @@
     />
     <van-cell
       center
-      title="LightNovelReader (Android)"
-      is-link
-      label="一款开源的轻小说阅读软件，追求轻量化的体积和流畅的阅读体验。"
-      @click="openLink('https://github.com/dmzz-yyhyy/LightNovelReader')"
-    />
-    <van-cell
-      center
-      title="Bili You (Android)"
-      is-link
-      label="一个用flutter制作的第三方B站客户端."
-      @click="openLink('https://github.com/lucinhu/bili_you')"
-    />
-    <van-cell
-      center
       title="Kikoeru (Android)"
       is-link
       label="Kikoeru(ASMR Online) android client."
@@ -265,6 +272,28 @@
     />
     <van-cell
       center
+      title="LightNovelReader (Android)"
+      is-link
+      label="一款开源的轻小说阅读软件，追求轻量化的体积和流畅的阅读体验。"
+      @click="openLink('https://github.com/dmzz-yyhyy/LightNovelReader')"
+    />
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/lucinhu/bili_you')"
+    >
+      <template #title> <s>Bili You (Android)</s> </template>
+      <template #label> <s>一个用flutter制作的第三方B站客户端</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="HamsterHelper (Windows)"
+      is-link
+      label="仓鼠助手,p站pixiv图片下载收藏管理器"
+      @click="openLink('https://github.com/HamsterHelper/HamsterHelper')"
+    />
+    <!-- <van-cell
+      center
       title="ComicNyaa (Android)"
       is-link
       label=" 一个跨平台的漫画/图库聚合阅读器。"
@@ -276,7 +305,7 @@
       is-link
       label="一个可爱的二次元网络画廊浏览器。"
       @click="openLink('https://github.com/tsukiseele/MoeViewerN')"
-    />
+    /> -->
   </div>
 </template>
 

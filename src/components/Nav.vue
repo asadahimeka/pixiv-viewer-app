@@ -68,7 +68,7 @@ export default {
   data() {
     return {
       isLogin: localApi.APP_CONFIG.useLocalAppApi || existsSessionId(),
-      isShowBackTop: document.documentElement.clientWidth > 1270,
+      isShowBackTop: document.documentElement.clientWidth > 1110,
       isDark: !!localStorage.PXV_DARK,
     }
   },

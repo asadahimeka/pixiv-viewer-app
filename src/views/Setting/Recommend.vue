@@ -53,6 +53,7 @@ export default {
 .h-tabs
   ::v-deep .van-tabs__content
     margin-top 10px
+    overflow hidden !important
 
 .af_title
   position relative

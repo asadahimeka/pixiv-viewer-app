@@ -193,7 +193,7 @@ export default {
   cursor: pointer;
 }
 .vs-full .vs-full-icon {
-  top: 0.1rem;
+  top: calc(0.1rem + var(--status-bar-height));
 }
 .vs-full .image-list-comp {
   position: fixed;
@@ -214,7 +214,7 @@ export default {
 }
 .vs-full .my-virtual-swiper .image-card .layer-num {
   right: 1.1rem;
-  top: 0.2rem;
+  top: calc(0.2rem + var(--status-bar-height));
 }
 .vs-full .home-i-tabs,
 .vs-full .search .search-bar-wrap,

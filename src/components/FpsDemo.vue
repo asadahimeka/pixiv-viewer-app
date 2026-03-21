@@ -14,7 +14,7 @@ const fps = useFps()
   position: fixed;
   z-index: 99999;
   right: 0.2rem;
-  top: 0.2rem;
+  top: calc(0.2rem + var(--status-bar-height));
   display: flex;
   justify-content: center;
   align-items: center;

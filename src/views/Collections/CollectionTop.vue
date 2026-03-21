@@ -124,7 +124,7 @@ export default {
   position: relative;
   .search-bar-wrap
     position: fixed;
-    top: 0;
+    top: var(--status-bar-height);
     left 0
     z-index: 3;
     width: 100%;
@@ -164,7 +164,7 @@ export default {
     z-index 3
     left 0
     width 100vw
-    top 120px
+    top calc(120px + var(--status-bar-height))
     margin-bottom 0
     padding 0px 0px 20px
     backdrop-filter: saturate(200%) blur(10PX);

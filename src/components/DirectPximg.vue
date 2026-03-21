@@ -127,26 +127,28 @@ export default {
         const url = new URL(this.src)
         if (url.host == 's.pximg.net') {
           this.localSrc = this.src
+          this.loading = false
           return
         }
 
         if (platform.isCapacitor) {
           const { getPximgUri } = await import('@/platform/capacitor/utils')
           this.localSrc = await getPximgUri(url)
+          this.loading = false
           return
         }
 
         if (platform.isTauri) {
           const { getPximgUri } = await import('@/platform/tauri/utils')
           this.localSrc = await getPximgUri(url)
+          this.loading = false
           return
         }
 
         this.localSrc = this.src
+        this.loading = false
       } catch (error) {
         console.log('error: ', error)
-      } finally {
-        this.loading = false
       }
     },
   },

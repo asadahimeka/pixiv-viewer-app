@@ -9,7 +9,7 @@ import '@/lib/polyfill'
 import { App as CapApp } from '@capacitor/app'
 import { StatusBar, Style as StatusBarStyle } from '@capacitor/status-bar'
 import { AndroidShortcuts } from 'capacitor-android-shortcuts'
-import { NavigationBar } from '@capgo/capacitor-navigation-bar'
+import { NavigationBar } from 'capacitor-navigation-bar'
 import { SafeArea } from 'capacitor-plugin-safe-area'
 
 import Vue from 'vue'
@@ -112,15 +112,12 @@ function setSafeAreaVar() {
 }
 
 function setStatusBar() {
-  if (platform.isIOS) {
-    StatusBar.setStyle({ style: localStorage.PXV_DARK ? StatusBarStyle.Dark : StatusBarStyle.Light }).catch(() => {})
-    return
-  }
-  const color = localStorage.PXV_DARK ? '#16161A' : '#FFFFFF'
   StatusBar.setStyle({ style: localStorage.PXV_DARK ? StatusBarStyle.Dark : StatusBarStyle.Light }).catch(() => {})
+  if (platform.isIOS) return
+  const color = localStorage.PXV_DARK ? '#16161A' : '#FFFFFF'
   StatusBar.setBackgroundColor({ color }).catch(() => {})
   StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {})
-  NavigationBar.setNavigationBarColor({ color }).catch(() => {})
+  NavigationBar.setTransparency({ isTransparent: true }).catch(() => {})
 }
 
 function addCapListeners() {

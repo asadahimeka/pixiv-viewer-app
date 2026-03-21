@@ -60,6 +60,9 @@ export default {
 .h-tabs
   ::v-deep .van-tabs__content
     margin-top 10px
+  ::v-deep .van-tab__pane .illusts
+     > div, .virtual-waterfall
+      padding-bottom 1rem
 
 .af_title
   position relative
