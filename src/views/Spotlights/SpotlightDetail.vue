@@ -8,13 +8,27 @@
       <div class="title_cnt">
         <p class="sp_date" :class="{hide_date:!showDate}">{{ spotlight.date }}</p>
         <h1 class="title">{{ spotlight.title }}</h1>
+        <router-link
+          v-if="spotlight.content"
+          :to="`/pixivision/stories/${spid}`"
+          style="display: inline-block;width: 100%;text-align: center;margin-top: 0.2rem;font-size: 0.3rem;"
+        >
+          {{ $t('MMvrKgvtY_JmiidXJ-ead') }}
+        </router-link>
       </div>
     </div>
     <div
       class="sp_desc"
-      @click.stop="handleClick($event)"
+      @click.stop.prevent="handleClick"
       v-html="spotlight.content"
     ></div>
+    <router-link
+      v-if="spotlight.content"
+      :to="`/pixivision/stories/${spid}`"
+      style="display: inline-block;width: 100%;text-align: center;margin-bottom: 0.6rem;font-size: 0.3rem;transform: translateY(-0.6rem)"
+    >
+      {{ $t('MMvrKgvtY_JmiidXJ-ead') }}
+    </router-link>
     <van-loading v-show="loading" class="loading" :size="'50px'" />
     <masonry v-bind="recomMasonryProps">
       <SpotlightsRecom
@@ -42,7 +56,7 @@ import _ from '@/lib/lodash'
 import TopBar from '@/components/TopBar'
 import api from '@/api'
 import SpotlightsRecom from './SpotlightsRecom.vue'
-import { COMMON_PROXY, PXIMG_PROXY_BASE } from '@/consts'
+import { COMMON_IMAGE_PROXY, PXIMG_PROXY_BASE, ugoiraAvifSrc } from '@/consts'
 
 export default {
   name: 'Spotlight',
@@ -105,8 +119,16 @@ export default {
       if (res.status === 0) {
         res.data.content = res.data.content
           ?.replace(/i\.pximg\.net/g, PXIMG_PROXY_BASE)
-          ?.replace(/src="https:\/\/embed\.pixiv\.net\/(.*)"/i, `src="${COMMON_PROXY}https://embed.pixiv.net/$1"`)
+          ?.replace(/src="https:\/\/embed\.pixiv\.net\/(.*)"/g, `src="${COMMON_IMAGE_PROXY}https://embed.pixiv.net/$1"`)
+          ?.replace(/src="https:\/\/source\.pixiv\.net\/(.*)"/g, `src="${COMMON_IMAGE_PROXY}https://source.pixiv.net/$1"`)
         this.spotlight = res.data
+        this.$nextTick(() => {
+          document.querySelectorAll('.Spotlight .sp_desc img.ugoira-poster').forEach(el => {
+            el.setAttribute('loading', 'lazy')
+            const id = el.src.match(/\/(\d+)_master1200/)?.[1]
+            if (id) el.src = ugoiraAvifSrc(id)
+          })
+        })
       } else {
         this.$toast({
           message: res.msg,
@@ -192,6 +214,9 @@ export default {
       margin 0 !important
       box-shadow: none !important
       object-fit: cover
+
+    ._ugoira-player-container canvas
+      display none
 
     ._article-illust-eyecatch img
       max-width 100%

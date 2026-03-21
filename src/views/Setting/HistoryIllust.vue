@@ -1,52 +1,97 @@
 <template>
   <div class="illusts">
-    <wf-cont layout="Grid">
-      <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
-    </wf-cont>
+    <VirtualWaterfall
+      wrapper-height="95vh"
+      :gap="10"
+      :items="artList"
+      :min-column-count="2"
+      :item-min-width="280"
+      :preload-screen-count="[1, 1]"
+      :calc-item-height="(_, w) => w"
+    >
+      <template #default="{ item }">
+        <ImageCard
+          v-longpress="clearSingleFn(item.id)"
+          mode="all"
+          :artwork="item"
+          no-longpress
+          @click-card="toArtwork(item)"
+        />
+      </template>
+    </VirtualWaterfall>
     <van-empty v-if="!artList.length" :description="$t('tips.no_data')" />
   </div>
 </template>
 
 <script>
 import { Dialog } from 'vant'
-import ImageCard from '@/components/ImageCard'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { filterCensoredIllusts } from '@/utils/filter'
+import VirtualWaterfall from '@/components/VirtualWaterfall.vue'
+import ImageCard from '@/components/ImageCard.vue'
 
 export default {
   name: 'SettingHistoryIllust',
   components: {
+    VirtualWaterfall,
     ImageCard,
   },
   data() {
     return {
       artList: [],
+      loading: false,
+      isLongpressing: false,
     }
   },
-  activated() {
-    this.init()
-  },
   mounted() {
-    this.init()
+    this.$nextTick(() => {
+      requestAnimationFrame(() => {
+        this.init()
+      })
+    })
   },
   methods: {
     init() {
-      this.$nextTick(() => {
-        setTimeout(() => {
-          this.getHistory()
-        }, 200)
-      })
+      this.getHistory()
     },
     toArtwork(art) {
+      if (this.isLongpressing) return
       this.$store.dispatch('setGalleryList', this.artList)
       this.$router.push({
         name: 'Artwork',
-        params: { id: art.id, art },
+        params: { id: art.id },
       })
     },
     async getHistory() {
+      if (this.loading) return
+      this.loading = true
       const list = await getCache('illusts.history')
       this.artList = list ? filterCensoredIllusts(list) : []
+      this.loading = false
+    },
+    clearSingleFn(id) {
+      return [
+        () => {
+          this.isLongpressing = true
+          Dialog.confirm({
+            message: this.$t('HBhN6EmgH_x2sduNtKpXn'),
+            cancelButtonText: this.$t('common.cancel'),
+            confirmButtonText: this.$t('common.confirm'),
+          }).then(async () => {
+            this.artList = this.artList.filter(e => e.id != id)
+            await setCache('illusts.history', this.artList)
+            this.init()
+          }).catch(() => {})
+        },
+        {
+          modifiers: { stop: true, prevent: true },
+          onMouseUp: () => {
+            setTimeout(() => {
+              this.isLongpressing = false
+            }, 500)
+          },
+        },
+      ]
     },
     clearHistory() {
       Dialog.confirm({
@@ -56,7 +101,7 @@ export default {
       }).then(async () => {
         this.artList = []
         await setCache('illusts.history', null)
-      })
+      }).catch(() => {})
     },
   },
 }

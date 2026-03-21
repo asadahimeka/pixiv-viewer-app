@@ -9,33 +9,39 @@
           </span>
         </template>
       </van-cell>
-      <h3 v-else class="af_title">{{ $t('user.fav_title') }}</h3>
+      <h3 v-else class="af_title">
+        <div class="discovery-tabs">
+          <div v-if="showPxcl" class="com_sel_tab" @click="$router.push('/my-illust-bookmarks')">插画收藏(本地缓存)</div>
+          <div class="com_sel_tab cur">{{ $t('user.fav_title') }}</div>
+          <div class="com_sel_tab" @click="$router.replace($route.fullPath.replace('favorites', 'favorite_novels').replace('artworks', 'novels'))">
+            {{ $t('user.fav_novel_title') }}
+          </div>
+        </div>
+      </h3>
     </template>
-    <van-list
-      v-model="loading"
-      :loading-text="$t('tips.loading')"
+    <BookmarkTags v-if="isCurrentUser" type="illust" @update-sel-tag="updateSelTag" @update-restrict="updateRestrict" />
+    <ImageList
+      :list="artList"
+      :loading="loading"
       :finished="finished"
-      :finished-text="!once ? $t('tips.no_more') : ''"
-      :error.sync="error"
-      :offset="800"
-      :error-text="$t('tips.net_err')"
-      @load="getMemberFavorite()"
-    >
-      <wf-cont>
-        <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
-      </wf-cont>
-    </van-list>
+      :error="error"
+      :on-load-more="getMemberFavorite"
+      :van-list-props="{ 'finished-text': !once ? $t('tips.no_more') : '' }"
+    />
   </div>
 </template>
 
 <script>
-import ImageCard from '@/components/ImageCard'
-import api from '@/api'
 import _ from '@/lib/lodash'
+import api, { localApi } from '@/api'
+import ImageList from '@/components/ImageList.vue'
+import BookmarkTags from '@/views/Account/components/BookmarkTags.vue'
+
 export default {
   name: 'FavoriteIllusts',
   components: {
-    ImageCard,
+    ImageList,
+    BookmarkTags,
   },
   props: {
     id: {
@@ -57,6 +63,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    isCurrentUser: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -65,6 +75,9 @@ export default {
       error: false,
       loading: false,
       finished: false,
+      restrict: 'public',
+      bookmarkTag: '',
+      showPxcl: localApi.APP_CONFIG.useLocalAppApi,
     }
   },
   mounted() {
@@ -78,6 +91,17 @@ export default {
     }
   },
   methods: {
+    updateRestrict(val) {
+      this.restrict = val
+      this.bookmarkTag = ''
+      this.reset()
+      this.getMemberFavorite()
+    },
+    updateSelTag(val) {
+      this.bookmarkTag = val
+      this.reset()
+      this.getMemberFavorite()
+    },
     reset() {
       this.next = 0
       this.artList = []
@@ -85,11 +109,16 @@ export default {
       this.finished = false
     },
     getMemberFavorite: _.throttle(async function () {
-      if (!this.id) return
+      if (!this.id || this.loading || this.finished) return
       if (this.next == null) return
       this.loading = true
       let newList
-      const res = await api.getMemberFavorite(this.id, this.next)
+      const options = {}
+      if (this.isCurrentUser) {
+        if (this.restrict) options.restrict = this.restrict
+        if (this.bookmarkTag) options.tag = this.bookmarkTag
+      }
+      const res = await api.getMemberFavorite(this.id, this.next, this.isCurrentUser, options)
       if (res.status === 0) {
         this.next = res.data.next
         newList = res.data.illusts
@@ -108,13 +137,6 @@ export default {
         this.error = true
       }
     }, 2500),
-    toArtwork(art) {
-      this.$store.dispatch('setGalleryList', this.artList)
-      this.$router.push({
-        name: 'Artwork',
-        params: { id: art.id, art },
-      })
-    },
     onClick() {
       this.$emit('onCilck')
     },
@@ -128,6 +150,13 @@ export default {
   margin-bottom 40px
   text-align center
   font-size 28px
+
+.discovery-tabs
+  display flex
+  justify-content center
+  align-items center
+  gap 10px
+  width 100%
 
 .favorite {
   .cell {

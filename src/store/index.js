@@ -61,7 +61,6 @@ export default new Vuex.Store({
       withBodyBg: true,
       novelDefDlFormat: '',
       novelDlRmStyle: false,
-      novelDlFormat: 'txt',
       novelDefTranslate: '',
       pageFont: '',
       hideNavBarOnScroll: true,

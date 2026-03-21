@@ -16,7 +16,17 @@
     <van-cell-group :title="$t('9X179hdP1zzapzk5Rvqx2')">
       <van-cell center :title="$t('setting.layout.title')" is-link :label="appSetting.wfType" @click="wfType.show = true" />
       <van-cell center :title="$t('setting.img_res.title')" is-link :label="appSetting.imgReso" @click="imgRes.show = true" />
-      <van-cell center :title="$t('ZO7u4XT4flW6_nmyvmXt7')" :label="$t('WdS4RTIeeWqdaqLtvk7ZO')">
+      <van-cell v-if="!appSetting.isEnableSwipe && !appSetting.imgViewHorizonSwiper" center :title="$t('GVpGJVKGl9ZCmIecor4fa')" :label="$t('Pb7RAgYfySagsZJPhO2kC')">
+        <template #right-icon>
+          <van-switch :value="appSetting.imgViewHorizonScroll" size="24" @change="v => saveAppSetting('imgViewHorizonScroll', v)" />
+        </template>
+      </van-cell>
+      <van-cell v-if="!appSetting.isEnableSwipe && !appSetting.imgViewHorizonScroll" center :title="$t('glzJ0Q3_3X3q0v9KbqaB_')" :label="$t('Pb7RAgYfySagsZJPhO2kC')">
+        <template #right-icon>
+          <van-switch :value="appSetting.imgViewHorizonSwiper" size="24" @change="v => saveAppSetting('imgViewHorizonSwiper', v)" />
+        </template>
+      </van-cell>
+      <van-cell v-if="!$store.getters.isNoOuterMeta" center :title="$t('ZO7u4XT4flW6_nmyvmXt7')" :label="$t('WdS4RTIeeWqdaqLtvk7ZO')">
         <template #right-icon>
           <van-switch :value="appSetting.isImageCardOuterMeta" size="24" @change="v => saveAppSetting('isImageCardOuterMeta', v, true)" />
         </template>
@@ -32,6 +42,16 @@
         </template>
       </van-cell>
       <van-cell v-if="isPageTransitionSelShow" center :title="$t('Cy6qJLutMa5O3jJr8TawB')" :label="pageTransitionLabel" is-link @click="pageTransition.show = true" />
+      <van-cell v-if="appSetting.wfType != 'VirtualSlide'" center :title="$t('4DPjs7ecYtMrqrD1DNkAE')" :label="$t('setting.lab.title') +' - ' + $t('9nsjvMfdZrtrkkwjKuyAh')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isVirtualList" size="24" @change="v => saveAppSetting('isVirtualList', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell v-if="!appSetting.isVirtualList" center :title="$t('h_6GIulP5_rWoGwBbyuMf')" :label="$t('XmZ5gQefKGSI43SZ5Kb--')">
+        <template #right-icon>
+          <van-switch :value="appSetting.searchListPagination" size="24" @change="v => saveAppSetting('searchListPagination', v, true)" />
+        </template>
+      </van-cell>
       <van-cell v-if="platform.isAndroid" center :title="$t('GC421AyTxr0fbKIiTVhNt')" :label="$t('Rw0vijWia2YYJTECmLXnR')">
         <template #right-icon>
           <van-switch :value="isDisableStatusbarOverlay" size="24" @change="changeStatusbarOverlayOff" />
@@ -39,17 +59,116 @@
       </van-cell>
     </van-cell-group>
 
+    <van-cell-group v-if="clientConfig.useLocalAppApi" :title="$t('YEPi_dV_gdvw9NzE4iBEu')">
+      <van-cell center :title="$t('kUXt_VWip1c_DZjKGnfNE')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isDefBookmarkPrivate" size="24" @change="v => saveAppSetting('isDefBookmarkPrivate', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('pPdP_eYRyF6xl83qAZ8py')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isDefFollowPrivate" size="24" @change="v => saveAppSetting('isDefFollowPrivate', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('Kzn-_j_XdwEx0af7BLXWA')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isDefBookmarkAddTags" size="24" @change="v => saveAppSetting('isDefBookmarkAddTags', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('mHj_-v8C_IQvGnmZrub-d')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isAutoFollowAfterBookmark" size="24" @change="v => saveAppSetting('isAutoFollowAfterBookmark', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('J8jpRsD7IP-QHHzpQYvH3')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isAutoDownLoadAfterBookmark" size="24" @change="v => saveAppSetting('isAutoDownLoadAfterBookmark', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('OLNaZsi0wpY8KJRRatM0j')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isAutoBookmarkAfterDownload" size="24" @change="v => saveAppSetting('isAutoBookmarkAfterDownload', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('xlcRGv9gUFiOhgdaPh2cy')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isLongpressPrivateBookmark" size="24" @change="v => saveAppSetting('isLongpressPrivateBookmark', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('rsyTbSP8LCnLYe326zCa5')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isLongpressPrivateFollow" size="24" @change="v => saveAppSetting('isLongpressPrivateFollow', v, true)" />
+        </template>
+      </van-cell>
+    </van-cell-group>
+
     <van-cell-group :title="$t('novel.settings.title')">
       <van-cell center :title="$t('j1tomH0kHtIiXUQ-6NhcS')" :label="$t('UiF3Ob-tYkIolJhNVMUFM')" is-link @click="showNovelConfig" />
       <van-cell center :title="$t('MIvoTULAIywXTtFIKsEuD')" :label="novelDlFmtLabel" is-link @click="novelDlFmt.show = true" />
+      <van-cell v-if="appSetting.novelDefDlFormat == 'epub'" center :title="$t('sJimI61fn8ruloG-3ObJs')">
+        <template #right-icon>
+          <van-switch :value="appSetting.novelDlRmStyle" size="24" @change="v => saveAppSetting('novelDlRmStyle', v)" />
+        </template>
+      </van-cell>
       <template v-if="showAutoLoadImtSwitch">
         <van-cell center title="小说默认翻译服务" :label="novelTranslateLabel" is-link @click="novelTranslate.show = true" />
-        <van-cell center title="自动加载沉浸式翻译 SDK 并翻译" label="如已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK">
+        <van-cell center title="自动加载简约翻译(KISS Translator)脚本并翻译">
+          <template #right-icon>
+            <van-switch :value="appSetting.isAutoLoadKissT" size="24" @change="changeAutoLoadKissT" />
+          </template>
+        </van-cell>
+        <!-- <van-cell center title="自动加载沉浸式翻译 SDK 并翻译" label="如已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK">
           <template #right-icon>
             <van-switch :value="appSetting.isAutoLoadImt" size="24" @change="changeAutoLoadImt" />
           </template>
-        </van-cell>
+        </van-cell> -->
       </template>
+      <van-cell center :title="$t('FQPdJ3lYL_mVbUQ09Ly4m')">
+        <template #right-icon>
+          <van-switch :value="appSetting.novelFilterNoLongTag" size="24" @change="v => saveAppSetting('novelFilterNoLongTag', v, true)" />
+        </template>
+      </van-cell>
+      <van-field
+        v-if="appSetting.novelFilterNoLongTag"
+        v-model="novelFilterTagLenMax"
+        type="digit"
+        class="searchMinFavNum_field"
+        :label="$t('6jy3lpKMK-SRoKaOYC9es')"
+        placeholder=" "
+      >
+        <template #button>
+          <van-button size="small" type="info" @click="saveAppSetting('novelFilterTagLenMax', novelFilterTagLenMax, true)">{{ $t('common.save') }}</van-button>
+        </template>
+      </van-field>
+      <van-field
+        v-if="appSetting.novelFilterNoLongTag"
+        v-model="novelFilterTagSplitMax"
+        type="digit"
+        class="searchMinFavNum_field"
+        :label="$t('deioz-o-xyQumyCC0nxcg')"
+        placeholder=" "
+      >
+        <template #button>
+          <van-button size="small" type="info" @click="saveAppSetting('novelFilterTagSplitMax', novelFilterTagSplitMax, true)">{{ $t('common.save') }}</van-button>
+        </template>
+      </van-field>
+      <van-cell center :title="$t('D4Sg4TcGKn13JicohFGvG')">
+        <template #right-icon>
+          <van-switch :value="appSetting.novelFilterNoShortLen" size="24" @change="v => saveAppSetting('novelFilterNoShortLen', v, true)" />
+        </template>
+      </van-cell>
+      <van-field
+        v-if="appSetting.novelFilterNoShortLen"
+        v-model="novelFilterTextLenMin"
+        type="digit"
+        class="searchMinFavNum_field"
+        :label="$t('qZpSERwayoTSDmMpi0w57')"
+        placeholder=" "
+      >
+        <template #button>
+          <van-button size="small" type="info" @click="saveAppSetting('novelFilterTextLenMin', novelFilterTextLenMin, true)">{{ $t('common.save') }}</van-button>
+        </template>
+      </van-field>
     </van-cell-group>
 
     <van-cell-group :title="$t('j2tFt08r6GGMmsfbF4HAN')">
@@ -66,6 +185,12 @@
       </van-cell>
       <van-cell center :title="$t('m9rhO-859d7Br05Hm5b54')" is-link :label="appSetting.dlFileNameTpl" @click="showDlFileNameTplDialog = true" />
       <van-cell center :title="$t('Rq0GHiUs_LyUxDu-IhfBb')" is-link :label="appSetting.ugoiraDefDLFormat || $t('ks96nwuAms0B8wSWBWhil')" @click="ugoiraDL.show = true" />
+      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'MP4(Browser)'" center :title="$t('C7QksnJamis3gnOQYahco')" is-link :label="appSetting.ugoiraMp4Bitrate" @click="ugoiraBitrates.show = true" />
+      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'APNG'" center :title="$t('1c9AB2NdmH-9CpwIEK2jg')" :label="$t('X6XWoxxKCWK5k7s8oOiGi')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isUgoiraApngSaveAsPng" size="24" @change="v => saveAppSetting('isUgoiraApngSaveAsPng', v)" />
+        </template>
+      </van-cell>
       <van-cell v-if="platform.isAndroid" center :title="$t('8uktANA7hP_We9wM_o8lN')" :label="$t('9zbbiHNnDhb2eebwLd3HR')">
         <template #right-icon>
           <van-switch
@@ -93,15 +218,15 @@
     </van-cell-group>
 
     <van-cell-group :title="$t('7-drBPGRIz_BsYuc9ybCm')">
-      <van-cell v-if="!(appSetting.isDirectPximg && clientConfig.useLocalAppApi)" center :title="$t('setting.other.manual_input')" :label="$t('setting.other.manual_input_label')">
+      <van-cell v-if="(pximgBed_.actions.length || hibiapi_.actions.length) && (!clientConfig.useLocalAppApi || !appSetting.isDirectPximg)" center :title="$t('setting.other.manual_input')" :label="$t('setting.other.manual_input_label')">
         <template #right-icon>
           <van-switch v-model="hideApSelect" size="24" />
         </template>
       </van-cell>
       <van-cell v-if="hideApSelect && !appSetting.isDirectPximg" center :title="$t('setting.img_proxy.title')" is-link :label="pximgBed.value" @click="pximgBed.show = true" />
       <van-cell v-if="!clientConfig.useLocalAppApi && hideApSelect" center :title="$t('setting.api.title')" is-link :label="hibiapi.value" @click="hibiapi.show = true" />
-      <van-cell v-if="!hideApSelect && !appSetting.isDirectPximg" center :title="$t('setting.img_proxy.title2')" is-link :label="pximgBedLabel" @click="pximgBed_.show = true" />
-      <van-cell v-if="!clientConfig.useLocalAppApi && !hideApSelect" center :title="$t('setting.api.title2')" is-link :label="hibiapiLabel" @click="hibiapi_.show = true" />
+      <van-cell v-if="!hideApSelect && !appSetting.isDirectPximg && pximgBed_.actions.length" center :title="$t('setting.img_proxy.title2')" is-link :label="pximgBedLabel" @click="pximgBed_.show = true" />
+      <van-cell v-if="!clientConfig.useLocalAppApi && !hideApSelect && hibiapi_.actions.length" center :title="$t('setting.api.title2')" is-link :label="hibiapiLabel" @click="hibiapi_.show = true" />
       <van-cell center :title="$t('lGZGzwfWz9tW_KQey3AmQ')" :label="appSetting.isDirectPximg?$t('1bFB0dqSmKBnjbVLFyJKp', [directApiHosts.pximg]):$t('OA8ygupG-4FcNWHtwEUG-')">
         <template #right-icon>
           <van-switch :value="appSetting.isDirectPximg" size="24" @change="setDirectPximg" />
@@ -125,7 +250,7 @@
     </van-cell-group>
 
     <van-cell-group :title="$t('6oe7JPS26HGAlcjQdmHZ4')">
-      <van-cell center :title="$t('Na5UTdncjCSNrFJGlrPoq')">
+      <van-cell v-if="!isDark" center :title="$t('Na5UTdncjCSNrFJGlrPoq')">
         <template #right-icon>
           <van-switch :value="appSetting.withBodyBg" size="24" @change="v => saveAppSetting('withBodyBg', v, true)" />
         </template>
@@ -135,9 +260,24 @@
           <van-switch :value="appSetting.isUseFancybox" size="24" @change="v => saveAppSetting('isUseFancybox', v)" />
         </template>
       </van-cell>
-      <van-cell center :title="$t('setting.other.swipe_toggle')">
+      <van-cell v-if="!appSetting.imgViewHorizonScroll && !appSetting.imgViewHorizonSwiper" center :title="$t('setting.other.swipe_toggle')">
         <template #right-icon>
           <van-switch :value="appSetting.isEnableSwipe" size="24" @change="v => saveAppSetting('isEnableSwipe', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('ZwLxHHLEfTwPAC6E2g6Pv')">
+        <template #right-icon>
+          <van-switch :value="appSetting.manualLoadRelated" size="24" @change="v => saveAppSetting('manualLoadRelated', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('60RSxzAvXAF1Lfp_oqv7h')">
+        <template #right-icon>
+          <van-switch :value="appSetting.autoPlayUgoira" size="24" @change="v => saveAppSetting('autoPlayUgoira', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell v-if="clientConfig.useLocalAppApi" center :title="$t('OHSPV09hSKNSbdJgbYJfV')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isUgoiraAvifSrc" size="24" @change="v => saveAppSetting('isUgoiraAvifSrc', v, true)" />
         </template>
       </van-cell>
       <van-cell v-if="isNavSHSetShow" center :title="$t('Gry1iNTJ2wm_9FMG_JpBT')">
@@ -145,19 +285,35 @@
           <van-switch :value="appSetting.hideNavBarOnScroll" size="24" @change="v => saveAppSetting('hideNavBarOnScroll', v, true)" />
         </template>
       </van-cell>
-      <van-cell center :title="$t('GnyWarxXoDw49xCft4IlS')">
+      <van-cell center :title="$t('YpPRTcXoLoM5R1mhSy3si')">
         <template #right-icon>
-          <van-switch :value="appSetting.isImgLazy" size="24" @change="v => saveAppSetting('isImgLazy', v, true)" />
+          <van-switch :value="appSetting.openArtDetailAsPopup" size="24" @change="v => saveAppSetting('openArtDetailAsPopup', v, true)" />
         </template>
       </van-cell>
-      <van-cell center :title="$t('2CmJxHkq8O-uA68cU90Lx')">
+      <van-cell v-if="!appSetting.isDirectPximg" center :title="$t('GnyWarxXoDw49xCft4IlS')">
         <template #right-icon>
-          <van-switch :value="appSetting.isImgLazyOb" size="24" @change="v => saveAppSetting('isImgLazyOb', v, true)" />
+          <van-switch :value="appSetting.isImgLazy" size="24" @change="v => saveAppSetting('isImgLazy', v, true)" />
         </template>
       </van-cell>
       <van-cell center :title="$t('_E9iTJP6wHVE-Qxau80YA')">
         <template #right-icon>
           <van-switch :value="appSetting.isImageCardBorderRadius" size="24" @change="v => saveAppSetting('isImageCardBorderRadius', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('foF5sr3Mc2YROB7MxRm49')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isImageCardBoxShadow" size="24" @change="v => saveAppSetting('isImageCardBoxShadow', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('-Awb9ThE8xXqaFTAHFHE2')" :label="appSetting.appStartPage" is-link @click="appStartPage.show = true" />
+      <van-cell center title="Navbar Alternative Style">
+        <template #right-icon>
+          <van-switch :value="appSetting.navBarAltStyle" size="24" @change="v => saveAppSetting('navBarAltStyle', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center title="Show FPS indicator">
+        <template #right-icon>
+          <van-switch :value="appSetting.showFpsDemo" size="24" @change="v => saveAppSetting('showFpsDemo', v, false)" />
         </template>
       </van-cell>
       <van-cell center title="Enable Umami Analytics">
@@ -171,6 +327,8 @@
       <van-cell center :title="$t('Wc3yMDMSkHUhoGx22bsP8')" is-link @click="importSettings" />
       <van-cell center :title="$t('Bi5BpYwKhUhWcm_RueGZN')" is-link @click="exportSettings" />
       <van-cell v-if="platform.isAndroid" center :title="$t('V8DX1WzGd142O8SUrOlMP')" is-link @click="shareSettings" />
+      <van-cell center :title="$t('zhO6bfsyPM1-GpZgyer-L')" is-link @click="importHistory" />
+      <van-cell center :title="$t('VV1Yh4x2vpWMf-YwVIRSl')" is-link @click="exportHistory" />
     </van-cell-group>
 
     <van-dialog
@@ -196,8 +354,8 @@
       @confirm="changeHibiapi"
     >
       <van-cell>{{ $t('setting.api.desc') }}</van-cell>
-      <van-cell>{{ $t('setting.api.desc2') }}</van-cell>
-      <van-cell>{{ $t('setting.api.desc3') }}: <a href="https://github.com/mixmoe/HibiAPI">🔗Github</a></van-cell>
+      <van-cell>{{ $t('setting.api.desc2', ['https://api.pxve.cc/api/pixiv']) }}</van-cell>
+      <van-cell>{{ $t('setting.api.desc3') }}: <a href="https://github.com/asadahimeka/pxve-api" target="_blank">🔗PxveAPI</a>&nbsp;<a href="https://github.com/mixmoe/HibiAPI" target="_blank">🔗HibiAPI</a></van-cell>
       <!-- <van-cell>{{ $t('setting.api.desc5') }}</van-cell> -->
       <van-field v-model="hibiapi.value" :label="$t('setting.input')" label-width="3.5em" :placeholder="$t('setting.api.title3')" />
     </van-dialog>
@@ -234,6 +392,14 @@
       @select="v => saveAppSetting('ugoiraDefDLFormat', v.name)"
     />
     <van-action-sheet
+      v-model="ugoiraBitrates.show"
+      :actions="ugoiraBitrates.actions"
+      :cancel-text="$t('common.cancel')"
+      :description="$t('C7QksnJamis3gnOQYahco')"
+      close-on-click-action
+      @select="v => saveAppSetting('ugoiraMp4Bitrate', v.name)"
+    />
+    <van-action-sheet
       v-model="pageTransition.show"
       :actions="pageTransition.actions"
       :cancel-text="$t('common.cancel')"
@@ -241,30 +407,30 @@
       close-on-click-action
       @select="onPageTransitionChange"
     />
-    <van-action-sheet
-      v-model="pageFont.show"
-      style="font-family: Arial, Helvetica, sans-serif"
-      :actions="pageFont.actions"
-      :cancel-text="$t('common.cancel')"
-      :description="$t('SLO07VkQh2wjFJJ1MLvUl')"
-      close-on-click-action
-      @select="e => saveAppSetting('pageFont', e._value, true)"
-    />
+    <PageFontSelect ref="pageFontSelRef" :current-font="appSetting.pageFont" @change="v => saveAppSetting('pageFont', v, !v)" />
     <van-action-sheet
       v-model="novelDlFmt.show"
       :actions="novelDlFmt.actions"
       :cancel-text="$t('common.cancel')"
       :description="$t('MIvoTULAIywXTtFIKsEuD')"
       close-on-click-action
-      @select="e => saveAppSetting('novelDlFormat', e._value)"
+      @select="e => saveAppSetting('novelDefDlFormat', e._value)"
     />
     <van-action-sheet
       v-model="novelTranslate.show"
       :actions="novelTranslate.actions"
       :cancel-text="$t('common.cancel')"
-      description="小说默认翻译服务 (不可与自动加载沉浸式翻译 SDK 同时使用)"
+      description="小说默认翻译服务"
       close-on-click-action
       @select="e => saveAppSetting('novelDefTranslate', e._value)"
+    />
+    <van-action-sheet
+      v-model="appStartPage.show"
+      :actions="appStartPage.actions"
+      :cancel-text="$t('common.cancel')"
+      :description="$t('-Awb9ThE8xXqaFTAHFHE2')"
+      close-on-click-action
+      @select="e => saveAppSetting('appStartPage', e._value)"
     />
     <van-action-sheet
       v-model="lang.show"
@@ -291,6 +457,7 @@
       class="hibiapi-actions"
       @select="changeHibiapi_"
     />
+    <NovelTextConfig ref="novelConfigRef" style="left: 50%;right: unset;" />
     <van-dialog
       v-model="showDlFileNameTplDialog"
       width="9rem"
@@ -302,7 +469,7 @@
       @cancel="dlFileNameTpl=appSetting.dlFileNameTpl"
     >
       <van-cell>{{ $t('QJJd8OqGWs3rIHxMwYma9') }}</van-cell>
-      <van-cell class="tips">{{ $t('bmqXgC68c1dDsgtYwO1Sv') }} <code>{pid}</code> <code>{index}</code></van-cell>
+      <van-cell class="tips">{{ $t('bmqXgC68c1dDsgtYwO1Sv') }} <br><code>{pid}</code> <code>{index}</code></van-cell>
       <van-cell>{{ $t('Zt3czgV8wrvas-it5b9Z0') }}</van-cell>
       <div class="dl-tpl-tags">
         <div class="dl-tpl-tag" @click="dlFileNameTpl+='{author}'">
@@ -341,35 +508,49 @@
           <van-tag round plain type="primary" size="large">createDate</van-tag>
           <span>{{ $t('JHBWOqLzMQN-kgmyDVSzN') }}</span>
         </div>
+        <div class="dl-tpl-tag" @click="dlFileNameTpl+='{xRestrict}'">
+          <van-tag round plain type="primary" size="large">xRestrict</van-tag>
+          <span>{{ $t('bWxoo0Ax8c19Asx33W8tC') }}</span>
+        </div>
+        <div class="dl-tpl-tag" @click="dlFileNameTpl+='{aiType}'">
+          <van-tag round plain type="primary" size="large">aiType</van-tag>
+          <span>{{ $t('BQErokL17-JKhKeCf21yI') }}</span>
+        </div>
         <div class="dl-tpl-tag" @click="dlFileNameTpl+='_'">
           <van-tag plain type="primary" size="large">_</van-tag>
           <span>{{ $t('P2gkznjKnjtHZDGXgzYfg') }}</span>
         </div>
       </div>
-      <van-field v-model="dlFileNameTpl" :label="$t('498jRU7yCP-NoupL7HBFk')" label-width="3.5em" />
+      <van-field v-model="dlFileNameTpl" :label="$t('498jRU7yCP-NoupL7HBFk')" label-width="2.5em" />
+      <van-cell>{{ $t('vrHKCLkhV92dZ7eyvgFx8') }}:&nbsp;&nbsp;&nbsp;&nbsp;{{ sampleArtFileName }}</van-cell>
     </van-dialog>
-    <NovelTextConfig ref="novelConfigRef" style="left: 50%;right: unset;" />
   </div>
 </template>
 
 <script>
 import { Dialog } from 'vant'
 import PixivAuth from '@/api/client/pixiv-auth'
-import localDb from '@/utils/storage/localDb'
 import store from '@/store'
+import platform from '@/platform'
+import localDb from '@/utils/storage/localDb'
 import { APP_API_PROXYS, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, HIBIAPI_ALTS, PXIMG_PROXYS } from '@/consts'
 import { i18n } from '@/i18n'
+import { localApi } from '@/api'
+import { getSampleFileName } from '@/store/actions/filename'
 import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, readTextFile } from '@/utils'
 import { mintVerify } from '@/utils/filter'
 import { LocalStorage, SessionStorage } from '@/utils/storage'
-import { getPageFontModel } from '@/utils/font'
+import { getCache, setCache } from '@/utils/storage/siteCache'
+import { aiModelMap } from '@/utils/translate'
+import { ugoiraDownloadActions } from '@/utils/ugoira'
 import NovelTextConfig from '../Artwork/components/NovelTextConfig.vue'
-import platform from '@/platform'
+import PageFontSelect from '../Artwork/components/PageFontSelect.vue'
 
 export default {
   name: 'SettingOthers',
   components: {
     NovelTextConfig,
+    PageFontSelect,
   },
   data() {
     return {
@@ -416,15 +597,20 @@ export default {
           { name: 'Masonry', subname: this.$t('setting.layout.m') },
           { name: 'Grid', subname: this.$t('setting.layout.g') },
           { name: 'Justified', subname: this.$t('setting.layout.j') },
-          { name: 'Masonry(CSSGrid)', subname: this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
-          { name: 'Justified(Transform)', subname: this.$t('setting.layout.j') + ' - ' + this.$t('setting.lab.title') },
-          { name: 'Masonry(FlexOrder)', subname: this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
+          // { name: 'VirtualMasonry', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
+          // { name: 'VirtualGrid', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.g') + ' - ' + this.$t('setting.lab.title') },
+          // { name: 'VirtualJustified', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.j') + ' - ' + this.$t('setting.lab.title') },
+          { name: 'VirtualSlide', subname: this.$t('WrsiY7DP94fbUlQ6SoLlH') },
+          { name: 'Masonry(CSSGrid)', subname: this.$t('setting.layout.m') },
+          { name: 'Justified(Transform)', subname: this.$t('setting.layout.j') },
+          // { name: 'Masonry(FlexOrder)', subname: this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
         ],
       },
       imgRes: {
         show: false,
         actions: [
           { name: 'Medium', subname: this.$t('setting.img_res.m') },
+          { name: 'Large(WebP)', subname: this.$t('setting.img_res.m') },
           { name: 'Large', subname: this.$t('setting.img_res.l') },
           { name: 'Original', subname: this.$t('setting.img_res.o'), disabled: LocalStorage.get('PXIMG_PROXY') != 'i.pixiv.re' },
         ],
@@ -438,8 +624,10 @@ export default {
           { _value: 'en', name: 'English' },
           { _value: 'ja', name: '日本語' },
           { _value: 'ko', name: '한국어' },
-          { _value: 'de', name: 'Deutsch' },
+          { _value: 'th-TH', name: 'ภาษาไทย' },
+          { _value: 'ms-MY', name: 'Bahasa Melayu' },
           { _value: 'fr', name: 'Français' },
+          { _value: 'de', name: 'Deutsch' },
           { _value: 'ru', name: 'Русский' },
           { _value: 'it', name: 'Italiano' },
           { _value: 'es', name: 'Español' },
@@ -450,14 +638,13 @@ export default {
       ugoiraDL: {
         show: false,
         actions: [
-          { name: 'ZIP', subname: i18n.t('artwork.download.zip') },
-          { name: 'GIF', subname: i18n.t('artwork.download.gif') },
-          { name: 'WebM', subname: i18n.t('artwork.download.webm') },
-          { name: 'APNG', subname: i18n.t('artwork.download.webm') },
-          { name: 'MP4(Browser)', subname: i18n.t('pIghtXdU8socMNNRUn5UR') },
-          { name: 'MP4(Server)', subname: i18n.t('zuVom-C8Ss8JTEDZIhzBj') },
-          { name: 'Other', subname: i18n.t('artwork.download.mp4') },
+          { name: '', subname: i18n.t('ks96nwuAms0B8wSWBWhil') },
+          ...ugoiraDownloadActions,
         ],
+      },
+      ugoiraBitrates: {
+        show: false,
+        actions: [2, 4, 6, 8, 10, 12].map(i => ({ name: `${i} Mbps` })),
       },
       pageTransition: {
         show: false,
@@ -475,35 +662,68 @@ export default {
           { name: 'push', _value: 'f7-push' },
         ],
       },
-      pageFont: {
-        show: false,
-        actions: [],
-      },
       novelDlFmt: {
         show: false,
         actions: [
+          { name: 'unset', _value: '' },
           { name: 'TXT', _value: 'txt' },
           { name: 'HTML', _value: 'html' },
-        ],
+          { name: 'EPUB', _value: 'epub' },
+          !store.state.isMobile && ({ name: `PDF(${i18n.t('Uf25j8CV8zHmOiUk7dn-M')})`, _value: 'print' }),
+          { name: 'PDF', _value: 'pdf' },
+          { name: 'DOC', _value: 'doc' },
+          { name: 'MD', _value: 'md' },
+        ].filter(Boolean),
       },
       novelTranslate: {
         show: false,
         actions: [
-          { name: '未设置', _value: '' },
-          { name: 'AI 翻译(glm-4-9b)', className: 'sc', key: 'sc_glm' },
-          { name: 'AI 翻译(GLM-4-9B-0414)', className: 'sc', key: 'sc_glm_0414' },
-          { name: 'AI 翻译(GLM-Z1-9B-0414)', className: 'sc', key: 'sc_glm_z1' },
-          { name: 'AI 翻译(Qwen3-8B)', className: 'sc', key: 'sc_qwen3' },
-          { name: 'AI 翻译(Qwen2.5-7B)', className: 'sc', key: 'sc_qwen2_5' },
-          { name: 'AI 翻译(Qwen2-7B)', className: 'sc', key: 'sc_qwen2' },
-          { name: 'AI 翻译(DS-R1-Llama-8B)', className: 'sc', key: 'sc_ds_r1_llama' },
-          { name: 'AI 翻译(DS-R1-Qwen-7B)', className: 'sc', key: 'sc_ds_r1_qwen' },
+          { name: '不设置', _value: '' },
           { name: '微软翻译', _value: 'ms' },
           { name: '谷歌翻译', _value: 'gg' },
+          ...Object.keys(aiModelMap).map(k => ({
+            name: `AI 翻译(${aiModelMap[k].split('/').pop()})`,
+            _value: `sc_${k}`,
+          })),
           { name: '有道翻译', _value: 'yd' },
         ],
       },
-      hideApSelect: LocalStorage.get('__HIDE_AP_SEL', false),
+      appStartPage: {
+        show: false,
+        actions: [
+          ...(store.getters.isLoggedIn ? [{ name: i18n.t('nav.home') + ' - ' + i18n.t('nav.home'), _value: '/home_all' }] : []),
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('common.illust'), _value: '/' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('common.manga'), _value: '/home_manga' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('common.novel'), _value: '/home_novel' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('sp.title'), _value: '/spotlights' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('Oz0zZHqnxZoCjYysARbO1'), _value: '/popular_illust' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('common.recomm'), _value: '/osusume_illust' },
+          { name: i18n.t('nav.home') + ' - ' + i18n.t('common.random_view'), _value: '/random_illust' },
+          { name: i18n.t('nav.search') + ' - ' + i18n.t('common.illust_manga'), _value: '/search' },
+          { name: i18n.t('nav.search') + ' - ' + i18n.t('common.user'), _value: '/search_novel' },
+          { name: i18n.t('nav.search') + ' - ' + i18n.t('common.novel'), _value: '/search_user' },
+          { name: i18n.t('nav.rank') + ' - ' + i18n.t('common.overall'), _value: '/rank/daily' },
+          { name: i18n.t('nav.rank') + ' - AI', _value: '/rank/daily_ai' },
+          { name: i18n.t('nav.rank') + ' - ' + i18n.t('common.illust'), _value: '/rank/daily_illust' },
+          { name: i18n.t('nav.rank') + ' - ' + i18n.t('common.ugoira'), _value: '/rank/daily_ugoira' },
+          { name: i18n.t('nav.rank') + ' - ' + i18n.t('common.manga'), _value: '/rank/daily_manga' },
+          { name: i18n.t('nav.rank') + ' - ' + i18n.t('common.novel'), _value: '/rank_novel/day' },
+          ...(store.getters.isLoggedIn
+            ? [
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('common.illust_manga'), _value: '/following' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('common.novel'), _value: '/following/5' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('follow.fav') + ' - ' + i18n.t('common.illust_manga'), _value: '/following/2' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('follow.fav') + ' - ' + i18n.t('common.novel'), _value: '/following/7' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('follow.user'), _value: '/following/3' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('iHxoO4eLVL-CHSVMoVynN'), _value: '/following/6' },
+                { name: i18n.t('nav.follow') + ' - ' + i18n.t('follow.latest'), _value: '/following/4' },
+              ]
+            : []),
+          { name: i18n.t('dZ93cWZJ03hu5emsVwgjA'), _value: '/collection' },
+          { name: i18n.t('nav.setting'), _value: '/setting' },
+        ],
+      },
+      hideApSelect: LocalStorage.get('__HIDE_AP_SEL', true),
       isDark: !!localStorage.getItem('PXV_DARK'),
       showAutoLoadImtSwitch: i18n.locale.includes('zh'),
       actTheme: localStorage.PXV_THEME || '',
@@ -519,12 +739,18 @@ export default {
       },
       saveFileDir: LocalStorage.get('PXV_DL_DIR'),
       isNavSHSetShow: document.documentElement.clientWidth <= 1270,
+      novelFilterTextLenMin: store.state.appSetting.novelFilterTextLenMin,
+      novelFilterTagLenMax: store.state.appSetting.novelFilterTagLenMax,
+      novelFilterTagSplitMax: store.state.appSetting.novelFilterTagSplitMax,
     }
   },
   head() {
     return { title: this.$t('setting.other.title') }
   },
   computed: {
+    isMobile() {
+      return store.state.isMobile
+    },
     selLangLabel() {
       return this.lang.actions.find(e => e._value == this.lang.value)?.name || ''
     },
@@ -544,10 +770,13 @@ export default {
       return this.pageTransition.actions.find(e => e._value == store.state.appSetting.pageTransition)?.name || ''
     },
     novelDlFmtLabel() {
-      return this.novelDlFmt.actions.find(e => e._value == store.state.appSetting.novelDlFormat)?.name || ''
+      return this.novelDlFmt.actions.find(e => e._value == store.state.appSetting.novelDefDlFormat)?.name || ''
     },
     novelTranslateLabel() {
       return this.novelTranslate.actions.find(e => e._value == store.state.appSetting.novelDefTranslate)?.name || ''
+    },
+    sampleArtFileName() {
+      return getSampleFileName(this.dlFileNameTpl)
     },
   },
   watch: {
@@ -557,12 +786,26 @@ export default {
         LocalStorage.set('HIBIAPI_BASE', DEF_HIBIAPI_MAIN)
         LocalStorage.set('PXIMG_PROXY', DEF_PXIMG_MAIN)
       }
-      setTimeout(() => {
-        location.reload()
-      }, 500)
+      this.reloadPage()
     },
   },
+  mounted() {
+    const scrollTop = sessionStorage.getItem('PXV_SETTING_PAGE_SCROLL_TOP')
+    console.log('scrollTop: ', scrollTop)
+    if (scrollTop) {
+      sessionStorage.removeItem('PXV_SETTING_PAGE_SCROLL_TOP')
+      this.$nextTick(() => {
+        document.documentElement.scrollTop = +scrollTop
+      })
+    }
+  },
   methods: {
+    reloadPage() {
+      sessionStorage.setItem('PXV_SETTING_PAGE_SCROLL_TOP', document.documentElement.scrollTop)
+      setTimeout(() => {
+        location.reload()
+      }, 200)
+    },
     copyToken() {
       const token = this.clientConfig.refreshToken
       if (!token) return
@@ -578,15 +821,13 @@ export default {
     },
     async saveClientConfig({ reload } = { reload: true }) {
       PixivAuth.writeConfig(this.clientConfig)
-      reload && setTimeout(() => {
-        location.reload()
-      }, 500)
+      reload && this.reloadPage()
     },
     saveAppSetting(/** @type {keyof typeof store.state.appSetting} */ key, val, needReload = false) {
       console.log(key, val)
       window.umami?.track(`set:${key}`, { val })
       store.commit('setAppSetting', { [key]: val })
-      if (needReload) setTimeout(() => location.reload(), 200)
+      if (needReload) this.reloadPage()
     },
     async setDirectPximg(val) {
       if (val) {
@@ -680,9 +921,7 @@ export default {
       window.umami?.track(`set:${key}`, { val })
       this.$nextTick(() => {
         LocalStorage.set(key, val)
-        setTimeout(() => {
-          location.reload()
-        }, 500)
+        this.reloadPage()
       })
     },
     async changePximgBed() {
@@ -731,9 +970,7 @@ export default {
       this.isDisableStatusbarOverlay = val
       this.$nextTick(() => {
         LocalStorage.set('PXV_STATUSBAR_OVERLAY_OFF', val)
-        setTimeout(() => {
-          location.reload()
-        }, 500)
+        this.reloadPage()
       })
     },
     onDarkChange(val) {
@@ -747,42 +984,52 @@ export default {
         document.documentElement.classList.remove('dark')
         document.body.classList.remove('dark')
       }
-      setTimeout(() => location.reload(), 200)
+      this.reloadPage()
     },
     onPageTransitionChange({ _value }) {
       this.saveAppSetting('pageTransition', _value, false)
       setTimeout(() => location.assign('/'), 200)
     },
-    async showPageFontSel() {
-      const pageFont = await getPageFontModel()
-      pageFont.show = true
-      this.pageFont = pageFont
+    showPageFontSel() {
+      this.$refs.pageFontSelRef?.open()
     },
     showNovelConfig() {
       this.$refs.novelConfigRef?.open()
     },
-    async changeAutoLoadImt(val) {
-      if (val) {
-        const res = await Dialog.confirm({
-          title: '自动加载沉浸式翻译 SDK',
-          message: '提示：如果已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK',
-          lockScroll: false,
-          closeOnPopstate: true,
-          cancelButtonText: '取消',
-          confirmButtonText: '确定',
-        }).catch(() => 'cancel')
-        if (res != 'confirm') return
-      }
-      this.saveAppSetting('isAutoLoadImt', val, true)
+    async changeAutoLoadKissT(val) {
+      // if (val) {
+      //   const res = await Dialog.confirm({
+      //     title: '自动加载 KISS Translator 脚本',
+      //     message: '提示：如已安装 KISS Translator 浏览器扩展或用户脚本则无需加载',
+      //     lockScroll: false,
+      //     closeOnPopstate: true,
+      //     cancelButtonText: '取消',
+      //     confirmButtonText: '确定',
+      //   }).catch(() => 'cancel')
+      //   if (res != 'confirm') return
+      // }
+      this.saveAppSetting('isAutoLoadKissT', val, true)
     },
+    // async changeAutoLoadImt(val) {
+    //   if (val) {
+    //     const res = await Dialog.confirm({
+    //       title: '自动加载沉浸式翻译 SDK',
+    //       message: '提示：如果已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK',
+    //       lockScroll: false,
+    //       closeOnPopstate: true,
+    //       cancelButtonText: '取消',
+    //       confirmButtonText: '确定',
+    //     }).catch(() => 'cancel')
+    //     if (res != 'confirm') return
+    //   }
+    //   this.saveAppSetting('isAutoLoadImt', val, true)
+    // },
     changeLang({ _value }) {
       this.lang.value = _value
       window.umami?.track('set_lang', { lang: _value })
       localStorage.setItem('PXV_LANG', _value)
       LocalStorage.remove('PXV_SHORTCUTS_SET')
-      setTimeout(() => {
-        location.reload()
-      }, 500)
+      this.reloadPage()
     },
     async selSaveFileDir() {
       const { getSelectedSaveDir } = await import('@/platform/tauri/utils')
@@ -812,14 +1059,12 @@ export default {
             localStorage.setItem(k, settings[k])
           })
           window.umami?.track('importSettings')
-          this.$toast.success('Success')
-          setTimeout(() => {
-            location.reload()
-          }, 500)
+          this.$toast.success(this.$t('0NCaoKpvYXQvFiCsbcPpK'))
+          this.reloadPage()
         } catch (err) {
           console.log('err: ', err)
           window.umami?.track('importSettingsError', { err })
-          this.$toast(`Error: ${err.message}`)
+          this.$toast(`${this.$t('-LmNvXZulUIIHq_iCdxda')}: ${err.message}`)
         }
       }
       input.click()
@@ -846,6 +1091,39 @@ export default {
         window.umami?.track('shareSettingsError', { err })
       }
     },
+    async importHistory() {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      input.style.display = 'none'
+      input.onchange = async e => {
+        try {
+          const text = await readTextFile(e.target.files[0])
+          const history = JSON.parse(text)
+          console.log('history: ', history)
+          const keys = ['illusts.history', 'novels.history', 'users.history']
+          await Promise.all(history.map(async (arr, i) => {
+            if (Array.isArray(arr)) return setCache(keys[i], arr)
+          }))
+          window.umami?.track('importHistory')
+          this.$toast.success(this.$t('0NCaoKpvYXQvFiCsbcPpK'))
+          this.reloadPage()
+        } catch (err) {
+          console.log('err: ', err)
+          this.$toast(`${this.$t('-LmNvXZulUIIHq_iCdxda')}: ${err.message}`)
+        }
+      }
+      input.click()
+    },
+    async exportHistory() {
+      window.umami?.track('exportHistory')
+      const history = await Promise.all([
+        getCache('illusts.history'),
+        getCache('novels.history'),
+        getCache('users.history'),
+      ])
+      downloadFile(new Blob([JSON.stringify(history)]), `pixiv-viewer-history-${Date.now()}.json`, { subDir: 'backup' })
+    },
     async checkURL(val, checkFn) {
       if (!isURL(val)) {
         const isOK = await mintVerify(val, true)
@@ -855,7 +1133,7 @@ export default {
             confirmButtonText: 'Close',
             message: 'Invalid URL input.',
           }).then(() => {
-            location.reload()
+            this.reloadPage()
           })
         } else {
           Dialog.alert({
@@ -864,7 +1142,7 @@ export default {
             confirmButtonText: 'Close',
             message: '<img src="https://upload-bbs.miyoushe.com/upload/2023/05/21/190122060/911b2f7ef84a863194dfb247c2dfdac9_4125491471312265373.png" alt style="width:100%">',
           }).then(() => {
-            location.reload()
+            this.reloadPage()
           })
         }
         return false
@@ -884,7 +1162,7 @@ export default {
           message: this.$t('tip.connect_err'),
           confirmButtonText: 'OK',
         }).then(() => {
-          location.reload()
+          this.reloadPage()
         })
         return false
       }

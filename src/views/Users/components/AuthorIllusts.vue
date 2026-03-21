@@ -11,8 +11,22 @@
       </van-cell>
       <h3 v-else class="af_title">{{ $t('user.art_title', [authorName + iTypeText]) }}</h3>
     </template>
-    <div v-if="iType == 'illust'" class="member-tags" :class="{ 'one-line': showAllTags }">
-      <div v-for="t in memberTagsDisplay" :key="t.tag" class="member-tag" :style="getTagStyle()" @click="setSelTag(t.tag)">
+    <div v-if="iType == 'illust'" class="member-tags">
+      <template v-if="showR18TagFilter">
+        <div class="member-tag" style="background: #ed4675;color: #fff;" @click="setAgeFilter('R')">
+          <div class="member-tag-main">
+            <span>R-18</span>
+            <van-icon v-if="ageFilter == 'R'" class="member-tag-check" name="checked" />
+          </div>
+        </div>
+        <div class="member-tag" style="background: #375fd7;color: #fff;" @click="setAgeFilter('S')">
+          <div class="member-tag-main">
+            <span>全年龄</span>
+            <van-icon v-if="ageFilter == 'S'" class="member-tag-check" name="checked" />
+          </div>
+        </div>
+      </template>
+      <div v-for="t in memberTagsDisplay" :key="t.tag" class="member-tag" :style="t.style" @click="setSelTag(t.tag)">
         <div class="member-tag-main">
           <span>#{{ t.tag }}</span>
           <template v-if="selTag">
@@ -23,15 +37,35 @@
         <div v-if="t.tag_translation">{{ t.tag_translation }}</div>
       </div>
       <div
-        v-if="!selTag && memberTags.length > 20 && !showAllTags"
+        v-if="!selTag && memberTags.length > 20"
         class="member-tag"
         style="background: #efefef;color: #333;"
         @click="showAllTags = true"
       >
         {{ $t('Tx35SIS0MBLD-pgz1XgXh') }}
       </div>
+      <van-popup
+        v-model="showAllTags"
+        round
+        closeable
+        get-container="body"
+        style="width: 80vw;max-width: 10rem;height:60vh;overflow: hidden;"
+      >
+        <div v-if="showAllTags" style="height: 90%;margin-top: 0.7rem;overflow-y: auto;">
+          <div class="member-tags popup" style="padding: 0.3rem">
+            <div v-for="t in memberTags" :key="t.tag" class="member-tag" :style="t.style" @click="setSelTag(t.tag)">
+              <div class="member-tag-main">
+                <span>#{{ t.tag }}</span>
+                <van-tag class="member-tag-cnt" style="margin-right: 0;">{{ t.cnt }}</van-tag>
+              </div>
+              <div v-if="t.tag_translation">{{ t.tag_translation }}</div>
+            </div>
+          </div>
+        </div>
+      </van-popup>
     </div>
     <van-list
+      v-if="selTag"
       v-model="loading"
       :loading-text="$t('tips.loading')"
       :finished="finished"
@@ -41,23 +75,34 @@
       :error-text="$t('tips.net_err')"
       @load="getMemberArtwork()"
     >
-      <wf-cont :layout="selTag ? 'Grid' : undefined">
+      <wf-cont layout="Grid">
         <ImageCard v-for="art in artList" :key="art.id" mode="all" :artwork="art" @click-card="toArtwork(art)" />
       </wf-cont>
     </van-list>
+    <ImageList
+      v-else
+      :list="artList"
+      :loading="loading"
+      :finished="finished"
+      :error="error"
+      :on-load-more="getMemberArtwork"
+      :van-list-props="{ 'finished-text': !once ? $t('tips.no_more') : '' }"
+    />
   </div>
 </template>
 
 <script>
-import ImageCard from '@/components/ImageCard'
-import api from '@/api'
 import _ from '@/lib/lodash'
-import { generateRandomColor, getContrastingTextColor } from '@/utils'
+import api, { localApi } from '@/api'
+import { generateRandomColor, getContrastingTextColor, sleep } from '@/utils'
+import ImageCard from '@/components/ImageCard.vue'
+import ImageList from '@/components/ImageList.vue'
 
 export default {
   name: 'AuthorIllusts',
   components: {
     ImageCard,
+    ImageList,
   },
   props: {
     id: {
@@ -95,6 +140,7 @@ export default {
       selTag: '',
       showAllTags: false,
       tagArtsCount: 0,
+      ageFilter: '',
     }
   },
   computed: {
@@ -111,7 +157,10 @@ export default {
     },
     memberTagsDisplay() {
       if (this.selTag) return this.memberTags.filter(e => e.tag == this.selTag)
-      return this.showAllTags ? this.memberTags : this.memberTags.slice(0, 20)
+      return this.memberTags.slice(0, 20)
+    },
+    showR18TagFilter() {
+      return localApi.APP_CONFIG.useLocalAppApi && this.$store.getters.isR18On
     },
   },
   mounted() {
@@ -134,6 +183,7 @@ export default {
       this.resetList()
       this.memberTags = []
       this.selTag = ''
+      this.ageFilter = ''
       this.showAllTags = false
       this.tagArtsCount = 0
     },
@@ -145,21 +195,33 @@ export default {
     },
     setSelTag(tag) {
       this.resetList()
+      this.showAllTags = false
       if (tag == this.selTag) {
         this.selTag = ''
         this.tagArtsCount = 0
         this.getMemberArtwork()
         return
       }
-      // window.umami?.track('sel_user_tag', { tag })
+      window.umami?.track('sel_user_tag')
       this.selTag = tag
       this.getMemberTagArtworks()
     },
+    setAgeFilter(type) {
+      this.resetList()
+      if (type == this.ageFilter) {
+        this.ageFilter = ''
+        this.getMemberArtwork()
+        return
+      }
+      window.umami?.track('sel_user_age_filter', { type })
+      this.ageFilter = type
+      this.getMemberArtwork()
+    },
     async getMemberTags() {
       if (this.iType != 'illust') return
-      const res = await api.getMemberTags(this.id)
+      const res = await api.getMemberTags(this.id, this.$store.getters.isR18On)
       if (res.status === 0) {
-        this.memberTags = res.data
+        this.memberTags = res.data.map(e => ({ ...e, style: e.style || this.getTagStyle() }))
       } else {
         this.$toast({ message: res.msg })
         this.memberTags = []
@@ -172,6 +234,20 @@ export default {
       const res = await api.getMemberTagArtworks(this.id, this.selTag, this.curPage)
       if (res.status === 0) {
         newList = res.data.works
+
+        if (this.ageFilter == 'R') {
+          newList = newList.filter(e => e.x_restrict > 0)
+        }
+
+        if (this.ageFilter == 'S') {
+          newList = newList.filter(e => e.x_restrict == 0)
+        }
+
+        if (newList.length < 10) {
+          console.log('------------- sleep')
+          await sleep(800)
+        }
+
         this.artList = _.uniqBy([
           ...this.artList,
           ...newList,
@@ -202,6 +278,20 @@ export default {
       const res = await api.getMemberArtwork(this.id, this.curPage, this.iType)
       if (res.status === 0) {
         newList = res.data
+
+        if (this.ageFilter == 'R') {
+          newList = newList.filter(e => e.x_restrict > 0)
+        }
+
+        if (this.ageFilter == 'S') {
+          newList = newList.filter(e => e.x_restrict == 0)
+        }
+
+        if (newList.length < 10) {
+          console.log('------------- sleep')
+          await sleep(800)
+        }
+
         if (this.once) newList = newList.slice(0, 10)
         this.artList = _.uniqBy([
           ...this.artList,
@@ -248,17 +338,6 @@ export default {
   font-size 28px
 }
 
-member-tags-one-line() {
-  flex-wrap nowrap
-  margin-bottom 30px
-  padding-bottom 10px
-  overflow-x auto
-
-  .member-tag {
-    min-width fit-content
-  }
-}
-
 .member-tags {
   display flex
   flex-wrap wrap
@@ -266,12 +345,30 @@ member-tags-one-line() {
   margin-top 20px
   margin-bottom 40px
 
-  &.one-line {
-    member-tags-one-line()
+  &.popup {
+    justify-content: center;
+    .member-tag {
+      content-visibility auto
+      contain-intrinsic-size auto 0.8rem
+    }
   }
 
   @media screen and (max-width: 1200px) {
-    member-tags-one-line()
+    &.popup {
+      .member-tag {
+        min-width 90%
+        min-height 0.9rem
+      }
+    }
+    &:not(.popup) {
+      flex-wrap nowrap
+      margin-bottom 30px
+      padding-bottom 10px
+      overflow-x auto
+      .member-tag {
+        min-width fit-content
+      }
+    }
   }
 }
 
@@ -295,6 +392,7 @@ member-tags-one-line() {
 
   &-cnt {
     margin-right 0.4rem
+    vertical-align: 0.1em
   }
 
   &-close {
@@ -303,6 +401,14 @@ member-tags-one-line() {
     right: 0.2rem;
     font-size: 1.2em;
     font-weight: bold;
+  }
+
+  &-check {
+    position: absolute;
+    top: -0.1rem;
+    right: -0.1rem;
+    font-size: 1.5em;
+    color: #5fe96b;
   }
 }
 

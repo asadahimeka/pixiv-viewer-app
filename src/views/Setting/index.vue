@@ -28,9 +28,9 @@
           </div>
         </template>
       </van-cell>
-      <van-cell v-if="isLoggedIn" size="large" center :title="$t('user.sess.my_fav')" icon="star-o" is-link :to="`/users/${user.id}/favorites`" />
+      <van-cell v-if="isLoggedIn" size="large" center :title="$t('user.sess.my_fav')" icon="star-o" is-link :to="`/users/${user.id}/favorites?isCurrentUser=1`" />
       <van-cell v-else size="large" center :title="$t('user.sess.login')" icon="user-circle-o" is-link to="/account/login" />
-      <van-cell size="large" center :title="$t('common.history')" icon="underway-o" is-link to="/setting/history" />
+      <van-cell size="large" center :title="$t('common.history')" icon="underway-o" is-link :to="{name:'History',params:{refresh:1}}" />
       <van-cell v-if="platform.isCapacitor" size="large" center :title="$t('5wkdnjEH9KXox8uIHhQmm')" icon="list-switch" is-link to="/setting/downloads" />
       <van-cell size="large" center :title="$t('display.title')" icon="eye-o" is-link to="/setting/contents_display" />
       <van-cell size="large" center :title="$t('cache.title')" icon="delete-o" is-link to="/setting/clearcache" />
@@ -41,6 +41,7 @@
     <div v-if="isLoggedIn" style="width: 60%;margin: 1rem auto 0;">
       <van-button round plain block type="danger" size="small" @click="logoutApp">{{ $t('user.sess.out') }}</van-button>
     </div>
+    <div class="kawaii-logo"></div>
   </div>
 </template>
 
@@ -48,6 +49,7 @@
 import { mapGetters, mapState } from 'vuex'
 import { Dialog } from 'vant'
 import PixivAuth from '@/api/client/pixiv-auth'
+import { localApi } from '@/api'
 import { logout } from '@/api/user'
 import { LocalStorage } from '@/utils/storage'
 import store from '@/store'
@@ -96,6 +98,17 @@ export default {
     margin-right 0.4rem
     font-size 24px
     transform: translateY(1px);
+
+.kawaii-logo
+  position fixed
+  z-index -1
+  bottom: 2rem
+  right: 0.4rem
+  width: 4rem
+  height 1.97rem
+  aspect-ratio 392/193
+  background url('@/assets/images/kawaii-logo.png') no-repeat center / contain
+  pointer-events none
 
 .app-title
   display flex

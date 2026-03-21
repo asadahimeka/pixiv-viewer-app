@@ -5,14 +5,17 @@
       <Icon class="icon" name="ex_link" />
     </div>
     <div class="main_cover">
-      <img :src="spotlight.cover || ''" alt="" loading="lazy">
+      <img v-if="spotlight.cover" :src="spotlight.cover || ''" alt="" loading="lazy">
       <div class="title_wp">
         <div class="title_cnt">
           <h1 class="title">{{ spotlight.title }}</h1>
         </div>
       </div>
     </div>
-    <div class="sp_desc">{{ spotlight.desc }}</div>
+    <div class="sp_desc">
+      {{ spotlight.desc }}
+      <router-link v-if="spotlight.desc" :to="`/pixivision/stories/${spid}`">{{ $t('MMvrKgvtY_JmiidXJ-ead') }}</router-link>
+    </div>
     <van-loading v-show="loading" class="loading" :size="'50px'" />
     <div v-if="spotlight.items" class="flexbin">
       <ImageCard
@@ -48,7 +51,7 @@ import TopBar from '@/components/TopBar'
 import ImageCard from '@/components/ImageCard'
 import api from '@/api'
 import SpotlightsRecom from './SpotlightsRecom.vue'
-import { COMMON_PROXY } from '@/consts'
+import { COMMON_IMAGE_PROXY, ugoiraAvifSrc } from '@/consts'
 import { dealStatusBarOnLeave, dealStatusBarOnEnter } from '@/utils'
 
 export default {
@@ -128,12 +131,14 @@ export default {
       const res = _.cloneDeep(await api.getSpotlightDetail(this.spid))
       if (res.status === 0) {
         this.checkRes(res.data)
-        res.data.cover = COMMON_PROXY + res.data.cover
+        const isUgoira = res.data.tags.some(e => e.id == '9')
+        const imgSrc = e => isUgoira ? ugoiraAvifSrc(e.illust_id) : e.illust_url
+        res.data.cover = COMMON_IMAGE_PROXY + res.data.cover
         res.data.items = res.data.items.map(e => ({
           id: e.illust_id,
           title: e.title,
-          illust_url: e.illust_url,
-          images: [{ m: e.illust_url }],
+          illust_url: imgSrc(e),
+          images: [{ m: imgSrc(e) }],
           author: {
             name: e.user_name,
             avatar: e.user_avatar,

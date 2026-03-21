@@ -4,6 +4,7 @@
       <div
         v-for="u in artList"
         :key="u.id"
+        v-longpress="clearSingleFn(u.id)"
         class="user_info"
         @click="toArtwork(u.id)"
       >
@@ -29,21 +30,18 @@ export default {
   data() {
     return {
       artList: [],
+      isLongpressing: false,
     }
-  },
-  activated() {
-    this.init()
   },
   mounted() {
     this.init()
   },
   methods: {
     init() {
-      this.$nextTick(() => {
-        this.getHistory()
-      })
+      this.getHistory()
     },
     toArtwork(id) {
+      if (this.isLongpressing) return
       this.$router.push({
         name: 'Users',
         params: { id },
@@ -52,6 +50,30 @@ export default {
     async getHistory() {
       const list = await getCache('users.history')
       this.artList = list || []
+    },
+    clearSingleFn(id) {
+      return [
+        () => {
+          this.isLongpressing = true
+          Dialog.confirm({
+            message: this.$t('HBhN6EmgH_x2sduNtKpXn'),
+            cancelButtonText: this.$t('common.cancel'),
+            confirmButtonText: this.$t('common.confirm'),
+          }).then(async () => {
+            this.artList = this.artList.filter(e => e.id != id)
+            await setCache('users.history', this.artList)
+            this.init()
+          }).catch(() => {})
+        },
+        {
+          modifiers: { stop: true, prevent: true },
+          onMouseUp: () => {
+            setTimeout(() => {
+              this.isLongpressing = false
+            }, 500)
+          },
+        },
+      ]
     },
     clearHistory() {
       Dialog.confirm({

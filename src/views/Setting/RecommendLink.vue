@@ -5,28 +5,14 @@
       title="PixivNow"
       is-link
       label="https://pixiv.js.org"
-      @click="openLink('https://pixiv.js.org/')"
-    />
-    <van-cell
-      center
-      title="Pixivel"
-      is-link
-      label="https://pixivel.moe"
-      @click="openLink('https://pixivel.moe/')"
+      @click="openLink('https://pixiv.js.org/?ref=pixiv.pictures')"
     />
     <van-cell
       center
       title="Pixiviz"
       is-link
       label="https://pixiviz.xyz"
-      @click="openLink('https://pixiviz.xyz/')"
-    />
-    <van-cell
-      center
-      title="Pixiviz Kai"
-      is-link
-      label="https://pixiviz.cocomi.eu.org"
-      @click="openLink('https://pixiviz.cocomi.eu.org')"
+      @click="openLink('https://pixiviz.xyz/?ref=pixiv.pictures')"
     />
     <van-cell
       center
@@ -34,6 +20,13 @@
       is-link
       label="https://pxelk.cocomi.eu.org"
       @click="openLink('https://pxelk.cocomi.eu.org')"
+    />
+    <van-cell
+      center
+      title="Pixiviz Kai"
+      is-link
+      label="https://pixiviz.cocomi.eu.org"
+      @click="openLink('https://pixiviz.cocomi.eu.org')"
     />
     <van-cell
       center
@@ -58,31 +51,24 @@
     />
     <van-cell
       center
-      title="Moeview"
+      title="PixivFE"
       is-link
-      label="https://moeview.cocomi.eu.org"
-      @click="openLink('https://moeview.cocomi.eu.org')"
+      label="https://pixiv.perennialte.ch"
+      @click="openLink('https://pixiv.perennialte.ch/?ref=pixiv.pictures')"
     />
     <van-cell
       center
-      title="Booru Masonry"
+      title="MixPiv"
       is-link
-      label="https://booru.cocomi.eu.org"
-      @click="openLink('https://booru.cocomi.eu.org')"
+      label="https://mixpiv.cocomi.eu.org"
+      @click="openLink('https://mixpiv.cocomi.eu.org')"
     />
     <van-cell
       center
-      title="Pixiv Daily Top50"
+      title="Pixiv Ranking"
       is-link
       label="https://www.nanoka.top/illust/pixiv/"
       @click="openLink('https://www.nanoka.top/illust/pixiv/')"
-    />
-    <van-cell
-      center
-      title="PixivCollection"
-      is-link
-      label="https://pxc.cocomi.eu.org"
-      @click="openLink('https://pxc.cocomi.eu.org')"
     />
     <van-cell
       center
@@ -93,24 +79,80 @@
     />
     <van-cell
       center
+      title="PixivCollection"
+      is-link
+      label="https://pxc.cocomi.eu.org"
+      @click="openLink('https://pxc.cocomi.eu.org')"
+    />
+    <van-cell
+      center
+      title="Moeview"
+      is-link
+      label="https://moeview.app"
+      @click="openLink('https://moeview.app')"
+    />
+    <van-cell
+      center
+      title="Booru Masonry"
+      is-link
+      label="https://booru.cocomi.eu.org"
+      @click="openLink('https://booru.cocomi.eu.org')"
+    />
+    <van-cell
+      center
       title="Wotaku - The Otaku Index"
       is-link
-      label="https://wotaku.moe"
-      @click="openLink('https://wotaku.moe/')"
+      label="https://wotaku.wiki"
+      @click="openLink('https://wotaku.wiki/?ref=pixiv.pictures')"
     />
     <van-cell
       center
       title="AnimeGarden - Anime Torrent aggregation site"
       is-link
-      label="https://garden.onekuma.cn"
-      @click="openLink('https://garden.onekuma.cn/')"
+      label="https://animes.garden"
+      @click="openLink('https://animes.garden/?ref=pixiv.pictures')"
     />
     <van-cell
       center
       title="EverythingMoe - Index of best Anime/Manga sites"
       is-link
       label="https://everythingmoe.com"
-      @click="openLink('https://everythingmoe.com')"
+      @click="openLink('https://everythingmoe.com/?ref=pixiv.pictures')"
+    />
+    <van-cell
+      center
+      title="Nekon - ≡ω≡"
+      is-link
+      label="https://nekon.app"
+      @click="openLink('https://nekon.app/?ref=pixiv.pictures')"
+    />
+    <van-cell
+      center
+      title="SomeACG - 做最棒的ACG插画作品分享平台"
+      is-link
+      label="https://www.someacg.top"
+      @click="openLink('https://www.someacg.top/?ref=pixiv.pictures')"
+    />
+    <van-cell
+      center
+      title="ManyACG - 二次元美图精选收集"
+      is-link
+      label="https://manyacg.top"
+      @click="openLink('https://manyacg.top/?ref=pixiv.pictures')"
+    />
+    <van-cell
+      center
+      title="Cosine 🎨 Gallery | 精选 ACG 好图壁纸集"
+      is-link
+      label="https://pic.cosine.ren"
+      @click="openLink('https://pic.cosine.ren/?ref=pixiv.pictures')"
+    />
+    <van-cell
+      center
+      title="萌哩 - 萌萌的二次元美图"
+      is-link
+      label="https://www.moely.link"
+      @click="openLink('https://www.moely.link/?ref=pixiv.pictures')"
     />
   </div>
 </template>

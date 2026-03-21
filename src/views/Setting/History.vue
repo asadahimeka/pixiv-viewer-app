@@ -7,7 +7,7 @@
         <Icon name="del" scale="2" />
       </div>
     </h3>
-    <van-tabs v-model="activeTab" class="h-tabs" sticky animated swipeable color="#F2C358">
+    <van-tabs v-model="activeTab" class="h-tabs" :sticky="activeTab != 'i'" animated swipeable color="#F2C358">
       <van-tab :title="$t('common.illust_manga')" name="i">
         <HistoryIllust v-if="activeTab == 'i'" ref="hi" />
       </van-tab>
@@ -42,6 +42,11 @@ export default {
   },
   head() {
     return { title: this.$t('common.history') }
+  },
+  activated() {
+    if (this.$route.params.refresh == 1) {
+      this.$refs[`h${this.activeTab}`]?.init()
+    }
   },
   methods: {
     clearHistory() {

@@ -62,10 +62,11 @@
 </template>
 
 <script>
-import _ from '@/lib/lodash'
 import { Dialog } from 'vant'
 import { mapMutations } from 'vuex'
+import _ from '@/lib/lodash'
 import store from '@/store'
+import { localApi } from '@/api'
 import { LocalStorage } from '@/utils/storage'
 
 export default {
@@ -121,9 +122,7 @@ export default {
       window.umami?.track(`set_ai_switch_${checked}`)
     },
     onR18Change(checked, type) {
-      let name
-      if (type === 1) name = 'R-18'
-      if (type === 2) name = 'R-18G'
+      const name = ['', 'R-18', 'R-18G'][type]
 
       window.umami?.track(`set_${name}_switch_${checked}`)
 

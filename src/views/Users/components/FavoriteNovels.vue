@@ -9,8 +9,16 @@
           </span>
         </template>
       </van-cell>
-      <h3 v-else class="af_title">{{ $t('user.fav_novel_title') }}</h3>
+      <h3 v-else class="af_title">
+        <div class="discovery-tabs">
+          <div class="com_sel_tab" @click="$router.replace($route.fullPath.replace('favorite_novels', 'favorites').replace('novels', 'artworks'))">
+            {{ $t('user.fav_title') }}
+          </div>
+          <div class="com_sel_tab cur">{{ $t('user.fav_novel_title') }}</div>
+        </div>
+      </h3>
     </template>
+    <BookmarkTags v-if="isCurrentUser" type="novel" @update-sel-tag="updateSelTag" @update-restrict="updateRestrict" />
     <van-list
       v-model="loading"
       :loading-text="$t('tips.loading')"
@@ -32,10 +40,13 @@
 import api from '@/api'
 import _ from '@/lib/lodash'
 import NovelCard from '@/components/NovelCard.vue'
+import BookmarkTags from '@/views/Account/components/BookmarkTags.vue'
+
 export default {
   name: 'FavoriteNovels',
   components: {
     NovelCard,
+    BookmarkTags,
   },
   props: {
     id: {
@@ -57,6 +68,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    isCurrentUser: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -74,6 +89,8 @@ export default {
           default: 4,
         },
       },
+      restrict: 'public',
+      bookmarkTag: '',
     }
   },
   mounted() {
@@ -87,6 +104,17 @@ export default {
     }
   },
   methods: {
+    updateRestrict(val) {
+      this.restrict = val
+      this.bookmarkTag = ''
+      this.reset()
+      this.getMemberFavorite()
+    },
+    updateSelTag(val) {
+      this.bookmarkTag = val
+      this.reset()
+      this.getMemberFavorite()
+    },
     reset() {
       this.next = 0
       this.artList = []
@@ -94,10 +122,15 @@ export default {
       this.finished = false
     },
     getMemberFavorite: _.throttle(async function () {
-      if (!this.id) return
+      if (!this.id || this.loading || this.finished) return
       this.loading = true
       let newList
-      const res = await api.getMemberFavoriteNovel(this.id, this.next)
+      const options = {}
+      if (this.isCurrentUser) {
+        if (this.restrict) options.restrict = this.restrict
+        if (this.bookmarkTag) options.tag = this.bookmarkTag
+      }
+      const res = await api.getMemberFavoriteNovel(this.id, this.next, this.isCurrentUser, options)
       if (res.status === 0) {
         this.next = res.data.next
         newList = res.data.novels
@@ -135,6 +168,13 @@ export default {
   margin-bottom 40px
   text-align center
   font-size 28px
+
+.discovery-tabs
+  display flex
+  justify-content center
+  align-items center
+  gap 10px
+  width 100%
 
 .favorite {
   .cell {

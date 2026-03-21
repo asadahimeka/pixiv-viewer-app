@@ -8,7 +8,7 @@
       </template>
       <template #right-icon>
         <van-button type="info" size="small" @click="clearCache('db')">
-          <span data-umami-event="clear_db_cache">{{ $t('cache.clear') }}</span>
+          <span>{{ $t('cache.clear') }}</span>
         </van-button>
       </template>
     </van-cell>
@@ -18,7 +18,7 @@
       </template>
       <template #right-icon>
         <van-button size="small" color="linear-gradient(to right, #ff6034, #ee0a24)" @click="clearCache('local')">
-          <span data-umami-event="clear_local_cache">{{ $t('cache.clear') }}</span>
+          <span>{{ $t('cache.clear') }}</span>
         </van-button>
       </template>
     </van-cell>
@@ -28,7 +28,7 @@
       </template>
       <template #right-icon>
         <van-button type="primary" size="small" @click="clearCache('session')">
-          <span data-umami-event="clear_session_cache">{{ $t('cache.clear') }}</span>
+          <span>{{ $t('cache.clear') }}</span>
         </van-button>
       </template>
     </van-cell>
@@ -79,8 +79,8 @@ export default {
   },
   methods: {
     async calcCacheSize() {
-      this.size.local = [LocalStorage.size, localStorage.length]
-      this.size.session = [SessionStorage.size, sessionStorage.length]
+      this.size.local = [LocalStorage.size(), localStorage.length]
+      this.size.session = [SessionStorage.size(), sessionStorage.length]
       this.size.db = [
         (await navigator.storage.estimate()).usage,
         await localDb.length(),
@@ -108,12 +108,11 @@ export default {
         confirmButtonText: this.$t('common.confirm'),
         cancelButtonText: this.$t('common.cancel'),
       }).then(async () => {
+        window.umami?.track('clear_cache', { type })
         if (type === 'db') {
           await localDb.clear()
-          const keyList = await caches.keys()
-          await Promise.all(keyList.map(async key => {
-            await caches.delete(key)
-          }))
+          const cacheKeys = await caches.keys()
+          await Promise.all(cacheKeys.map(key => caches.delete(key)))
         }
         if (type === 'local') LocalStorage.clear()
         if (type === 'session') SessionStorage.clear()
@@ -124,7 +123,7 @@ export default {
 
         this.calcCacheSize()
         this.$toast.success(this.$t('cache.success_tip'))
-      })
+      }).catch(() => {})
     },
     async openSettings() {
       const { openAppSettings } = await import('@/platform/capacitor/utils')

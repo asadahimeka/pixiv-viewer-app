@@ -68,7 +68,7 @@
         min-width 100%
       &+.result-list
         padding-top 1rem
-      &+.rank-card
+      &+.rank-card,&+.search-quick-tabs
         padding-top 1.1rem
     .search-dropdown .pid-n-uid
       margin-top 0.13333rem
@@ -151,7 +151,7 @@
           font-size 12PX
       &+.result-list
         padding-top 1rem
-      &+.rank-card
+      &+.rank-card,&+.search-quick-tabs
         padding-top 1.1rem
     .search .search-bar,
     .search .search_params,
@@ -178,6 +178,7 @@
 
   &.tauri body:not(.dark) .search .search_params
     &+.result-list,
+    &+.search-quick-tabs,
     &+.rank-card
       padding-top 1.4rem !important
 

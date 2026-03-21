@@ -31,11 +31,12 @@
             <div class="follow_btn" :class="{isFollowed}">
               <van-button
                 v-if="showFollowBtn"
+                v-longpress="followUserPrivate"
                 size="small"
                 :plain="!isFollowed"
                 :color="isFollowed ? 'linear-gradient(60deg, #96deda 0%, #50c9c3 100%)' : '#4E4F97'"
                 :loading="favLoading"
-                @click="toggleFollow"
+                @click="toggleFollow()"
               >
                 {{ isFollowed ? $t('user.followed') : $t('user.follow') }}
               </van-button>
@@ -60,7 +61,7 @@
                   <span>{{ userInfo.region }}</span>
                 </li> -->
               </ul>
-              <ul class="site-list" :class="{ multi: userInfo.webpage && userInfo.twitter_url }">
+              <ul class="site-list social-links" :class="{ multi: userInfo.webpage && userInfo.twitter_url }">
                 <li v-if="userInfo.webpage" class="site">
                   <Icon class="icon home" name="home-s" />
                   <a :href="userInfo.webpage" target="_blank">{{ userInfo.webpage | hostname }}</a>
@@ -219,6 +220,7 @@
               :not-from-artwork="notFromArtwork"
               :once="false"
               :show-title="false"
+              :is-current-user="isCurrentUser"
               @onCilck="showSub('favorite')"
             />
           </van-tab>
@@ -231,17 +233,20 @@
               :not-from-artwork="notFromArtwork"
               :once="false"
               :show-title="false"
+              :is-current-user="isCurrentUser"
               @onCilck="showSub('fav_novel')"
             />
+          </van-tab>
+          <van-tab :title="$t('dZ93cWZJ03hu5emsVwgjA')" name="collections">
+            <AuthorCollections v-if="activeTab == 'collections'" :id="userInfo.id" />
           </van-tab>
           <van-tab :title="$t('user.related')" name="related">
             <RecommUser v-if="activeTab == 'related'" :related-id="userInfo.id" />
           </van-tab>
+          <van-tab v-if="showTwitterMedia" title="X(Twitter) Media" name="x-media">
+            <AuthorTwitterMedia v-if="activeTab == 'x-media'" :user-name="twitterName" />
+          </van-tab>
         </van-tabs>
-
-        <!-- <div v-show="activeTab != 'related' && !loading" style="margin-top: 10px;text-align: center;">
-          <van-button size="small" @click="showSub(activeTab)">{{ $t('common.view_more') }}</van-button>
-        </div> -->
 
         <van-loading v-show="loading" class="loading" size="60px" />
       </div>
@@ -250,6 +255,14 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { Dialog } from 'vant'
+import _ from '@/lib/lodash'
+import api, { localApi } from '@/api'
+import platform from '@/platform'
+import store from '@/store'
+import { getCache, setCache } from '@/utils/storage/siteCache'
+import { copyText, dealStatusBarOnLeave, dealStatusBarOnEnter } from '@/utils'
 import TopBar from '@/components/TopBar'
 import AuthorIllusts from './components/AuthorIllusts'
 import AuthorIllustSeries from './components/AuthorIllustSeries'
@@ -258,12 +271,10 @@ import FavoriteIllusts from './components/FavoriteIllusts'
 import RecommUser from '../Search/components/RecommUser.vue'
 import AuthorNovels from './components/AuthorNovels.vue'
 import FavoriteNovels from './components/FavoriteNovels.vue'
-import _ from '@/lib/lodash'
-import { Dialog } from 'vant'
-import api, { localApi } from '@/api'
-import { getCache, setCache } from '@/utils/storage/siteCache'
-import { copyText, dealStatusBarOnLeave, dealStatusBarOnEnter } from '@/utils'
-import platform from '@/platform'
+import AuthorCollections from './components/AuthorCollections.vue'
+import AuthorTwitterMedia from './components/AuthorTwitterMedia.vue'
+
+const { isDefFollowPrivate, isLongpressPrivateFollow } = store.state.appSetting
 
 export default {
   name: 'Users',
@@ -283,6 +294,8 @@ export default {
     RecommUser,
     AuthorIllustSeries,
     AuthorNovelSeries,
+    AuthorCollections,
+    AuthorTwitterMedia,
   },
   beforeRouteEnter(to, from, next) {
     dealStatusBarOnEnter()
@@ -314,6 +327,18 @@ export default {
     return { title: this.userInfo.name }
   },
   computed: {
+    ...mapGetters(['isLoggedIn', 'isR18On']),
+    showTwitterMedia() {
+      return this.isLoggedIn && this.isR18On && this.twitterName
+    },
+    twitterName() {
+      if (this.userInfo.twitter_account) return this.userInfo.twitter_account
+      const url = this.userInfo.webpage
+      if (/x\.com|twitter\.com/i.test(url)) {
+        return url.replace('https://x.com/', '').replace('https://twitter.com/', '')
+      }
+      return null
+    },
     showFollowBtn() {
       if (!localApi.APP_CONFIG.useLocalAppApi) return false
       const id = this.$store.state?.user?.id
@@ -345,7 +370,11 @@ export default {
       this.loading = true
       const id = +this.$route.params.id
       this.userInfo = {}
-      this.activeTab = 'illusts'
+      this.activeTab = this.$route.params.tab || 'illusts'
+      if (this.$store.state.blockUids.includes(`${id}`)) {
+        this.$toast(this.$t('common.content.hide'))
+        return
+      }
       this.getMemberInfo(id)
     },
     onUidLongpress() {
@@ -381,6 +410,10 @@ export default {
         )
       }
     },
+    updateAuthorFollow(val) {
+      if (typeof val != 'boolean') return
+      this.userInfo.is_followed = val
+    },
     async togggleFollowCache(bool) {
       const itemKey = `memberInfo_${this.userInfo.id}`
       const user = await getCache(itemKey)
@@ -389,7 +422,25 @@ export default {
         await setCache(itemKey, user, 60 * 60 * 6)
       }
     },
-    async toggleFollow() {
+    followUserPrivate() {
+      if (this.isFollowed) return
+      if (isLongpressPrivateFollow) {
+        this.toggleFollow('private')
+        return
+      }
+      Dialog.confirm({
+        message: this.$t('U7uqf6LXov5GP4PvkrnFk'),
+        lockScroll: false,
+        closeOnPopstate: true,
+        cancelButtonText: this.$t('common.cancel'),
+        confirmButtonText: this.$t('common.confirm'),
+      }).then(res => {
+        if (res == 'confirm') {
+          this.toggleFollow('private')
+        }
+      }).catch(() => {})
+    },
+    async toggleFollow(restrict) {
       this.favLoading = true
       if (this.isFollowed) {
         const isOk = await localApi.userFollowDelete(this.userInfo.id)
@@ -401,11 +452,15 @@ export default {
           this.$toast(this.$t('user.unfollow_fail'))
         }
       } else {
-        const isOk = await localApi.userFollowAdd(this.userInfo.id)
+        if (!restrict && isDefFollowPrivate) {
+          restrict = 'private'
+        }
+        const isOk = await localApi.userFollowAdd(this.userInfo.id, restrict)
         this.favLoading = false
         if (isOk) {
           this.userInfo.is_followed = true
           this.togggleFollowCache(true)
+          if (restrict == 'private') this.$toast(this.$t('QcXruM7VMaBz-9zcw5wtD'))
         } else {
           this.$toast(this.$t('user.follow_fail'))
         }
@@ -418,7 +473,7 @@ export default {
         this.userInfo = res.data
         this.loading = false
         this.$nextTick(() => {
-          this.getCommentHeight()
+          this.commentHeight = this.$refs.comment.clientHeight
         })
 
         let historyList = await getCache('users.history', [])
@@ -635,6 +690,15 @@ export default {
       .site-list {
         display: flex;
         justify-content: center;
+
+        &.social-links {
+          transform: translateY(2PX) !important
+        }
+        @media screen and (max-width: 1280px) {
+          &.social-links {
+            transform: translateY(-2PX) !important
+          }
+        }
 
         &.multi {
           .site {

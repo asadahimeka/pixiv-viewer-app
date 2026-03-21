@@ -9,17 +9,17 @@
     />
     <van-cell
       center
-      title="Pixiv-Shaft (Android)"
+      title="Pixiv Artvier (Android)"
       is-link
-      label="Pixiv 第三方 Android 客户端。"
-      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
+      label="A third-party app for pixiv. 一个第三方pixiv App。"
+      @click="openLink('https://github.com/yleencc/pixiv-artvier')"
     />
     <van-cell
       center
-      title="Clover (Android)"
+      title="Pixiv-SwiftUI (iOS,macOS)"
       is-link
-      label="全新的第三方 pixiv 客户端。"
-      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Slinky')"
+      label="一个 Pixiv 客户端，支持 iOS/iPadOS/macOS"
+      @click="openLink('https://github.com/Eslzzyl/Pixiv-SwiftUI')"
     />
     <van-cell
       center
@@ -30,17 +30,55 @@
     />
     <van-cell
       center
-      title="Pixiv Artvier (Android)"
       is-link
-      label="A third-party app for pixiv. 一个第三方pixiv App。"
-      @click="openLink('https://github.com/yleencc/pixiv-artvier')"
+      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
+    >
+      <template #title> <s>Pixiv-Shaft (Android)</s> </template>
+      <template #label> <s>Pixiv 第三方 Android 客户端。</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Slinky')"
+    >
+      <template #title> <s>Clover (Android)</s> </template>
+      <template #label> <s>全新的第三方 pixiv 客户端。</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      is-link
+      @click="openLink('https://github.com/git-xiaocao/pixiv_func_mobile')"
+    >
+      <template #title> <s>Pixiv Func (Android,Windows)</s> </template>
+      <template #label> <s>功能齐全的Pixiv第三方客户端 免代理 支持查看动图查看直播</s> </template>
+    </van-cell>
+    <van-cell
+      center
+      title="Pixeval (Windows)"
+      is-link
+      label="Wow. Yet another Pixiv client!"
+      @click="openLink('https://github.com/Pixeval/Pixeval')"
     />
     <van-cell
       center
-      title="Pixiv Func (Android,Windows)"
+      title="pixes (Android,iOS,Linux,macOS,Windows)"
       is-link
-      label="功能齐全的Pixiv第三方客户端 免代理 支持查看动图查看直播"
-      @click="openLink('https://github.com/git-xiaocao/pixiv_func_mobile')"
+      label="Unofficial pixiv app"
+      @click="openLink('https://github.com/wgh136/pixes')"
+    />
+    <van-cell
+      center
+      title="PiPixiv (Android,iOS,Linux,macOS,Windows)"
+      is-link
+      label="一个使用Compose Multiplatform开发的第三方Pixiv客户端，支持国内直连"
+      @click="openLink('https://github.com/darriousliu/PiPixiv')"
+    />
+    <van-cell
+      center
+      title="Pixiv-MultiPlatform (Android,iOS,Linux,macOS,Windows)"
+      is-link
+      label="跨平台第三方客户端，专注于预览。"
+      @click="openLink('https://github.com/magic-cucumber/Pixiv-MultiPlatform')"
     />
     <van-cell
       center
@@ -51,10 +89,10 @@
     />
     <van-cell
       center
-      title="Flexbooru (Android)"
+      title="Boorusama (Android)"
       is-link
-      label="A booru client for Android, support Danbooru, Moebooru, Gelbooru, Shimmie, etc."
-      @click="openLink('https://github.com/flexbooru/flexbooru')"
+      label="A mobile client for booru sites built with Flutter"
+      @click="openLink('https://github.com/khoadng/Boorusama')"
     />
     <van-cell
       center
@@ -65,10 +103,10 @@
     />
     <van-cell
       center
-      title="Boorusama (Android)"
+      title="Flexbooru (Android)"
       is-link
-      label="A mobile client for booru sites built with Flutter"
-      @click="openLink('https://github.com/khoadng/Boorusama')"
+      label="A booru client for Android, support Danbooru, Moebooru, Gelbooru, Shimmie, etc."
+      @click="openLink('https://github.com/flexbooru/flexbooru')"
     />
     <van-cell
       center
@@ -121,11 +159,12 @@
     />
     <van-cell
       center
-      title="CopyMangaX (Android)"
       is-link
-      label="拷贝漫画三方APP 、项目采用多模块 和 MVI框架开发"
       @click="openLink('https://github.com/crowforkotlin/CopyMangaX')"
-    />
+    >
+      <template #title> <s>CopyMangaX (Android)</s> </template>
+      <template #label> <s>拷贝漫画三方APP 、项目采用多模块 和 MVI框架开发</s> </template>
+    </van-cell>
     <van-cell
       center
       title="Kotatsu (Android)"
@@ -142,10 +181,10 @@
     />
     <van-cell
       center
-      title="kobi ( Android,iOS,macOS,Windows,Linux)"
+      title="kobi (Android,iOS,macOS,Windows,Linux)"
       is-link
       label="拷贝漫画客户端"
-      @click="openLink('https://github.com/Predidit/Kazumi')"
+      @click="openLink('https://github.com/niuhuan/kobi')"
     />
     <van-cell
       center
@@ -216,6 +255,13 @@
       is-link
       label="Kikoeru(ASMR Online) android client."
       @click="openLink('https://github.com/loli-ball/KikoeruRelease/releases')"
+    />
+    <van-cell
+      center
+      title="KikoFlu (Android,iOS,macOS,Windows)"
+      is-link
+      label="Kikoeru Flutter ASMR player app, 跨平台同人音声客户端"
+      @click="openLink('https://github.com/Meteor-Sage/KikoFlu')"
     />
     <van-cell
       center

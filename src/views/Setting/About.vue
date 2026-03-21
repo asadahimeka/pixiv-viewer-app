@@ -83,15 +83,15 @@
         :label="$t('tQaYxaOwYjOgf1OAnQm4J')"
         @click="openLink('https://github.com/Mikubill/pixivpy-async')"
       />
-    </van-cell-group>
-    <van-cell-group :title="$t('about.feedback')">
       <van-cell
         center
-        :title="$t('cIyLKP7_S_Wo0Y0908dnm')"
+        title="ZeoSeven Fonts (ZSFT)"
         is-link
-        label="Github:asadahimeka/pixiv-viewer"
-        @click="openLink('https://github.com/asadahimeka/pixiv-viewer/discussions')"
+        label="释放字体自由！"
+        @click="openLink('https://fonts.zeoseven.com')"
       />
+    </van-cell-group>
+    <van-cell-group :title="$t('about.feedback')">
       <van-cell
         center
         :title="$t('TnXv_wGi3BhyVLjxBYf1u')"
@@ -99,6 +99,20 @@
         label="Github:asadahimeka/pixiv-viewer"
         @click="openLink('https://github.com/asadahimeka/pixiv-viewer/issues')"
       />
+      <van-cell
+        center
+        title="E-mail"
+        is-link
+        label="i@nanoka.top"
+        @click="openLink('mailto:i@nanoka.top')"
+      />
+      <!-- <van-cell
+        center
+        :title="$t('cIyLKP7_S_Wo0Y0908dnm')"
+        is-link
+        label="Github:asadahimeka/pixiv-viewer"
+        @click="openLink('https://github.com/asadahimeka/pixiv-viewer/discussions')"
+      /> -->
       <!-- <van-cell
         center
         :title="$t('VhMNSWrg03-_ryN7nRBJ3')"

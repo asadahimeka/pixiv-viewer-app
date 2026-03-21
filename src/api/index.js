@@ -9,15 +9,19 @@ import { PXIMG_PROXY_BASE, notSelfHibiApi, PIXIV_NOW_URL, PIXIV_NEXT_URL, COMMON
 import { setProperFontSize } from '@/utils'
 
 const isSupportWebP = (() => {
-  const elem = document.createElement('canvas')
+  try {
+    const elem = document.createElement('canvas')
 
-  if (elem.getContext && elem.getContext('2d')) {
-    // was able or not to get WebP representation
-    return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0
+    if (elem.getContext && elem.getContext('2d')) {
+      // was able or not to get WebP representation
+      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0
+    }
+
+    // very old browser like IE 8, canvas not supported
+    return false
+  } catch (err) {
+    return false
   }
-
-  // very old browser like IE 8, canvas not supported
-  return false
 })()
 
 export const imgProxy = url => {
@@ -492,6 +496,40 @@ export const localApi = {
     console.log('userBookmarkTags: ', type, res)
     if (res.bookmark_tags) {
       return { status: 0, data: res.bookmark_tags }
+    } else if (res.error) {
+      return {
+        status: -1,
+        msg: handleErrMsg(res),
+      }
+    } else {
+      return {
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
+      }
+    }
+  },
+  async homeAll(params = {}) {
+    const res = await reqPost('v1/home/all', params)
+    if (Array.isArray(res.contents)) {
+      res.contents = res.contents.map(e => {
+        let detail = {}
+        const kind = e.kind
+        if (kind == 'illust' || kind == 'manga') {
+          detail = parseIllust(e.thumbnails[0].app_model)
+        }
+        if (kind == 'novel') {
+          detail = parseNovel(e.thumbnails[0].app_model)
+          detail._previewText = e.thumbnails[0].text
+        }
+        if (kind == 'tags_carousel') {
+          detail = e.trend_tags.map((tag, i) => ({
+            ...tag,
+            thumb: imgProxy(e.thumbnails[i].app_model.image_urls.medium),
+          }))
+        }
+        return { kind, detail }
+      })
+      return { status: 0, data: res }
     } else if (res.error) {
       return {
         status: -1,

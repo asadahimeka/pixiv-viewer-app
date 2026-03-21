@@ -104,7 +104,10 @@ class PixivApi {
   constructor() {
     this.headers = { ...DEFAULT_HEADERS }
     const auth = LocalStorage.get('PXV_CLIENT_AUTH')
-    if (auth) this.auth = auth
+    if (auth) {
+      this.auth = auth
+      this._expireTime = auth._expireTime
+    }
   }
 
   get _loginExpired() {
@@ -157,6 +160,7 @@ class PixivApi {
       const auth = res.response
       this.auth = auth
       this._expireTime = Date.now() / 1000 + auth.expires_in
+      auth._expireTime = this._expireTime
       return auth
     } catch (err) {
       console.log('tokenRequest err: ', err)
@@ -170,6 +174,7 @@ class PixivApi {
 
   logout() {
     this.auth = null
+    this._expireTime = 0
     // this.username = null
     // this.password = null
     delete this.headers.Authorization
@@ -205,6 +210,7 @@ class PixivApi {
     const auth = res.response
     this.auth = auth
     this._expireTime = Date.now() / 1000 + auth.expires_in
+    auth._expireTime = this._expireTime
     LocalStorage.set('PXV_CLIENT_AUTH', auth, auth.expires_in - 60)
     return auth
   }
@@ -1146,6 +1152,20 @@ class PixivApi {
       )
     )
     return this.requestUrl(`/v1/spotlight/articles?${queryString}`)
+  }
+
+  homeAll(next_params, states) {
+    const data = {}
+    if (next_params) data.next_params = next_params
+    if (states) data.states = states
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF8',
+      },
+      data,
+    }
+    return this.requestUrl('/v1/home/all', options)
   }
 }
 
