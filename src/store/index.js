@@ -44,7 +44,7 @@ export default new Vuex.Store({
       isEnableSwipe: getSettingDef('PXV_IMG_DTL_SWIPE', false),
       isHideRankManga: getSettingDef('PXV_HIDE_RANK_MANGA', false),
       isUseFancybox: getSettingDef('PXV_USE_FANCYBOX', false),
-      isImageFitScreen: getSettingDef('PXV_IMG_FIT_SCREEN', isMobile),
+      isImageFitScreen: getSettingDef('PXV_IMG_FIT_SCREEN', true),
       isImageCardOuterMeta: getSettingDef('PXV_IMG_META_OUTER', true),
       isDirectPximg: getSettingDef('PXV_PXIMG_DIRECT', false),
       isAutoLoadImt: getSettingDef('PXV_AUTO_LOAD_IMT', false),

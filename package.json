@@ -1,6 +1,6 @@
 {
   "name": "pixiv-viewer",
-  "version": "1.25.5",
+  "version": "1.32.2",
   "private": true,
   "scripts": {
     "dev:web": "cross-env VUE_APP_PLATFORM=android vue-cli-service serve --port 8080",

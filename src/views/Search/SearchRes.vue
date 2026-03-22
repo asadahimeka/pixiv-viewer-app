@@ -121,7 +121,7 @@
       </div>
       <PopularPreview v-if="showPopPreview && keywords.trim()" ref="popPreview" :word="keywords" :params="searchParams" />
       <template v-else-if="keywords.trim()">
-        <van-tabs v-model="actSearchQuickTab" class="search-quick-tabs" :swipeable="false">
+        <van-tabs v-model="actSearchQuickTab" class="search-quick-tabs" :swipeable="false" color="#F2C358">
           <van-tab :title="$t('common.illust_manga')" />
           <van-tab :title="$t('common.novel')" :to="searchNovelTag('isLink')" />
           <van-tab :title="$t('common.user')" :to="searchUser('isLink')" />
@@ -935,35 +935,35 @@ export default {
   @media screen and (min-width: 1281px)
     ::v-deep .van-dropdown-menu:not(.showPopPreview)
       >div:nth-child(2) .van-dropdown-item__content
-        width: 14.5vw
+        width: 15vw
         border-bottom-right-radius: 8PX
       >div:nth-child(3) .van-dropdown-item__content
-        width: 12.5vw
-        left: 12.5vw
+        width: 11.9vw
+        left: 11.9vw
         border-bottom-left-radius: 8PX
         border-bottom-right-radius: 8PX
       >div:nth-child(4) .van-dropdown-item__content
-        width: 12.5vw
-        left: 12.5vw*2
+        width: 11.9vw
+        left: 11.9vw*2
         border-bottom-left-radius: 8PX
         border-bottom-right-radius: 8PX
       >div:nth-child(6) .van-dropdown-item__content
-        width: 12.5vw
-        left: 12.5vw*4
+        width: 11.9vw
+        left: 11.9vw*4
         border-bottom-left-radius: 8PX
         border-bottom-right-radius: 8PX
       >div:nth-child(7) .van-dropdown-item__content
-        width: 12.5vw
-        left: 12.5vw*5
+        width: 11.9vw
+        left: 11.9vw*5
         border-bottom-left-radius: 8PX
         border-bottom-right-radius: 8PX
       >div:nth-child(8) .van-dropdown-item__content
-        width: 12.5vw
-        left: 12.5vw*6
+        width: 11.9vw
+        left: 11.9vw*6
         border-bottom-left-radius: 8PX
         border-bottom-right-radius: 8PX
       >div:nth-child(9) .van-dropdown-item__content
-        width: 12.5vw
+        width: 11.9vw
         left: unset
         right 0
         border-bottom-left-radius: 8PX

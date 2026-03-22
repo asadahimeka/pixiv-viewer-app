@@ -565,9 +565,9 @@ export default {
     top: 1.15rem !important
   &:has(.van-sticky--fixed)
     .top-bar-wrap
-      top 0.8rem !important
+      top 1rem !important
     .share_btn
-      top 2rem !important
+      top 2.2rem !important
 </style>
 <style lang="stylus" scoped>
 // .user-container {

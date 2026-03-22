@@ -183,6 +183,7 @@ html,body
           width 100%
         .search-bar-word
           left 2.5rem
+      .search_params,
       .search-dropdown
           left 1.2rem
           width calc(100% - 1.2rem)
@@ -247,53 +248,6 @@ html,body
       margin-top 0
       .van-dropdown-menu__bar
         border-radius 0
-
-// @media screen and (min-width: 1120px)
-//   #app
-//     .Home,
-//     .search .tags,
-//     .search .result-list,
-//     .search-user .list-wrap,
-//     .rank-list,
-//     .users .user-tabs .van-tab__pane,
-//     .user-illusts,
-//     .Spotlights,
-//     .Discovery,
-//     .HomeRecommIllust,
-//     .related,
-//     .Following
-//       padding-left 5vw
-//       padding-right 5vw
-
-//   #app
-//     .nav-container
-//       left unset
-//       right 0
-//       bottom 50%
-//       width 1.2rem
-//       height auto
-//       transform: translate(0, 50%);
-//       opacity 1
-//       &.showNav
-//         transform: translate(0, 50%);
-//     .nav-bar
-//       flex-direction: column
-//       justify-content: center
-//       align-items: center
-//       padding-top 15px
-//       border-top-left-radius: 0.21333rem;
-//       border-top-right-radius: 0;
-//       border-bottom-left-radius: 0.21333rem;
-//       li
-//         width 100%
-//         margin-bottom 25px
-//         &.nav_to_top
-//           display list-item
-//         .icon
-//           margin-bottom 4px
-//           font-size 0.55rem
-//         span
-//           font-size 0.26rem
 
 html:not([lang^=zh])
   @media screen and (max-width: 1200px)

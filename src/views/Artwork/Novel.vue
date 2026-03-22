@@ -40,7 +40,7 @@
             <van-button type="info" size="small" plain @click="showComments = true">
               💬{{ $t('user.view_comments') }}
             </van-button>
-            <van-button type="info" size="small" plain @click="showShare = true">
+            <van-button type="info" size="small" plain @click="shareNovel">
               🔗{{ $t('artwork.share.share') }}
             </van-button>
           </div>

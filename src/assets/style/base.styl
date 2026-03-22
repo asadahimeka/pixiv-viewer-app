@@ -781,7 +781,7 @@ html
     #app .main-layout:not(.navbar-alt-style) .nav-container
       height calc(1.33333rem + var(--nav-bar-height))
     #app .navbar-alt-style .nav-container .nav-bar
-      transform: translateY(calc(-1 * var(--nav-bar-height)))
+      transform: translateY(calc(-1.1 * var(--nav-bar-height)))
 
 .ios
   .artwork .top-bar-wrap,
@@ -900,8 +900,9 @@ body .Home .com_sel_tabs
     margin-left auto !important
     margin-right auto !important
   .rank .top
-    left 50% !important
+    left calc(50% + 0.6rem) !important
     transform translateX(-50%)
+    padding-left 0 !important
   .justified-container .image-card
     --jstf-w: 265;
     --jstf-w-px: 265PX;
@@ -912,15 +913,6 @@ body .Home .com_sel_tabs
     border-bottom-left-radius 8PX
     border-bottom-right-radius 8PX
     background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), var(--accent-color, #f7f8fa);
-  @media screen and (min-width: 1280px)
-    .search .search-bar-wrap .search-bar
-      padding: 10px 7rem !important
-    .search .search-bar-wrap .search-bar-word
-      left: 8rem !important
-      top: 0.72rem !important
-    .search .image-search
-      right: 7rem !important
-      top: 0.4rem !important
 
 @media screen and (min-width: 1400px)
   #app .noImgFillScreen .Home .home-i-tabs
