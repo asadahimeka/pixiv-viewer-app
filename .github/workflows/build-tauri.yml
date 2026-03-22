@@ -41,7 +41,7 @@ jobs:
               name: `v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
               draft: true,
-              prerelease: false
+              prerelease: true
             })
             return data.id
 
@@ -120,8 +120,8 @@ jobs:
           # tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           # releaseName: 'v__VERSION__'
           # releaseBody: 'See the assets to download this version and install.'
-          # releaseDraft: true
-          # prerelease: false
+          releaseDraft: true
+          prerelease: true
           releaseId: ${{ needs.create-release.outputs.release_id }}
           args: ${{ matrix.args }}
 
