@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from '@/lib/lodash'
+import platform from '@/platform'
 import { getSettingDef, LocalStorage, SessionStorage } from '@/utils/storage'
 import { isSafari } from '@/utils'
 import { isArtworkNotCensored } from '@/utils/filter'
@@ -49,7 +50,7 @@ export default new Vuex.Store({
       isDirectPximg: getSettingDef('PXV_PXIMG_DIRECT', false),
       isAutoLoadImt: getSettingDef('PXV_AUTO_LOAD_IMT', false),
       preferDownloadManager: false,
-      preferMediaStore: true,
+      preferMediaStore: platform.isAndroid,
       dlSubDirByAuthor: false,
       dlFileNameTpl: '{author}_{title}_{pid}_p{index}',
       isImgLazy: isMobile,
