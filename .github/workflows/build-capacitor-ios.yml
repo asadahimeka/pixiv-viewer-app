@@ -1,4 +1,4 @@
-name: Build Capacitor App for Android & iOS(Unsigned)
+name: Build Capacitor App for iOS(Unsigned)
 
 on:
   workflow_dispatch:  # 允许手动触发
@@ -6,92 +6,9 @@ on:
   #   branches: [main] # 在 push 到 main 分支时触发
 
 jobs:
-  build-android:
-    name: Build Android APK
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          npm install -g pnpm
-          pnpm install
-
-      - name: Build frontend
-        run: npm run build:web
-        env:
-          VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
-          VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
-          VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
-          VUE_APP_HIBIAPI_ALTS: ${{ secrets.VUE_APP_HIBIAPI_ALTS }}
-          VUE_APP_DEF_APP_API_PROXY: ${{ secrets.VUE_APP_DEF_APP_API_PROXY }}
-          VUE_APP_APP_API_PROXYS: ${{ secrets.VUE_APP_APP_API_PROXYS }}
-          VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
-          VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
-          VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
-          VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
-          VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
-          BROWSERSLIST_ENV: 'capacitor'
-          VUE_APP_PLATFORM: 'android'
-
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Cache Gradle
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
-      - name: Build APK
-        working-directory: android
-        run: ./gradlew assembleDebug
-
-      - name: Extract app name and version
-        id: app-info
-        run: |
-          NAME=$(node -p "require('./package.json').name || 'app'")
-          VERSION=$(node -p "require('./package.json').version || '0.0.0'")
-          echo "APP_NAME=$NAME" >> $GITHUB_ENV
-          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-          echo "APK_NAME=${NAME}_${VERSION}_android.apk" >> $GITHUB_ENV
-
-      - name: Rename APK
-        run: |
-          cd android/app/build/outputs/apk/debug
-          mv app-debug.apk "${APK_NAME}"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APK_NAME }}
-          path: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
-
-      - name: Upload APK to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.APP_VERSION }}
-          files: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-ios:
     name: Build iOS IPA (Unsigned)
     runs-on: macos-latest
-    needs: build-android  # 等待安卓构建完成
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
