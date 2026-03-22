@@ -23,101 +23,101 @@
   <tr>
     <td>Android</td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/pixiv-viewer_1.25.5_android.apk">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/pixiv-viewer_1.32.2_android.apk">
         <img alt src="https://img.shields.io/badge/APK-Universal-45bf55.svg?logo=android">
       </a>
     </td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/pixiv-viewer_1.25.5_android.apk">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/pixiv-viewer_1.25.5_android.apk?label=DL&color=45bf55">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/pixiv-viewer_1.32.2_android.apk">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/pixiv-viewer_1.32.2_android.apk?label=DL&color=45bf55">
       </a>
     </td>
   </tr>
   <tr>
     <td>iOS</td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/pixiv-viewer_1.25.5_ios_unsigned.ipa">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/pixiv-viewer_1.32.2_ios_unsigned.ipa">
         <img alt src="https://img.shields.io/badge/IPA-Unsigned-blue.svg?logo=apple">
       </a>
     </td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/pixiv-viewer_1.25.5_ios_unsigned.ipa">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/pixiv-viewer_1.25.5_ios_unsigned.ipa?label=DL&color=blue">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/pixiv-viewer_1.32.2_ios_unsigned.ipa">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/pixiv-viewer_1.32.2_ios_unsigned.ipa?label=DL&color=blue">
       </a>
     </td>
   </tr>
   <tr>
     <td>Windows</td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64-setup.exe">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64-setup.exe">
         <img alt src="https://img.shields.io/badge/%F0%9F%92%BF_EXE-Setup_x64-2d7d9a.svg">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64_en-US.msi">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64_en-US.msi">
         <img alt src="https://img.shields.io/badge/%F0%9F%92%BF_MSI-Setup_x64-67b7d1.svg">
       </a>
     </td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64-setup.exe">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_x64-setup.exe?label=DL&color=2d7d9a">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64-setup.exe">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_x64-setup.exe?label=DL&color=2d7d9a">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64_en-US.msi">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_x64_en-US.msi?label=DL&color=67b7d1">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64_en-US.msi">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_x64_en-US.msi?label=DL&color=67b7d1">
       </a>
     </td>
   </tr>
   <tr>
     <td>macOS</td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_aarch64.dmg">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_aarch64.dmg">
         <img alt src="https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64.dmg">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64.dmg">
         <img alt src="https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_aarch64.app.tar.gz">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_aarch64.app.tar.gz">
         <img alt src="https://img.shields.io/badge/APP-Apple%20Silicon-%23000000.svg?logo=apple">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_x64.app.tar.gz">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_x64.app.tar.gz">
         <img alt src="https://img.shields.io/badge/APP-Intel%20X64-%2300A9E0.svg?logo=apple">
       </a>
     </td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_aarch64.dmg">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_aarch64.dmg?label=DL&color=000000">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_aarch64.dmg">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_aarch64.dmg?label=DL&color=000000">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_x64.dmg">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_x64.dmg?label=DL&color=00A9E0">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_x64.dmg">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_x64.dmg?label=DL&color=00A9E0">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_aarch64.app.tar.gz">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_aarch64.app.tar.gz?label=DL&color=000000">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_aarch64.app.tar.gz">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_aarch64.app.tar.gz?label=DL&color=000000">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_x64.app.tar.gz">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_x64.app.tar.gz?label=DL&color=00A9E0">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_x64.app.tar.gz">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_x64.app.tar.gz?label=DL&color=00A9E0">
       </a>
     </td>
   </tr>
   <tr>
     <td>Linux</td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_amd64.AppImage">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage">
         <img alt src="https://img.shields.io/badge/AppImage-x64-F1B42F.svg?logo=linux">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_amd64.deb">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.deb">
         <img alt src="https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer-1.25.5-1.x86_64.rpm">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer-1.32.2-1.x86_64.rpm">
         <img alt src="https://img.shields.io/badge/RpmPackage-x64-f84e29.svg?logo=redhat">
       </a>
     </td>
     <td>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_amd64.AppImage">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_amd64.AppImage?label=DL&color=F1B42F">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage?label=DL&color=F1B42F">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer_1.25.5_amd64.deb">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer_1.25.5_amd64.deb?label=DL&color=FF9966">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.deb">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_amd64.deb?label=DL&color=FF9966">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.25.5/Pixiv-Viewer-1.25.5-1.x86_64.rpm">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.25.5/Pixiv-Viewer-1.25.5-1.x86_64.rpm?label=DL&color=f84e29">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer-1.32.2-1.x86_64.rpm">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer-1.32.2-1.x86_64.rpm?label=DL&color=f84e29">
       </a>
     </td>
   </tr>
