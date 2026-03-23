@@ -117,7 +117,8 @@ function addTauriListener() {
   listen('download_file_progress', evt => {
     const { current, total } = evt.payload
     Toast.clear()
-    Toast(`${i18n.t('tip.downloading')}: ${(current / total * 100).toFixed(0)}%`)
+    const progress = total ? (current / total * 100).toFixed(0) + '%' : (current / 1024).toFixed(0) + 'KB'
+    Toast(`${i18n.t('tip.downloading')}: ${progress}`)
   })
 }
 
