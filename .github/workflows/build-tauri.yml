@@ -141,7 +141,6 @@ jobs:
       - name: Install Rust
         run: |
           curl https://sh.rustup.rs -sSf | sh -s -- -y
-          echo "source $HOME/.cargo/env" >> $BASH_ENV
           . "$HOME/.cargo/env"
           rustup update stable
           rustup default stable
