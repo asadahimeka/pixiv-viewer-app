@@ -40,7 +40,14 @@
     },
     "resources": [],
     "linux": {
+      "appimage": {
+        "bundleMediaFramework": true,
+        "files": {}
+      },
       "deb": {
+        "depends": []
+      },
+      "rpm": {
         "depends": []
       }
     }

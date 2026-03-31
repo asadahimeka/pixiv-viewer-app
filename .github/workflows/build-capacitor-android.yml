@@ -1,4 +1,4 @@
-name: Build Capacitor App for Android
+name: 2. Build Capacitor App for Android
 
 on:
   workflow_dispatch:  # 允许手动触发
@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g pnpm
+          npm install -g pnpm@9
           pnpm install
 
       - name: Build frontend
@@ -74,16 +74,16 @@ jobs:
           cd android/app/build/outputs/apk/debug
           mv app-debug.apk "${APK_NAME}"
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APK_NAME }}
-          path: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
+      # - name: Upload APK
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.APK_NAME }}
+      #     path: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
 
-      - name: Upload APK to GitHub Release
+      - name: Upload APK to existing GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
+          tag_name: draft_v_${{ env.APP_VERSION }}
           files: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

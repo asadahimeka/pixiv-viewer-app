@@ -1,4 +1,4 @@
-name: Build Tauri App for Linux, Windows, and macOS
+name: 1. Build Tauri App for Linux, Windows, and macOS
 
 on:
   # push:
@@ -37,72 +37,117 @@ jobs:
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `v${process.env.PACKAGE_VERSION}`,
-              name: `v${process.env.PACKAGE_VERSION}`,
+              tag_name: `draft_v_${process.env.PACKAGE_VERSION}`,
+              name: `draft_v_${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
               draft: true,
               prerelease: true
             })
             return data.id
 
-  build-tauri:
+  # build-tauri:
+  #   needs: create-release
+  #   permissions:
+  #     contents: write
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - platform: 'macos-latest' # for Arm based macs (M1 and above).
+  #           args: '--target aarch64-apple-darwin'
+  #         - platform: 'macos-latest' # for Intel based macs.
+  #           args: '--target x86_64-apple-darwin'
+  #         - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+  #           args: '--bundles deb,appimage'
+  #         - platform: 'windows-latest'
+  #           args: ''
+
+  #   runs-on: ${{ matrix.platform }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Install dependencies (ubuntu only)
+  #       if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+  #       # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
+  #       # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         # cache: 'pnpm' # Set this to npm, yarn or pnpm.
+
+  #     - name: Install Rust stable
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+  #         targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+  #     - name: Rust cache
+  #       uses: swatinem/rust-cache@v2
+  #       with:
+  #         workspaces: './src-tauri -> target'
+
+  #     - name: Install frontend dependencies
+  #       # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+  #       run: |
+  #         npm install -g pnpm@9
+  #         pnpm install
+  #       # change this to npm or pnpm depending on which one you use.
+
+  #     - name: Build Tauri app
+  #       uses: tauri-apps/tauri-action@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
+  #         VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
+  #         VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
+  #         VUE_APP_HIBIAPI_ALTS: ${{ secrets.VUE_APP_HIBIAPI_ALTS }}
+  #         VUE_APP_DEF_APP_API_PROXY: ${{ secrets.VUE_APP_DEF_APP_API_PROXY }}
+  #         VUE_APP_APP_API_PROXYS: ${{ secrets.VUE_APP_APP_API_PROXYS }}
+  #         VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
+  #         VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
+  #         VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
+  #         VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
+  #         VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
+  #         BROWSERSLIST_ENV: 'tauri'
+  #         VUE_APP_PLATFORM: 'tauri'
+  #       with:
+  #         args: ${{ matrix.args }}
+  #         releaseId: ${{ needs.create-release.outputs.release_id }}
+  #         releaseDraft: true
+  #         prerelease: true
+
+  build-tauri-rpm:
     needs: create-release
     permissions:
       contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: ''
-          - platform: 'windows-latest'
-            args: ''
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:39
 
-    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-        # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          # cache: 'pnpm' # Set this to npm, yarn or pnpm.
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
+          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf nodejs npm rust cargo
 
       - name: Install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: |
-          npm install -g pnpm
+          npm install -g pnpm@9
           pnpm install
-        # change this to npm or pnpm depending on which one you use.
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri rpm
+        run: |
+          cargo install tauri-cli
+          cargo tauri build --bundles rpm
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
           VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
           VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
@@ -116,33 +161,11 @@ jobs:
           VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
           BROWSERSLIST_ENV: 'tauri'
           VUE_APP_PLATFORM: 'tauri'
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
         with:
-          # tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          # releaseName: 'v__VERSION__'
-          # releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: true
-          releaseId: ${{ needs.create-release.outputs.release_id }}
-          args: ${{ matrix.args }}
-
-  # publish-release:
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
-  #   needs: [create-release, build-tauri]
-
-  #   steps:
-  #     - name: Publish Release
-  #       id: publish-release
-  #       uses: actions/github-script@v6
-  #       env:
-  #         release_id: ${{ needs.create-release.outputs.release_id }}
-  #       with:
-  #         script: |
-  #           github.rest.repos.updateRelease({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             release_id: process.env.release_id,
-  #             draft: false,
-  #             prerelease: false
-  #           })
+          tag_name: draft_v_${{ env.APP_VERSION }}
+          files: src-tauri/target/release/bundle/rpm/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

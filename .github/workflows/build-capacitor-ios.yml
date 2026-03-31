@@ -1,4 +1,4 @@
-name: Build Capacitor App for iOS(Unsigned)
+name: 3. Build Capacitor App for iOS(Unsigned)
 
 on:
   workflow_dispatch:  # 允许手动触发
@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g pnpm
+          npm install -g pnpm@9
           pnpm install
 
       - name: Build frontend
@@ -88,16 +88,16 @@ jobs:
       #       -exportOptionsPlist exportOptions.plist \
       #       CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.IPA_NAME }}
-          path: ios/App/build/${{ env.IPA_NAME }}
+      # - name: Upload IPA
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.IPA_NAME }}
+      #     path: ios/App/build/${{ env.IPA_NAME }}
 
       - name: Upload IPA to existing GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
+          tag_name: draft_v_${{ env.APP_VERSION }}
           files: ios/App/build/${{ env.IPA_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
