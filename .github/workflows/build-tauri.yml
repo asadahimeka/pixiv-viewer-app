@@ -136,7 +136,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf
+          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf gcc gcc-c++ make glibc-devel kernel-headers pkgconfig libffi-devel zlib-devel openssl-devel
 
       - name: Install Rust
         run: |
@@ -158,8 +158,7 @@ jobs:
       - name: Build Tauri rpm
         run: |
           . "$HOME/.cargo/env"
-          cargo install tauri-cli
-          cargo tauri build --bundles rpm
+          pnpm tauri build --bundles rpm
         env:
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
           VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
@@ -178,7 +177,7 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: draft_v_${{ env.APP_VERSION }}
+          release_id: ${{ needs.create-release.outputs.release_id }}
           files: src-tauri/target/release/bundle/rpm/*.rpm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
