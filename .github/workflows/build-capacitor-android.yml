@@ -83,6 +83,8 @@ jobs:
       - name: Upload APK to existing GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
+          prerelease: true
           tag_name: draft_v_${{ env.APP_VERSION }}
           files: android/app/build/outputs/apk/debug/${{ env.APK_NAME }}
         env:

@@ -179,6 +179,8 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
+          prerelease: true
           tag_name: ${{ needs.create-release.outputs.version_tag }}
           files: src-tauri/target/release/bundle/rpm/*.rpm
         env:

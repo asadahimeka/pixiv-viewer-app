@@ -19,7 +19,9 @@ fn main() {
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             #[cfg(any(windows, target_os = "linux"))]
-            app.deep_link().register_all()?;
+            {
+                let _ = app.deep_link().register_all();
+            }
             Ok(())
         })
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {

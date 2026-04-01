@@ -97,6 +97,8 @@ jobs:
       - name: Upload IPA to existing GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
+          prerelease: true
           tag_name: draft_v_${{ env.APP_VERSION }}
           files: ios/App/build/${{ env.IPA_NAME }}
         env:
