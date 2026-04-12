@@ -78,10 +78,10 @@
       />
       <van-cell
         center
-        title="pixivpy-async"
+        title="Pixiv-Shaft"
         is-link
         :label="$t('tQaYxaOwYjOgf1OAnQm4J')"
-        @click="openLink('https://github.com/Mikubill/pixivpy-async')"
+        @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
       />
       <van-cell
         center

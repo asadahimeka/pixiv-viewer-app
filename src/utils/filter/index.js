@@ -37,8 +37,8 @@ export const HiddenAuthors = {
   NO_TYPE_AI: [],
 }
 
-const re1 = /漫画|描き方|お絵かきTIPS|manga|BL|スカラマシュ|散兵|恋与深空/i
-const re2 = /R-?18|恋童|ペド|幼女|萝莉|loli|小学生|BL|腐|スカラマシュ|散兵|恋与深空/i
+const re1 = /漫画|描き方|お絵かきTIPS|manga|BL|スカラマシュ|散兵/i
+const re2 = /R-?18|恋童|ペド|幼女|萝莉|loli|小学生|BL|腐|スカラマシュ|散兵/i
 
 export function filterHomeIllust(e) {
   if (e.type == 'manga') return false
@@ -205,5 +205,5 @@ export function isBlockTagHit(blockTags, value) {
 
 export const BLOCK_INPUT_WORDS = [/r-?18/i, /18-?r/i, /^黄?色情?图$/, /^ero$/i, /工口/, /エロ/]
 export const BLOCK_LAST_WORD_RE = /(^\d+$)|スカラ|散/i
-export const BLOCK_SEARCH_WORD_RE = /スカラマシュ|散兵|放浪者|流浪者|恋与深空/i
-export const BLOCK_RESULT_RE = /恋童|ペド|进群|加好友|度盘|低价|スカラマシュ|散兵|恋与深空/i
+export const BLOCK_SEARCH_WORD_RE = /スカラマシュ|散兵|放浪者|流浪者/i
+export const BLOCK_RESULT_RE = /恋童|ペド|进群|加好友|度盘|低价|スカラマシュ|散兵/i

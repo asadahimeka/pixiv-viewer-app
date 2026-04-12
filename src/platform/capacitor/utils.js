@@ -345,7 +345,7 @@ export async function getPixivQuicClient() {
     }
     const res = await PixivCronet.request(options)
     if (res.status == 200) {
-      return { data: JSON.parse(res.data) }
+      return { data: config.responseType == 'text' ? res.data : JSON.parse(res.data) }
     } else {
       try {
         const err = { response: { data: JSON.parse(res.data) } }

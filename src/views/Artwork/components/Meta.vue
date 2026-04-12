@@ -1,10 +1,10 @@
 /* eslint-disable vue/no-template-key */
 <template>
   <div v-if="artwork.author" class="artwork-meta">
-    <div class="mask">
+    <div v-if="!hidePIDMask" class="mask">
       <canvas ref="mask" class="mask-text"></canvas>
     </div>
-    <div class="author-info" :class="{ is_novel: isNovel, isAutoLoadKissT }">
+    <div class="author-info" :class="{ is_novel: isNovel, hidePIDMask }">
       <Pximg
         v-if="!isNovel"
         class="avatar"
@@ -32,6 +32,7 @@
         </div>
       </div>
     </div>
+    <div v-if="hidePIDMask" style="height: 2px;margin: 0.3rem 0;background-color: #e5e5e5;"></div>
     <div class="date">
       <span v-if="isNovel" class="view" style="margin-left: 0;">
         {{ $t('P8RGkre-rnlFxZ18aH2VW', [convertToK(artwork.text_length)]) }}
@@ -164,7 +165,7 @@ import { mapGetters } from 'vuex'
 import { Dialog } from 'vant'
 import _ from '@/lib/lodash'
 import store from '@/store'
-import { copyText, isSafari, downloadFile, formatIntlDate, formatIntlNumber } from '@/utils'
+import { copyText, downloadFile, formatIntlDate, formatIntlNumber } from '@/utils'
 import { i18n, isCNLocale } from '@/i18n'
 import { isIllustBookmarked, addBookmark, removeBookmark } from '@/api/user'
 import { getBookmarkRestrictTags, localApi } from '@/api'
@@ -175,7 +176,6 @@ import { COMMON_IMAGE_PROXY } from '@/consts'
 import CommentsArea from './Comment/CommentsArea.vue'
 
 const {
-  isAutoLoadKissT,
   isDefBookmarkPrivate,
   isDefBookmarkAddTags,
   isLongpressPrivateBookmark,
@@ -208,7 +208,6 @@ export default {
       bookmarkId: null,
       favLoading: false,
       showComments: false,
-      isAutoLoadKissT,
     }
   },
   computed: {
@@ -224,6 +223,14 @@ export default {
     },
     isBtnsShow() {
       return !this.artwork?.images.some(e => e.o.includes('common/images/limit'))
+    },
+    hidePIDMask() {
+      return (
+        this.isNovel ||
+        store.state.isSafari ||
+        store.state.appSetting.isAutoLoadKissT ||
+        !store.state.appSetting.showPIDMask
+      )
     },
   },
   watch: {
@@ -245,7 +252,9 @@ export default {
     },
   },
   mounted() {
-    this.drawMask()
+    if (!this.hidePIDMask) {
+      this.drawMask()
+    }
   },
   methods: {
     commonProxy(src) {
@@ -368,9 +377,6 @@ export default {
       await action(restrict, tags)
     },
     async drawMask() {
-      if (this.isAutoLoadKissT || isSafari()) return
-      if (this.isNovel) return
-
       await this.$nextTick()
 
       const canvas = this.$refs.mask
@@ -684,7 +690,7 @@ export default {
     }
 
     &.is_novel,
-    &.isAutoLoadKissT {
+    &.hidePIDMask {
       .author {
         margin-top 20px
         font-size 24px
@@ -704,12 +710,20 @@ export default {
       }
     }
 
-    &.isAutoLoadKissT {
+    &.hidePIDMask {
       .avatar {
         display none
       }
       .name-box {
         max-width unset
+        .title, .author {
+          display inline-block
+        }
+        .author {
+          margin-top 0
+          margin-left 0.1rem
+          line-height 1.5
+        }
       }
     }
 

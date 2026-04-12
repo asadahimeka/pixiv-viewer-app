@@ -61,8 +61,8 @@
       is-link
       @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
     >
-      <template #title> <s>Pixiv-Shaft (Android)</s> </template>
-      <template #label> <s>Pixiv 第三方 Android 客户端。</s> </template>
+      <template #title> Pixiv-Shaft (Android) </template>
+      <template #label> Pixiv 第三方 Android 客户端。 </template>
     </van-cell>
     <van-cell
       center

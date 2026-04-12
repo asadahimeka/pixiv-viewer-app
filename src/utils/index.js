@@ -507,7 +507,7 @@ export async function previewXMedia(item) {
     twitterStatusId: item.id,
     twitterName: item.userName,
   })), {
-    compact: store.state.isMobile,
+    compact: false,
     backdropClick: 'close',
     contentClick: store.state.isMobile ? 'close' : 'toggleZoom',
     startIndex: 0,
@@ -520,8 +520,8 @@ export async function previewXMedia(item) {
     Toolbar: {
       display: {
         left: ['infobar'],
-        middle: [],
-        right: ['myDetail', 'myDownload', 'toggleZoom', 'thumbs', 'rotateCW', 'flipX', 'flipY', 'close'],
+        middle: platform.isCapacitor ? ['myDetail', 'myDownload', 'toggleZoom', 'thumbs', 'rotateCW', 'flipX', 'flipY', 'close'] : [],
+        right: platform.isCapacitor ? [] : ['myDetail', 'myDownload', 'toggleZoom', 'thumbs', 'rotateCW', 'flipX', 'flipY', 'close'],
       },
       items: {
         myDetail: {
