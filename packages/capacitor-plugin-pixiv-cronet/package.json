@@ -1,0 +1,47 @@
+{
+  "name": "capacitor-plugin-pixiv-cronet",
+  "version": "1.0.0",
+  "description": "Pixiv Cronet plugin for direct connection via QUIC/HTTP3",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "unpkg": "dist/plugin.js",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/"
+  ],
+  "author": "asadahimeka",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asadahimeka/pixiv-viewer-app"
+  },
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "pixiv",
+    "cronet",
+    "direct-connection"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc && rollup -c rollup.config.js",
+    "clean": "rimraf ./dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^5.6.0",
+    "@capacitor/core": "^5.6.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.32.0",
+    "typescript": "^4"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^5.6.0"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

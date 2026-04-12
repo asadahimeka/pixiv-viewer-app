@@ -26,5 +26,5 @@ yarn-error.log*
 *.map
 
 /packages/**/android/build/*
-
 /public/static/words.txt
+.sisyphus

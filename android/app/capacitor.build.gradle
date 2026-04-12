@@ -23,6 +23,7 @@ dependencies {
     implementation project(':capacitor-navigation-bar')
     implementation project(':capacitor-plugin-file-opener')
     implementation project(':capacitor-plugin-filedownload')
+    implementation project(':capacitor-plugin-pixiv-cronet')
     implementation project(':capacitor-plugin-safe-area')
 
 }

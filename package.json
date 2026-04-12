@@ -34,6 +34,7 @@
     "capacitor-navigation-bar": "workspace:*",
     "capacitor-plugin-file-opener": "workspace:*",
     "capacitor-plugin-filedownload": "workspace:*",
+    "capacitor-plugin-pixiv-cronet": "workspace:*",
     "capacitor-plugin-safe-area": "2.0.6",
     "@tauri-apps/api": "2.5.0",
     "@tauri-apps/plugin-clipboard-manager": "2.2.2",
