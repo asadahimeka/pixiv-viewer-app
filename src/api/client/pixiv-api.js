@@ -42,15 +42,22 @@ const CLIENT_SECRET = 'lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj'
 const HASH_SECRET = '28c1fdd170a5204386cb1313c7077b34f83e4aaf4aa829ce78c231e05b0bae2c'
 
 const DEFAULT_HEADERS = {
-  'App-OS': 'Android',
-  'App-OS-Version': 'Android 14.0',
-  'App-Version': '6.140.1',
+  'App-OS': 'android',
+  'App-OS-Version': '15',
+  'App-Version': '6.178.0',
   'Accept-Language': i18n.locale || 'zh-CN',
-  'User-Agent': 'PixivAndroidApp/6.140.1 (Android 14.0; Pixel 8)',
+  'User-Agent': 'PixivAndroidApp/6.178.0 (Android 15; Pixel 9)',
 }
 
 let _tauriClient
+let _quicClient
 const getClient = async () => {
+  if (platform.isAndroid && window.p_api_hosts) {
+    if (_quicClient) return _quicClient
+    const { getPixivQuicClient } = await import('@/platform/capacitor/utils')
+    _quicClient = await getPixivQuicClient()
+    return _quicClient
+  }
   if (!platform.isTauri) return axios
   if (_tauriClient) return _tauriClient
   const { default: adapter } = await import('@/platform/tauri/axios-tauri-adapter')
@@ -70,11 +77,11 @@ function callApi(url, options) {
     }
     fUrl.hostname = window.p_api_proxy
     finalUrl = fUrl.href
-  } else if (window.p_api_hosts) {
+  }/*  else if (window.p_api_hosts) {
     options.headers.Host = fUrl.host
     fUrl.host = window.p_api_hosts[fUrl.hostname]
     finalUrl = fUrl.href
-  }
+  } */
 
   console.log('callApi Url: ', finalUrl)
   console.log('callApi options: ', options)

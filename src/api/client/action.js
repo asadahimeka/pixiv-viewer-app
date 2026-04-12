@@ -44,27 +44,27 @@ async function setPximgIP() {
   }
 }
 
-async function setApiHosts(config) {
-  console.log('config: ', config)
-  if (config.apiHosts) {
-    window.p_api_hosts = config.apiHosts
-    return
-  }
-  try {
-    const res = await dnsQuery('pixiv.me')
-    const { data } = res.data.Answer[0]
-    console.log('dns answer: ', data)
-    window.p_api_hosts = {
-      [OAUTH_DOMAIN]: data,
-      [API_DOMAIN]: data,
-    }
-    config.apiHosts = window.p_api_hosts
-    PixivAuth.writeConfig(config)
-  } catch (err) {
-    console.log('setApiHosts err: ', err)
-    window.p_api_hosts = DEF_API_HOSTS
-  }
-}
+// async function setApiHosts(config) {
+//   console.log('config: ', config)
+//   if (config.apiHosts) {
+//     window.p_api_hosts = config.apiHosts
+//     return
+//   }
+//   try {
+//     const res = await dnsQuery('pixiv.me')
+//     const { data } = res.data.Answer[0]
+//     console.log('dns answer: ', data)
+//     window.p_api_hosts = {
+//       [OAUTH_DOMAIN]: data,
+//       [API_DOMAIN]: data,
+//     }
+//     config.apiHosts = window.p_api_hosts
+//     PixivAuth.writeConfig(config)
+//   } catch (err) {
+//     console.log('setApiHosts err: ', err)
+//     window.p_api_hosts = DEF_API_HOSTS
+//   }
+// }
 
 async function prepare() {
   const config = PixivAuth.readConfig()
@@ -72,7 +72,8 @@ async function prepare() {
   if (config.useApiProxy) {
     window.p_api_proxy = config.apiProxy || DEF_API_PROXY
   } else if (config.directMode) {
-    await setApiHosts(config)
+    // await setApiHosts(config)
+    window.p_api_hosts = DEF_API_HOSTS
   }
 
   const pixivAuth = new PixivAuth()
@@ -343,20 +344,18 @@ function initApp(pixiv) {
     const { path, params } = req.query
     console.log('path: ', path)
     console.log('params: ', params)
-    const options = JSON.parse(params)
     const fns = {
-      'v2/illust/follow': () => pixiv.illustFollow(options),
-      'v1/novel/follow': () => pixiv.novelFollow(options),
-      'v1/user/bookmark-tags/illust': () => pixiv.userBookmarkIllustTags(options),
-      'v1/user/bookmark-tags/novel': () => pixiv.userBookmarkNovelTags(options),
+      'v2/illust/follow': () => pixiv.illustFollow(params),
+      'v1/novel/follow': () => pixiv.novelFollow(params),
+      'v1/user/bookmark-tags/illust': () => pixiv.userBookmarkIllustTags(params),
+      'v1/user/bookmark-tags/novel': () => pixiv.userBookmarkNovelTags(params),
     }
     return fns[path]?.()
   })
   app.get('/req_post', async req => {
-    const { path, data } = req.query
+    const { path, data: d } = req.query
     console.log('path: ', path)
-    console.log('data: ', data)
-    const d = JSON.parse(data)
+    console.log('data: ', d)
     const fns = {
       'v2/illust/bookmark/add': () => pixiv.bookmarkIllust(d.illust_id, d.restrict, d.tags),
       'v1/illust/bookmark/delete': () => pixiv.unbookmarkIllust(d.illust_id),

@@ -52,7 +52,6 @@ dependencies {
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
 
-    // Cronet - Chromium network stack
-    implementation 'org.chromium.net:cronet-api:119.6045.31'
-    implementation 'org.chromium.net:cronet-fallback:119.6045.31'
+    // Cronet - Chromium network stack (使用 embedded 版本，与 Pixiv-Shaft 一致)
+    implementation 'org.chromium.net:cronet-embedded:119.6045.31'
 }

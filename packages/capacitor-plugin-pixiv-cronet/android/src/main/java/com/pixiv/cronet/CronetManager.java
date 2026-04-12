@@ -35,7 +35,13 @@ public class CronetManager {
         if (sEngine == null) {
             synchronized (CronetManager.class) {
                 if (sEngine == null) {
-                    sEngine = buildEngine(context);
+                    try {
+                        sEngine = buildEngine(context);
+                        Log.d(TAG, "Cronet engine initialized successfully");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to initialize Cronet engine: " + e.getMessage(), e);
+                        throw e;
+                    }
                 }
             }
         }
@@ -65,19 +71,27 @@ public class CronetManager {
         // 创建 Cronet 缓存目录
         File cacheDir = new File(context.getCacheDir(), "pixiv-cronet");
         if (!cacheDir.exists()) {
-            cacheDir.mkdirs();
+            boolean created = cacheDir.mkdirs();
+            Log.d(TAG, "Cache dir created: " + created + ", path: " + cacheDir.getAbsolutePath());
         }
         
-        Log.d(TAG, "Initializing Cronet with HostResolverRules: " + rules);
+        Log.d(TAG, "Cronet config - QUIC: true, HTTP2: true");
+        Log.d(TAG, "Cronet config - QuicHints: app-api.pixiv.net:443, oauth.secure.pixiv.net:443");
+        Log.d(TAG, "Cronet config - experimental: " + experimental);
         
-        return new ExperimentalCronetEngine.Builder(context)
+        ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(context)
                 .enableQuic(true)                    // 启用 QUIC/HTTP3
-                .enableHttp2(true)                  // 启用 HTTP/2
+                .enableHttp2(true)                   // 启用 HTTP/2
                 .setStoragePath(cacheDir.getAbsolutePath())
                 .addQuicHint("app-api.pixiv.net", 443, 443)
                 .addQuicHint("oauth.secure.pixiv.net", 443, 443)
-                .setExperimentalOptions(experimental)
-                .build();
+                .setExperimentalOptions(experimental);
+        
+        Log.d(TAG, "Building Cronet engine...");
+        CronetEngine engine = builder.build();
+        Log.d(TAG, "Cronet engine built successfully");
+        
+        return engine;
     }
     
     /**

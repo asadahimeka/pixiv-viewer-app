@@ -119,7 +119,8 @@ export default {
       if (val) {
         const res = await Dialog.confirm({
           title: this.$t('setting.other.direct_mode.confirm.title'),
-          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
+          // message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
+          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl'),
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).catch(() => 'cancel')

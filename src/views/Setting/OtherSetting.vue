@@ -232,9 +232,9 @@
           <van-switch :value="appSetting.isDirectPximg" size="24" @change="setDirectPximg" />
         </template>
       </van-cell>
-      <van-cell v-if="clientConfig.directMode || appSetting.isDirectPximg" center :title="$t('setting.other.direct_mode.host.title')" is-link :label="$t('setting.other.direct_mode.host.label')" @click="clearApiHosts" />
+      <van-cell v-if="appSetting.isDirectPximg" center :title="$t('setting.other.direct_mode.host.title')" is-link :label="$t('setting.other.direct_mode.host.label')" @click="clearApiHosts" />
       <template v-if="clientConfig.useLocalAppApi">
-        <van-cell v-if="platform.isAndroid" center :title="$t('setting.other.direct_mode.title')" :label="clientConfig.directMode?$t('1bFB0dqSmKBnjbVLFyJKp', [directApiHosts.api]):$t('setting.other.direct_mode.label')">
+        <van-cell v-if="platform.isAndroid" center :title="$t('setting.other.direct_mode.title')" :label="$t('setting.lab.title')">
           <template #right-icon>
             <van-switch :value="clientConfig.directMode" :disabled="clientConfig.useApiProxy" size="24" @change="setDirectMode" />
           </template>
@@ -834,7 +834,7 @@ export default {
         let message = this.$t('mq3jjWeUDS-TPnfYJQvD5')
         if (platform.isAndroid) message += '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq')
         const res = await Dialog.confirm({
-          title: this.$t('setting.other.direct_mode.confirm.title'),
+          title: this.$t('nTsgCnGYm8FSVMfe-TQSN'),
           message,
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
@@ -856,13 +856,16 @@ export default {
       this.$nextTick(() => {
         this.hibiapi.show = false
         this.hibiapi_.show = false
+        this.pximgBed.show = false
+        this.pximgBed_.show = false
       })
     },
     async setDirectMode(val) {
       if (val) {
         const res = await Dialog.confirm({
           title: this.$t('setting.other.direct_mode.confirm.title'),
-          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
+          // message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl') + '<br><br>' + this.$t('GRVq7phCyjYNikSeFBUpq'),
+          message: this.$t('setting.other.direct_mode.confirm.msg') + '<br><br>' + this.$t('Vac-n5rX-GcGmqcu-bhvl'),
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).catch(() => 'cancel')
@@ -872,8 +875,8 @@ export default {
       this.clientConfig.directMode = val
       await this.$nextTick()
       await this.saveClientConfig({ reload: false })
-      const { setSkipSslSetting } = await import('@/platform/capacitor/utils')
-      await setSkipSslSetting(this.appSetting.isDirectPximg || val)
+      // const { setSkipSslSetting } = await import('@/platform/capacitor/utils')
+      // await setSkipSslSetting(this.appSetting.isDirectPximg || val)
       Dialog.alert({
         title: this.$t('tips.tip'),
         message: this.$t('lvocRILZVORp4Y1U0x6gz'),

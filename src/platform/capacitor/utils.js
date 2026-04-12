@@ -8,13 +8,14 @@ import { FileDownload } from 'capacitor-plugin-filedownload'
 import { FileOpener } from 'capacitor-plugin-file-opener'
 import { Mediastore } from 'capacitor-mediastore'
 import { NativeSettings, AndroidSettings, IOSSettings } from 'capacitor-native-settings'
+import { PixivCronet } from 'capacitor-plugin-pixiv-cronet'
 import writeBlob from 'capacitor-blob-writer'
 import { LocalStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
 import { formatBytes } from '@/utils'
-import platform from '..'
 import store from '@/store'
+import platform from '..'
 
 export async function copyText(string, cb, errCb) {
   try {
@@ -324,4 +325,34 @@ export async function setSkipSslSetting(shouldSkip = false) {
     key: SKIP_SSL_VERIFICATION_KEY,
     value: shouldSkip.toString(),
   })
+}
+
+let _isCronetAvailable = false
+export async function getPixivQuicClient() {
+  if (!_isCronetAvailable) {
+    const { available } = await PixivCronet.isAvailable()
+    if (!available) {
+      throw new Error('Cronet not available')
+    }
+    _isCronetAvailable = true
+  }
+  return async (url, config) => {
+    const options = { url }
+    if (config.method) options.method = config.method
+    if (config.headers) options.headers = config.headers
+    if (config.data) {
+      options.body = typeof config.data == 'string' ? config.data : JSON.stringify(config.data)
+    }
+    const res = await PixivCronet.request(options)
+    if (res.status == 200) {
+      return { data: JSON.parse(res.data) }
+    } else {
+      try {
+        const err = { response: { data: JSON.parse(res.data) } }
+        throw err
+      } catch (err) {
+        throw new Error(res.data)
+      }
+    }
+  }
 }

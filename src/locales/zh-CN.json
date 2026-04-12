@@ -231,7 +231,7 @@
           "label": "清除后将重新通过 DoH 查询"
         },
         "confirm": {
-          "title": "确认启用 App API直连模式？",
+          "title": "确认启用 App API 直连模式？",
           "msg": "App API 直连模式速度可能较快，但不保证稳定性。不可与 AppAPI 代理同时开启。",
           "proxy_title": "确认启用 AppAPI 代理？",
           "proxy_msg": "通过第三方云服务转发本地 AppAPI 请求，无法保证稳定性与安全性。不可与直连模式同时开启。"

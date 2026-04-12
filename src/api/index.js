@@ -287,14 +287,14 @@ function decodeCFEmail(encodedString) {
 function reqGet(path, params) {
   return get('/req_get', {
     path,
-    params: JSON.stringify(params),
+    params,
   })
 }
 
 function reqPost(path, data) {
   return get('/req_post', {
     path,
-    data: JSON.stringify(data),
+    data,
     t: Date.now(),
   }, {
     headers: {
