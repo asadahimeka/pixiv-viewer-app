@@ -18,22 +18,17 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm \
-            webkit2gtk \
-            gtk3 \
+          pacman -S --noconfirm --needed \
+            webkit2gtk-4.1 \
+            base-devel \
+            curl \
+            wget \
+            file \
+            openssl \
+            appmenu-gtk-module \
             libappindicator-gtk3 \
             librsvg \
-            patchelf \
-            gcc \
-            make \
-            pkg-config \
-            libffi \
-            zlib \
-            openssl \
-            curl \
-            git \
-            libfuse2 \
-            base-devel \
+            xdotool
             xdg-utils \
             xdg-user-dirs \
             desktop-file-utils \
