@@ -60,7 +60,7 @@ jobs:
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: '--bundles deb'
+            args: '--bundles deb,rpm,appimage'
           - platform: 'windows-latest'
             args: ''
 
