@@ -41,14 +41,14 @@
     "resources": [],
     "linux": {
       "appimage": {
-        "bundleMediaFramework": true,
+        "bundleMediaFramework": false,
         "files": {}
       },
       "deb": {
-        "depends": []
+        "depends": ["libwebkit2gtk-4.1-0"]
       },
       "rpm": {
-        "depends": []
+        "depends": ["webkit2gtk4.1"]
       }
     }
   },

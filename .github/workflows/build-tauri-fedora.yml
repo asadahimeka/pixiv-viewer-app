@@ -1,0 +1,69 @@
+name: 4. Build Tauri App for Linux(Fedora)
+
+on:
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-tauri-fedora:
+    needs: create-release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:39
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf gcc gcc-c++ make glibc-devel kernel-headers pkgconfig libffi-devel zlib-devel openssl-devel
+
+      - name: Install Rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          . "$HOME/.cargo/env"
+          rustup update stable
+          rustup default stable
+
+      - name: Install Node.js
+        run: |
+          curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+          dnf install -y nodejs
+
+      - name: Install frontend dependencies
+        run: |
+          npm install -g pnpm@9
+          pnpm install
+
+      - name: Build Tauri
+        run: |
+          . "$HOME/.cargo/env"
+          pnpm tauri build --bundles rpm,appimage
+        env:
+          VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
+          VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
+          VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
+          VUE_APP_HIBIAPI_ALTS: ${{ secrets.VUE_APP_HIBIAPI_ALTS }}
+          VUE_APP_DEF_APP_API_PROXY: ${{ secrets.VUE_APP_DEF_APP_API_PROXY }}
+          VUE_APP_APP_API_PROXYS: ${{ secrets.VUE_APP_APP_API_PROXYS }}
+          VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
+          VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
+          VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
+          VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
+          VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
+          BROWSERSLIST_ENV: 'tauri'
+          VUE_APP_PLATFORM: 'tauri'
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: true
+          tag_name: ${{ needs.create-release.outputs.version_tag }}
+          files: |
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
