@@ -33,7 +33,13 @@ jobs:
             curl \
             git \
             libfuse2 \
-            base-devel
+            base-devel \
+            xdg-utils \
+            xdg-user-dirs \
+            desktop-file-utils \
+            glib2 \
+            gstreamer \
+            gst-plugins-base
 
       - name: Install Rust
         run: |

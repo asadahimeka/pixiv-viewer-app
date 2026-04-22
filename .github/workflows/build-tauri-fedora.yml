@@ -17,7 +17,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf gcc gcc-c++ make glibc-devel kernel-headers pkgconfig libffi-devel zlib-devel openssl-devel
+          dnf install -y webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel librsvg2-devel patchelf gcc gcc-c++ make glibc-devel kernel-headers pkgconfig libffi-devel zlib-devel openssl-devel xdg-utils xdg-user-dirs desktop-file-utils glib2-devel gstreamer1-devel gstreamer1-plugins-base-devel
 
       - name: Install Rust
         run: |
