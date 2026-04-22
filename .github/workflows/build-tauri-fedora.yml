@@ -5,7 +5,6 @@ on:
 
 jobs:
   build-tauri-fedora:
-    needs: create-release
     permissions:
       contents: write
     runs-on: ubuntu-latest
