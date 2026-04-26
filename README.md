@@ -111,13 +111,7 @@
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage">
         <img alt src="https://img.shields.io/badge/AppImage-Debian%2FUbuntu%20x64-E95420.svg?logo=ubuntu">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64-fedora.AppImage">
-        <img alt src="https://img.shields.io/badge/AppImage-Fedora%2FRHEL%20x64-51A2DA.svg?logo=fedora">
-      </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64-archlinux.AppImage">
-        <img alt src="https://img.shields.io/badge/AppImage-ArchLinux%20x64-1793D1.svg?logo=archlinux">
-      </a><br>
-      <a href="https://aur.archlinux.org/packages/pixiv-viewer-git">
+      <a href="https://aur.archlinux.org/packages/pixiv-viewer">
          <img alt src="https://img.shields.io/badge/AUR-ArchLinux%20x64-1793D1.svg?logo=archlinux">
       </a>
     </td>
@@ -133,12 +127,6 @@
       </a><br>
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage">
         <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_amd64.AppImage?label=DL&color=E95420">
-      </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64-fedora.AppImage">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_amd64-fedora.AppImage?label=DL&color=51A2DA">
-      </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.32.2/Pixiv-Viewer_1.32.2_amd64-archlinux.AppImage">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.32.2/Pixiv-Viewer_1.32.2_amd64-archlinux.AppImage?label=DL&color=1793D1">
       </a><br>
       <code>yay -S pixiv-viewer</code>
     </td>
