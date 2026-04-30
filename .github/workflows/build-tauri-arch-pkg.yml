@@ -67,7 +67,7 @@ jobs:
       - name: Run makepkg
         run: |
           chown -R builduser:builduser .
-          sudo -E -u builduser bash -c "
+          sudo -u builduser bash -c "
             echo 'VUE_APP_DEF_HIBIAPI_MAIN=${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}' > .env
             echo 'VUE_APP_PXIMG_PROXYS=${{ secrets.VUE_APP_PXIMG_PROXYS }}' >> .env
             echo 'VUE_APP_DEF_PXIMG_MAIN=${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}' >> .env
