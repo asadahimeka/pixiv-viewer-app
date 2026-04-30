@@ -97,7 +97,9 @@ jobs:
       - name: Install frontend dependencies
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: |
+          rustc --version
           npm install -g pnpm@9
+          node -v
           pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.

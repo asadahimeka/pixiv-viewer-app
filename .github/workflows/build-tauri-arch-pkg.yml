@@ -35,12 +35,12 @@ jobs:
         run: |
           cat << 'EOF' > PKGBUILD
           # Maintainer: Sakura Yumine <i@nanoka.top>
-          pkgname='pixiv-viewer-git'
+          pkgname="pixiv-viewer"
           pkgver=1.0.0
           pkgrel=1
-          pkgdesc='Yet Another Pixiv Illust&Novel Viewer / 又一个 Pixiv 阅览工具'
+          pkgdesc="Yet Another Pixiv Illust&Novel Viewer / 又一个 Pixiv 阅览工具"
           arch=('x86_64')
-          url='https://github.com/asadahimeka/pixiv-viewer-app'
+          url="https://github.com/asadahimeka/pixiv-viewer-app"
           license=('MIT')
           depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup' 'pango' 'webkit2gtk-4.1')
           makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'pnpm' 'nodejs')
@@ -48,23 +48,19 @@ jobs:
           source=()
           sha256sums=()
           prepare() {
-            ln -sf '$startdir' '${srcdir}/pixiv-viewer-app'
-          }
-          pkgver() {
-            cd '${srcdir}/pixiv-viewer-app'
-            ( set -o pipefail
-              git describe --long --abbrev=7 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
-              printf 'r%s.%s' '$(git rev-list --count HEAD)' '$(git rev-parse --short=7 HEAD)'
-            )
+            echo Node.js $(node -v)
+            echo pnpm $(pnpm -v)
+            rustc --version
+            ls -la ..
           }
           build() {
-            cd '${srcdir}/pixiv-viewer-app'
+            cd ..
             pnpm install
             pnpm tauri build -v -b deb
           }
           package() {
-            cd '${srcdir}/pixiv-viewer-app'
-            cp -a src-tauri/target/release/bundle/deb/Pixiv-Viewer_*/data/* '${pkgdir}'
+            cd ..
+            cp -a src-tauri/target/release/bundle/deb/Pixiv-Viewer_*/data/* "${pkgdir}"
           }
           EOF
 
@@ -93,6 +89,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          mv pixiv-viewer-1.0.0-1-x86_64.pkg.tar.zst "pixiv-viewer-${APP_VERSION}-1-x86_64.pkg.tar.zst"
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
