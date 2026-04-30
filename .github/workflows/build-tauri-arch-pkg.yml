@@ -46,7 +46,7 @@ jobs:
           url="https://github.com/asadahimeka/pixiv-viewer-app"
           license=('MIT')
           depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup' 'pango' 'webkit2gtk-4.1')
-          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'pnpm' 'nodejs')
+          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'nodejs' 'npm')
           options=('!lto' '!strip' '!debug')
           source=()
           sha256sums=()
