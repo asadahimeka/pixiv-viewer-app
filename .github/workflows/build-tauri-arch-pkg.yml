@@ -50,6 +50,8 @@ jobs:
           prepare() {
             echo Node.js $(node -v)
             echo pnpm $(pnpm -v)
+            rustup update stable
+            rustup default stable
             rustc --version
             ls -la ..
           }
