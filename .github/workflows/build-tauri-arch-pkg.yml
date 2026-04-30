@@ -15,24 +15,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up non-root user & sudo (makepkg doesnt allow root)
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm sudo git base-devel
-          useradd -m -G wheel builduser
-          echo "builduser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
       - name: Install Tauri build deps
         run: |
+          pacman -Syu --noconfirm
           pacman -S --noconfirm --needed \
-            cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
+            git base-devel cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
             hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
             curl rustup nodejs pnpm
 
       - name: Create PKGBUILD file
         run: |
-          sudo -E -u builduser bash -c "
           cat << 'EOF' > PKGBUILD
           # Maintainer: Sakura Yumine <i@nanoka.top>
           pkgname='pixiv-viewer-git'
@@ -67,27 +60,26 @@ jobs:
             cp -a src-tauri/target/release/bundle/deb/Pixiv-Viewer_*/data/* '${pkgdir}'
           }
           EOF
-          "
 
       - name: Run makepkg
         run: |
-          sudo -E -u builduser bash -c "
-            echo 'VUE_APP_DEF_HIBIAPI_MAIN=${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}' > .env
-            echo 'VUE_APP_PXIMG_PROXYS=${{ secrets.VUE_APP_PXIMG_PROXYS }}' >> .env
-            echo 'VUE_APP_DEF_PXIMG_MAIN=${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}' >> .env
-            echo 'VUE_APP_HIBIAPI_ALTS=${{ secrets.VUE_APP_HIBIAPI_ALTS }}' >> .env
-            echo 'VUE_APP_DEF_APP_API_PROXY=${{ secrets.VUE_APP_DEF_APP_API_PROXY }}' >> .env
-            echo 'VUE_APP_APP_API_PROXYS=${{ secrets.VUE_APP_APP_API_PROXYS }}' >> .env
-            echo 'VUE_APP_COMMON_PROXY=${{ secrets.VUE_APP_COMMON_PROXY }}' >> .env
-            echo 'VUE_APP_UMAMI_ID=${{ secrets.VUE_APP_UMAMI_ID }}' >> .env
-            echo 'VUE_APP_UMAMI_SRC=${{ secrets.VUE_APP_UMAMI_SRC }}' >> .env
-            echo 'VUE_APP_COMMON_IMAGE_PROXY=${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}' >> .env
-            echo 'VUE_APP_SILICON_CLOUD_API_KEY=${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}' >> .env
-            echo 'VUE_APP_PLATFORM=tauri' >> .env
-            echo 'BROWSERSLIST_ENV=tauri' >> .env
-            makepkg --printsrcinfo > .SRCINFO
-            makepkg -sf --noconfirm
-          "
+          echo 'VUE_APP_DEF_HIBIAPI_MAIN=${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}' > .env
+          echo 'VUE_APP_PXIMG_PROXYS=${{ secrets.VUE_APP_PXIMG_PROXYS }}' >> .env
+          echo 'VUE_APP_DEF_PXIMG_MAIN=${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}' >> .env
+          echo 'VUE_APP_HIBIAPI_ALTS=${{ secrets.VUE_APP_HIBIAPI_ALTS }}' >> .env
+          echo 'VUE_APP_DEF_APP_API_PROXY=${{ secrets.VUE_APP_DEF_APP_API_PROXY }}' >> .env
+          echo 'VUE_APP_APP_API_PROXYS=${{ secrets.VUE_APP_APP_API_PROXYS }}' >> .env
+          echo 'VUE_APP_COMMON_PROXY=${{ secrets.VUE_APP_COMMON_PROXY }}' >> .env
+          echo 'VUE_APP_UMAMI_ID=${{ secrets.VUE_APP_UMAMI_ID }}' >> .env
+          echo 'VUE_APP_UMAMI_SRC=${{ secrets.VUE_APP_UMAMI_SRC }}' >> .env
+          echo 'VUE_APP_COMMON_IMAGE_PROXY=${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}' >> .env
+          echo 'VUE_APP_SILICON_CLOUD_API_KEY=${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}' >> .env
+          echo 'VUE_APP_PLATFORM=tauri' >> .env
+          echo 'BROWSERSLIST_ENV=tauri' >> .env
+          makepkg --printsrcinfo > .SRCINFO
+          makepkg -sf --noconfirm
+        env:
+          MAKEPKG_FORCE_ROOT: "1" 
 
       - name: Extract app version
         run: |
