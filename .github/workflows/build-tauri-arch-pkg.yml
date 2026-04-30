@@ -86,8 +86,8 @@ jobs:
             echo 'VUE_APP_UMAMI_SRC=${{ secrets.VUE_APP_UMAMI_SRC }}' >> .env
             echo 'VUE_APP_COMMON_IMAGE_PROXY=${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}' >> .env
             echo 'VUE_APP_SILICON_CLOUD_API_KEY=${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}' >> .env
-            echo 'VUE_APP_PLATFORM='tauri'' >> .env
-            echo 'BROWSERSLIST_ENV='tauri'' >> .env
+            echo 'VUE_APP_PLATFORM=tauri' >> .env
+            echo 'BROWSERSLIST_ENV=tauri' >> .env
             makepkg --printsrcinfo > .SRCINFO
             makepkg -sf --noconfirm
           "
