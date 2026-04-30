@@ -29,7 +29,10 @@ jobs:
             cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
             hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
-            curl rustup nodejs pnpm
+            curl rustup nodejs npm
+          rustup update stable
+          rustup default stable
+          npm i -g pnpm@9
 
       - name: Create PKGBUILD file
         run: |
@@ -49,9 +52,8 @@ jobs:
           sha256sums=()
           prepare() {
             echo Node.js $(node -v)
+            echo npm $(npm -v)
             echo pnpm $(pnpm -v)
-            rustup update stable
-            rustup default stable
             rustc --version
             ls -la ..
           }
