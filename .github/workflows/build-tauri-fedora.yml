@@ -59,14 +59,17 @@ jobs:
           BROWSERSLIST_ENV: 'tauri'
           VUE_APP_PLATFORM: 'tauri'
 
-      - name: Extract app version and rename file
+      - name: Extract app version and repackage AppImage
         run: |
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           cd src-tauri/target/release/bundle/appimage
-          for file in *.AppImage; do
-            mv "$file" "${file%.AppImage}-fedora.AppImage"
-          done
+          "./Pixiv-Viewer_${VERSION}_amd64.AppImage" --appimage-extract
+          rm -f squashfs-root/usr/lib/*wayland*so*
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${VERSION}_amd64-fedora.AppImage"
+          ls -la
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -75,6 +78,6 @@ jobs:
           prerelease: true
           tag_name: draft_v_${{ env.APP_VERSION }}
           files: |
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/appimage/*-fedora.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

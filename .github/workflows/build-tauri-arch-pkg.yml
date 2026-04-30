@@ -30,14 +30,18 @@ jobs:
             hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
             curl rustup nodejs npm
-          npm i -g pnpm@9
+
+      - name: Extract app version
+        run: |
+          VERSION=$(node -p "require('./package.json').version || '0.0.0'")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create PKGBUILD file
         run: |
           cat << 'EOF' > PKGBUILD
           # Maintainer: Sakura Yumine <i@nanoka.top>
           pkgname="pixiv-viewer"
-          pkgver=1.0.0
+          pkgver=PLACEHOLDER_VERSION
           pkgrel=1
           pkgdesc="Yet Another Pixiv Illust&Novel Viewer / 又一个 Pixiv 阅览工具"
           arch=('x86_64')
@@ -51,6 +55,7 @@ jobs:
           prepare() {
             echo Node.js $(node -v)
             echo npm $(npm -v)
+            npm i -g pnpm
             echo pnpm $(pnpm -v)
             rustup update stable
             rustup default stable
@@ -67,6 +72,7 @@ jobs:
             cp -a src-tauri/target/release/bundle/deb/Pixiv-Viewer_*/data/* "${pkgdir}"
           }
           EOF
+          sed -i "s/PLACEHOLDER_VERSION/$APP_VERSION/g" PKGBUILD
 
       - name: Run makepkg
         run: |
@@ -88,12 +94,6 @@ jobs:
             makepkg --printsrcinfo > .SRCINFO
             makepkg -sf --noconfirm
           "
-
-      - name: Extract app version
-        run: |
-          VERSION=$(node -p "require('./package.json').version || '0.0.0'")
-          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-          mv pixiv-viewer-1.0.0-1-x86_64.pkg.tar.zst "pixiv-viewer-${APP_VERSION}-1-x86_64.pkg.tar.zst"
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2

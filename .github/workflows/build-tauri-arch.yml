@@ -28,7 +28,7 @@ jobs:
             appmenu-gtk-module \
             libappindicator-gtk3 \
             librsvg \
-            xdotool
+            xdotool \
             xdg-utils \
             xdg-user-dirs \
             desktop-file-utils \
@@ -92,11 +92,11 @@ jobs:
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           cd src-tauri/target/release/bundle/appimage
-          "./Pixiv-Viewer_${APP_VERSION}_amd64.AppImage" --appimage-extract
+          "./Pixiv-Viewer_${VERSION}_amd64.AppImage" --appimage-extract
           rm -f squashfs-root/usr/lib/*wayland*so*
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
+          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${VERSION}_amd64-archlinux.AppImage"
           ls -la
 
       - name: Upload to release
