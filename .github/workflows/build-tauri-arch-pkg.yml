@@ -30,8 +30,6 @@ jobs:
             hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
             curl rustup nodejs npm
-          rustup update stable
-          rustup default stable
           npm i -g pnpm@9
 
       - name: Create PKGBUILD file
@@ -54,6 +52,8 @@ jobs:
             echo Node.js $(node -v)
             echo npm $(npm -v)
             echo pnpm $(pnpm -v)
+            rustup update stable
+            rustup default stable
             rustc --version
             ls -la ..
           }
