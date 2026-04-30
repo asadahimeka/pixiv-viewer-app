@@ -17,7 +17,6 @@ jobs:
 
       - name: Set up non-root user & sudo (makepkg doesnt allow root)
         run: |
-          sed -i '/^\[options\]/a NoConfirm' /etc/pacman.conf
           pacman -Syu --noconfirm
           pacman -S --noconfirm sudo git base-devel
           useradd -m -G wheel builduser
@@ -25,13 +24,11 @@ jobs:
 
       - name: Install Tauri build deps
         run: |
-          sudo -u builduser bash -c '
-            pacman -S --noconfirm --needed \
-              cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
-              hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
-              openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
-              curl rustup nodejs pnpm
-          '
+          pacman -S --noconfirm --needed \
+            cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
+            hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
+            openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
+            curl rustup nodejs pnpm
 
       - name: Create PKGBUILD file
         run: |
