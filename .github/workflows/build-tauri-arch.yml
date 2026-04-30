@@ -1,0 +1,111 @@
+name: 6. Build Tauri AppImage for ArchLinux
+
+on:
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-tauri-arch:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            webkit2gtk-4.1 \
+            base-devel \
+            curl \
+            wget \
+            file \
+            openssl \
+            appmenu-gtk-module \
+            libappindicator-gtk3 \
+            librsvg \
+            xdotool
+            xdg-utils \
+            xdg-user-dirs \
+            desktop-file-utils \
+            glib2 \
+            gstreamer \
+            gst-plugins-base
+
+      - name: Install Rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          . "$HOME/.cargo/env"
+          rustup update stable
+          rustup default stable
+          rustup --version
+          rustc --version
+
+      - name: Install Node.js
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+          \. "$HOME/.nvm/nvm.sh"
+          nvm install 20
+          node -v
+          npm -v
+
+      - name: Install frontend dependencies
+        run: |
+          \. "$HOME/.nvm/nvm.sh"
+          npm install -g pnpm@9
+          pnpm -v
+          pnpm install
+
+      - name: Build Tauri
+        run: |
+          . "$HOME/.cargo/env"
+          \. "$HOME/.nvm/nvm.sh"
+          rustc --version
+          node -v
+          pnpm -v
+          export DISABLE_STRIP=1
+          export NO_STRIP=true
+          pnpm tauri build --bundles appimage
+        env:
+          VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
+          VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
+          VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
+          VUE_APP_HIBIAPI_ALTS: ${{ secrets.VUE_APP_HIBIAPI_ALTS }}
+          VUE_APP_DEF_APP_API_PROXY: ${{ secrets.VUE_APP_DEF_APP_API_PROXY }}
+          VUE_APP_APP_API_PROXYS: ${{ secrets.VUE_APP_APP_API_PROXYS }}
+          VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
+          VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
+          VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
+          VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
+          VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
+          BROWSERSLIST_ENV: 'tauri'
+          VUE_APP_PLATFORM: 'tauri'
+
+      - name: Extract app version and repackage AppImage
+        run: |
+          \. "$HOME/.nvm/nvm.sh"
+          node -v
+          VERSION=$(node -p "require('./package.json').version || '0.0.0'")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          cd src-tauri/target/release/bundle/appimage
+          "./Pixiv-Viewer_${APP_VERSION}_amd64.AppImage" --appimage-extract
+          rm -f squashfs-root/usr/lib/*wayland*so*
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
+          ls -la
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: true
+          tag_name: draft_v_${{ env.APP_VERSION }}
+          files: |
+            src-tauri/target/release/bundle/appimage/*-archlinux.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

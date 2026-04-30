@@ -98,6 +98,7 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: |
           npm install -g pnpm@9
+          pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.
 
