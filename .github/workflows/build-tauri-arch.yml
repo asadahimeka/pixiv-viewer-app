@@ -68,7 +68,7 @@ jobs:
           node -v
           pnpm -v
           export DISABLE_STRIP=1
-          export NO_STRIP=true
+          export NO_STRIP=1
           pnpm tauri build --bundles appimage
         env:
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
