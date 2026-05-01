@@ -1,4 +1,4 @@
-name: 1. Build Tauri App for Windows, macOS, and Linux(Ubuntu)
+name: 1. Build Tauri App for Windows, macOS, and Linux
 
 on:
   # push:
@@ -10,60 +10,21 @@ on:
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  # create-release:
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     release_id: ${{ steps.create-release.outputs.result }}
-  #     version_tag: draft_v_${{ steps.get-version.outputs.version }}
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: lts/*
-
-  #     - name: Get Version
-  #       id: get-version
-  #       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-  #     - name: Create Release
-  #       id: create-release
-  #       uses: actions/github-script@v6
-  #       with:
-  #         script: |
-  #           const { data } = await github.rest.repos.createRelease({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             tag_name: `draft_v_${{ steps.get-version.outputs.version }}`,
-  #             name: `draft_v_${{ steps.get-version.outputs.version }}`,
-  #             body: 'Take a look at the assets to download and install this app.',
-  #             draft: true,
-  #             prerelease: true
-  #           })
-  #           return data.id
-
   build-tauri:
-    # needs: create-release
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          # - platform: 'macos-latest' # for Arm based macs (M1 and above).
-          #   args: '--target aarch64-apple-darwin'
-          # - platform: 'macos-latest' # for Intel based macs.
-          #   args: '--target x86_64-apple-darwin'
+          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: '--bundles appimage'
-            # args: '--bundles deb,rpm,appimage'
-          # - platform: 'windows-latest'
-          #   args: ''
+            args: '--bundles deb,rpm,appimage'
+          - platform: 'windows-latest'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -133,21 +94,25 @@ jobs:
         with:
           args: ${{ matrix.args }}
           tagName: draft_v_${{ env.APP_VERSION }}
-          # releaseId: ${{ needs.create-release.outputs.release_id }}
           releaseDraft: true
           prerelease: true
 
       - name: Repackage AppImage for Fedora/ArchLinux
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           cd src-tauri/target/release/bundle/appimage
-          "./Pixiv-Viewer_${APP_VERSION}_amd64.AppImage" --appimage-extract
-          rm -f squashfs-root/usr/lib/*wayland*so*
+          "./Pixiv-Viewer_${VERSION}_amd64.AppImage" --appimage-extract
+          mv squashfs-root appdir
+          rm -f appdir/usr/lib/*wayland*so*
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          mv squashfs-root appimagetool
+          ./appimagetool/AppRun appdir "Pixiv-Viewer_${VERSION}_amd64-archlinux.AppImage"
           ls -la
 
       - name: Upload AppImage to release
+        if: matrix.platform == 'ubuntu-22.04'
         uses: softprops/action-gh-release@v2
         with:
           draft: true
