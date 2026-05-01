@@ -10,59 +10,60 @@ on:
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  create-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create-release.outputs.result }}
-      version_tag: draft_v_${{ steps.get-version.outputs.version }}
+  # create-release:
+  #   permissions:
+  #     contents: write
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     release_id: ${{ steps.create-release.outputs.result }}
+  #     version_tag: draft_v_${{ steps.get-version.outputs.version }}
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: lts/*
 
-      - name: Get Version
-        id: get-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+  #     - name: Get Version
+  #       id: get-version
+  #       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Create Release
-        id: create-release
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `draft_v_${{ steps.get-version.outputs.version }}`,
-              name: `draft_v_${{ steps.get-version.outputs.version }}`,
-              body: 'Take a look at the assets to download and install this app.',
-              draft: true,
-              prerelease: true
-            })
-            return data.id
+  #     - name: Create Release
+  #       id: create-release
+  #       uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           const { data } = await github.rest.repos.createRelease({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             tag_name: `draft_v_${{ steps.get-version.outputs.version }}`,
+  #             name: `draft_v_${{ steps.get-version.outputs.version }}`,
+  #             body: 'Take a look at the assets to download and install this app.',
+  #             draft: true,
+  #             prerelease: true
+  #           })
+  #           return data.id
 
   build-tauri:
-    needs: create-release
+    # needs: create-release
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
+          # - platform: 'macos-latest' # for Arm based macs (M1 and above).
+          #   args: '--target aarch64-apple-darwin'
+          # - platform: 'macos-latest' # for Intel based macs.
+          #   args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: '--bundles deb,rpm,appimage'
-          - platform: 'windows-latest'
-            args: ''
+            args: '--bundles appimage'
+            # args: '--bundles deb,rpm,appimage'
+          # - platform: 'windows-latest'
+          #   args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -73,7 +74,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf wget
         # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
@@ -81,7 +82,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: 'pnpm' # Set this to npm, yarn or pnpm.
+          cache: 'pnpm' # Set this to npm, yarn or pnpm.
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -98,14 +99,19 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: |
           rustc --version
-          npm install -g pnpm@9
           node -v
+          npm install -g pnpm@9
           pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.
 
+      - name: Extract app version
+        run: |
+          VERSION=$(node -p "require('./package.json').version || '0.0.0'")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
@@ -123,6 +129,28 @@ jobs:
           VUE_APP_PLATFORM: 'tauri'
         with:
           args: ${{ matrix.args }}
-          releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: draft_v_${{ env.APP_VERSION }}
+          # releaseId: ${{ needs.create-release.outputs.release_id }}
           releaseDraft: true
           prerelease: true
+
+      - name: Repackage AppImage for Fedora/ArchLinux
+        run: |
+          cd src-tauri/target/release/bundle/appimage
+          "./Pixiv-Viewer_${APP_VERSION}_amd64.AppImage" --appimage-extract
+          rm -f squashfs-root/usr/lib/*wayland*so*
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
+          ls -la
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: true
+          tag_name: draft_v_${{ env.APP_VERSION }}
+          files: |
+            src-tauri/target/release/bundle/appimage/*-archlinux.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
