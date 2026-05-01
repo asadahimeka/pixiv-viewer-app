@@ -78,6 +78,10 @@ jobs:
         # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -100,7 +104,6 @@ jobs:
         run: |
           rustc --version
           node -v
-          npm install -g pnpm@9
           pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.
@@ -144,7 +147,7 @@ jobs:
           ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
           ls -la
 
-      - name: Upload to release
+      - name: Upload AppImage to release
         uses: softprops/action-gh-release@v2
         with:
           draft: true

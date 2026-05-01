@@ -5,8 +5,8 @@
   "version": "1.32.2",
   "identifier": "org.eu.cocomi.pxvek",
   "build": {
-    "beforeBuildCommand": "npm run build:web:tauri",
-    "beforeDevCommand": "npm run dev:web:tauri",
+    "beforeBuildCommand": "pnpm run build:web:tauri",
+    "beforeDevCommand": "pnpm run dev:web:tauri",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:8080"
   },

@@ -5,13 +5,13 @@
   "scripts": {
     "dev:web": "cross-env VUE_APP_PLATFORM=android vue-cli-service serve --port 8080",
     "dev:tauri": "cross-env VUE_APP_PLATFORM=tauri tauri dev",
-    "build:and:dev": "cross-env BROWSERSLIST_ENV=development VUE_APP_PLATFORM=android npm run build:web -- --modern && npx cap sync android",
-    "build:ios:dev": "cross-env BROWSERSLIST_ENV=development VUE_APP_PLATFORM=ios npm run build:web -- --modern && npx cap sync ios",
-    "build:and": "cross-env BROWSERSLIST_ENV=capacitor VUE_APP_PLATFORM=android npm run build:web && npx cap sync android",
-    "build:ios": "cross-env BROWSERSLIST_ENV=capacitor VUE_APP_PLATFORM=ios npm run build:web && npx cap sync ios",
+    "build:and:dev": "cross-env BROWSERSLIST_ENV=development VUE_APP_PLATFORM=android pnpm run build:web -- --modern && npx cap sync android",
+    "build:ios:dev": "cross-env BROWSERSLIST_ENV=development VUE_APP_PLATFORM=ios pnpm run build:web -- --modern && npx cap sync ios",
+    "build:and": "cross-env BROWSERSLIST_ENV=capacitor VUE_APP_PLATFORM=android pnpm run build:web && npx cap sync android",
+    "build:ios": "cross-env BROWSERSLIST_ENV=capacitor VUE_APP_PLATFORM=ios pnpm run build:web && npx cap sync ios",
     "build:win": "cross-env BROWSERSLIST_ENV=tauri VUE_APP_PLATFORM=tauri tauri build --target x86_64-pc-windows-msvc",
     "build:mac": "cross-env BROWSERSLIST_ENV=tauri VUE_APP_PLATFORM=tauri tauri build --target universal-apple-darwin",
-    "build:web:tauri": "cross-env BROWSERSLIST_ENV=tauri VUE_APP_PLATFORM=tauri npm run build:web",
+    "build:web:tauri": "cross-env BROWSERSLIST_ENV=tauri VUE_APP_PLATFORM=tauri pnpm run build:web",
     "dev:web:tauri": "cross-env VUE_APP_PLATFORM=tauri vue-cli-service serve --port 8080",
     "build:web": "vue-cli-service build",
     "lint": "vue-cli-service lint"

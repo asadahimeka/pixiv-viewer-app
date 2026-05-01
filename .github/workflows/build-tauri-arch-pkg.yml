@@ -29,7 +29,7 @@ jobs:
             cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
             hicolor-icon-theme libsoup pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
-            curl rustup nodejs npm
+            curl rustup nodejs pnpm
 
       - name: Extract app version
         run: |
@@ -48,14 +48,12 @@ jobs:
           url="https://github.com/asadahimeka/pixiv-viewer-app"
           license=('MIT')
           depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup' 'pango' 'webkit2gtk-4.1')
-          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'nodejs' 'npm')
+          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'nodejs' 'pnpm')
           options=('!lto' '!strip' '!debug')
           source=()
           sha256sums=()
           prepare() {
             echo Node.js $(node -v)
-            echo npm $(npm -v)
-            npm i -g pnpm
             echo pnpm $(pnpm -v)
             rustup update stable
             rustup default stable
