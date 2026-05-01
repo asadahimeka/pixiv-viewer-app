@@ -65,10 +65,13 @@ jobs:
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           cd src-tauri/target/release/bundle/appimage
           "./Pixiv-Viewer_${VERSION}_amd64.AppImage" --appimage-extract
-          rm -f squashfs-root/usr/lib/*wayland*so*
+          mv squashfs-root appdir
+          rm -f appdir/usr/lib/*wayland*so*
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          ./appimagetool-x86_64.AppImage squashfs-root/ "Pixiv-Viewer_${VERSION}_amd64-fedora.AppImage"
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          mv squashfs-root appimagetool
+          ./appimagetool/AppRun appdir "Pixiv-Viewer_${VERSION}_amd64-fedora.AppImage"
           ls -la
 
       - name: Upload to release
