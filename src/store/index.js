@@ -105,6 +105,8 @@ export default new Vuex.Store({
     isR18On(state) {
       return state.contentSetting.r18 || state.contentSetting.r18g
     },
+    blockTagsSet: state => new Set(state.blockTags),
+    blockUidsSet: state => new Set(state.blockUids),
     isCensored: state => artwork => !isArtworkNotCensored(artwork, state),
     isNoOuterMeta(state) {
       return state.appSetting.isVirtualList || ['VirtualSlide', 'Justified(Transform)'].includes(state.appSetting.wfType)
