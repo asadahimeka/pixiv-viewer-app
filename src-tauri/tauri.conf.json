@@ -5,8 +5,8 @@
   "version": "1.32.2",
   "identifier": "org.eu.cocomi.pxvek",
   "build": {
-    "beforeBuildCommand": "npm run build:web:tauri",
-    "beforeDevCommand": "npm run dev:web:tauri",
+    "beforeBuildCommand": "pnpm run build:web:tauri",
+    "beforeDevCommand": "pnpm run dev:web:tauri",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:8080"
   },
@@ -41,14 +41,14 @@
     "resources": [],
     "linux": {
       "appimage": {
-        "bundleMediaFramework": true,
+        "bundleMediaFramework": false,
         "files": {}
       },
       "deb": {
-        "depends": []
+        "depends": ["libwebkit2gtk-4.1-0"]
       },
       "rpm": {
-        "depends": []
+        "depends": ["webkit2gtk4.1"]
       }
     }
   },
