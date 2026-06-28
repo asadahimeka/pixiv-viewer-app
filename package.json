@@ -14,7 +14,7 @@
     "build:web:tauri": "cross-env BROWSERSLIST_ENV=tauri VUE_APP_PLATFORM=tauri npm run build:web",
     "dev:web:tauri": "cross-env VUE_APP_PLATFORM=tauri vue-cli-service serve --port 8080",
     "build:web": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "eslint src --fix --ext .js,.vue"
   },
   "dependencies": {
     "@capacitor/android": "5.6.0",

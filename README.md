@@ -12,7 +12,6 @@
 <img src="https://kwc.cocomi.eu.org/https://img.shields.io/badge/Stylus-6da13f.svg?style=flat&logo=Stylus&logoColor=white" alt >
 <img src="https://img.shields.io/badge/Capacitor-119EFF.svg?style=flat&logo=Capacitor&logoColor=white" alt >
 <img src="https://img.shields.io/badge/Tauri-24C8D8.svg?style=flat&logo=Tauri&logoColor=white" alt >
-<img src="https://img.shields.io/badge/Electron-47848F.svg?style=flat&logo=Electron&logoColor=white" alt >
 </p>
 
 **Web Preview:** 🔗 [pixiv.pictures](https://pixiv.pictures)
@@ -160,6 +159,7 @@ https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-faq
 - [HibiAPI](https://github.com/mixmoe/HibiAPI): Provide most Pixiv App API support
 - [PixivNow](https://github.com/FreeNowOrg/PixivNow): Provide partial support for Pixiv Web API.
 - [PixEz](https://github.com/Notsfsssf/pixez-flutter): Direct connect mode logic reference.
+- [Pixiv-Shaft](https://github.com/CeuiLiSA/Pixiv-Shaft): Direct connect mode logic reference.
 
 ### Services
 - [Pixiv.cat](https://pixiv.re/): Pximg proxy service
@@ -171,7 +171,6 @@ https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-faq
 - [Vue I18n](https://kazupon.github.io/vue-i18n/)
 - [Capacitor](https://capacitorjs.com/)
 - [Tauri](https://tauri.app/)
-- [Electron](https://www.electronjs.org/)
 
 ## Disclaimer
 

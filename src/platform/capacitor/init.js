@@ -91,12 +91,14 @@ async function initSetting() {
 
 function addErrorListener() {
   Vue.config.errorHandler = function (err, vm, info) {
-    trackEvent('vue_error', {
-      err: `Error: ${err.toString()}\nInfo: ${info}\nDescription: ${vm.description}\nTag: ${vm.$vnode.tag}`,
-    })
+    const msg = `Error: ${err.toString()}\nInfo: ${info}\nDescription: ${vm.description}\nTag: ${vm.$vnode.tag}`
+    if (msg.includes('Swiper')) return
+    trackEvent('vue_error', { msg })
   }
   window.onerror = function (ev, source, lineno, colno, error) {
-    trackEvent('global_error', { err: `${ev} ${error}: ${source} ${lineno}:${colno}` })
+    const msg = `${ev} ${error}: ${source} ${lineno}:${colno}`
+    if (msg.includes('ResizeObserver')) return
+    trackEvent('global_error', { msg })
   }
   document.addEventListener('dragstart', e => {
     e.preventDefault()

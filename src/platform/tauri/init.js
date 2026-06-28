@@ -124,12 +124,14 @@ function addTauriListener() {
 
 function addErrorListener() {
   Vue.config.errorHandler = function (err, vm, info) {
-    window.umami?.track('vue_error', {
-      err: `Error: ${err.toString()}\nInfo: ${info}\nDescription: ${vm.description}\nTag: ${vm.$vnode.tag}`,
-    })
+    const msg = `Error: ${err.toString()}\nInfo: ${info}\nDescription: ${vm.description}\nTag: ${vm.$vnode.tag}`
+    if (msg.includes('Swiper')) return
+    window.umami?.track('vue_error', { msg })
   }
   window.onerror = function (ev, source, lineno, colno, error) {
-    window.umami?.track('global_error', { err: `${ev} ${error}: ${source} ${lineno}:${colno}` })
+    const msg = `${ev} ${error}: ${source} ${lineno}:${colno}`
+    if (msg.includes('ResizeObserver')) return
+    window.umami?.track('global_error', { msg })
   }
   listen('error', event => {
     window.umami?.track('Got error in window', { windowLabel: event.windowLabel, payload: event.payload })

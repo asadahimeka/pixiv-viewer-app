@@ -1,294 +1,230 @@
-# AGENTS.md - Pixiv Viewer Development Guide
+# AGENTS.md — Pixiv Viewer
 
-## Project Overview
-- **Type**: Cross-platform mobile app (Android/iOS via Capacitor, Desktop via Tauri)
-- **Stack**: Vue 2.7 + Vuex + Vue Router + Vant UI + Capacitor + Tauri
-- **Package Manager**: pnpm (workspace structure in `packages/`)
-- **CSS Preprocessor**: Stylus (not SCSS)
+## ⚠️ CRITICAL RULES
+
+### Never Modify Code Without Explicit Request
+- **INVESTIGATE ≠ IMPLEMENT**. "look into", "check", "find" → report only.
+- "explain", "how does X work" → answer only.
+- Do not write code, edit files, or create features unless explicitly asked.
+
+### Never Delete Files Without Explicit Request
+- "revert" → revert changes with `git restore`, not delete files.
+- When in doubt → ask.
+
+### Never Commit to Git Without Explicit Request
+- Do not stage, commit, or push changes unless the user directly says "commit" or "push".
+- Even if work is complete, wait for instruction.
 
 ---
 
-## Build & Development Commands
+## Pre-Implementation Protocol
 
-### Development
+Before writing any code or modifying any file, you MUST follow this protocol:
+
+### Step 1 — Restate Understanding
+In your own words, explain:
+- What problem you're solving and what the deliverable is.
+- Any assumptions you're making or things you're uncertain about.
+- If you see a better technical approach, propose it — the user decides.
+
+### Step 2 — Ask Key Questions
+Ask no more than **3** questions until you have 100% clarity on:
+1. **The real goal** — what the user actually wants to achieve (not just what they said).
+2. **Unstated constraints** — tech stack limits, performance requirements, code that must not be touched, etc.
+3. **Your implementation plan** — core approach, why this solution, what tradeoffs exist.
+
+### Step 3 — Wait for Go-Ahead
+**Do not write code or modify files** until the user explicitly says to proceed.
+
+---
+
+## Project Overview
+
+**Stack**: Vue 2.7 + Vuex 3 + Vue Router 3 + Vant 2.x + Capacitor 5 + Tauri 2
+**Language**: JavaScript (ES6+), **NO TypeScript**
+**CSS**: Stylus (`.styl`), **NOT SCSS**
+**Package Manager**: pnpm (workspace in `packages/` — 6 custom Capacitor plugins)
+**No test framework**. No formatter config.
+
+---
+
+## Build Commands
+
 ```bash
-npm run dev:web           # Web dev server (port 8080)
+npm run dev:web           # Web dev (port 8080, VUE_APP_PLATFORM=android)
 npm run dev:tauri         # Tauri desktop dev
-npm run dev:web:tauri     # Tauri web preview
-```
-
-### Build Commands
-```bash
 npm run build:web         # Production web build
 npm run build:and         # Android APK (Capacitor)
-npm run build:ios         # iOS IPA (Capacitor)
-npm run build:win         # Windows desktop
-npm run build:mac         # macOS desktop
-npm run build:and:dev     # Android + sync (dev mode)
-npm run build:ios:dev     # iOS + sync (dev mode)
-npm run build:web:tauri   # Web build for Tauri
-```
-
-### Linting & Quality
-```bash
+npm run build:ios         # iOS IPA (Capacitor, unsigned)
+npm run build:win         # Windows (Tauri, x86_64-msvc)
+npm run build:mac         # macOS (Tauri, universal)
 npm run lint              # ESLint check + auto-fix
 ```
 
+**CI**: GitHub Actions workflows in `.github/workflows/` — manual dispatch only.
+**Key CI env vars**: `VUE_APP_PLATFORM`, `BROWSERSLIST_ENV`, and many `VUE_APP_*` secrets for API endpoints (see CI workflow files).
+
 ---
 
-## Code Style Guidelines
+## Platform Abstraction (Critical)
 
-### General
-- **Language**: JavaScript (ES6+), NOT TypeScript
-- **Quotes**: Single quotes (`'string'`)
-- **Semicolons**: NO semicolons
-- **Commas**: Trailing commas in multiline (arrays, objects, imports, exports, functions never)
-- **Indentation**: 2 spaces (verify in existing files)
+The entire app is built around `VUE_APP_PLATFORM` env var:
 
-### ESLint Configuration (`.eslintrc.js`)
+| Value   | Runtime     | Init file                   |
+|---------|-------------|-----------------------------|
+| android | Capacitor   | `src/platform/capacitor/init.js` |
+| ios     | Capacitor   | `src/platform/capacitor/init.js` |
+| tauri   | Tauri       | `src/platform/tauri/init.js`     |
+
+- `src/main.js` dynamically imports the platform init based on `VUE_APP_PLATFORM`.
+- **Platform init IS where Vue is mounted** (`new Vue({...}).$mount('#app')`). If no platform matches, the app never mounts.
+- `src/platform/index.js` exposes flags: `isCapacitor`, `isTauri`, `isAndroid`, `isIOS`, `current`.
+- Web dev (`dev:web`) always runs as `android` platform.
+
+**Platform init does all of**: imports global styles, registers Vant/Vue plugins/directives, registers global components (`WfCont`, `TopBar`, `Pximg`), sets up SafeArea, StatusBar, deep links, error tracking, and then mounts Vue.
+
+---
+
+## Code Style
+
+### Conventions
+- **Quotes**: Single. **Semicolons**: No.
+- **Indentation**: 2 spaces.
+- **Commas**: Trailing in multiline arrays/objects/imports/exports. **Never** in functions.
+- **Named exports only** from `@/utils`. No default exports from utility modules.
+
+### eslintrc.js Highlights
 ```js
-// Extends: eslint:recommended, plugin:vue/recommended, @vue/standard
-// Key rules:
-'arrow-parens': ['warn', 'as-needed']
-'camelcase': 'off'
-'quotes': ['warn', 'single']
-'semi': ['warn', 'never']
-'space-before-function-paren': ['warn', { anonymous: 'always', named: 'never', asyncArrow: 'always' }]
+quotes: ['warn', 'single']
+semi: ['warn', 'never']
+camelcase: 'off'
+eqeqeq: 'off'
+'no-console': 'off'
 'vue/multi-word-component-names': 'off'
+'vue/component-tags-order': ['warn', { order: [['script', 'template'], 'style'] }]
+'comma-dangle': ['warn', { functions: 'never', ...everythingElse: 'always-multiline' }]
+'space-before-function-paren': ['warn', { anonymous: 'always', named: 'never', asyncArrow: 'always' }]
 ```
 
-### Vue Component Structure
-```vue
-<template>
-  <!-- HTML with kebab-case attributes -->
-</template>
+### File Naming
+- Vue components: `PascalCase.vue` (e.g., `HomeAll.vue`, `ImageCard.vue`)
+- JS modules: `camelCase.js` (e.g., `storage.js`, `filter.js`)
+- Component dirs: `PascalCase/` (e.g., `Home/components/`)
+- Index files: `index.js`
 
-<script>
-import _ from '@/lib/lodash'           # Use @/ alias for src/
-import store from '@/store'
-import api from '@/api'
-
-export default {
-  name: 'ComponentName',              # PascalCase, matches filename
-  components: { /* ... */ },
-  props: {
-    propA: { type: String, required: true },
-    propB: { type: Number, default: 0 },
-  },
-  data() {
-    return {
-      localState: 'value',
-    }
-  },
-  computed: {
-    computedProp() { return this.localState },
-  },
-  activated() { /* lifecycle */ },
-  mounted() { /* lifecycle */ },
-  methods: {
-    handler() { /* methods */ },
-  },
-}
-</script>
-
-<style lang="stylus" scoped>
-/* Component-scoped styles - Stylus syntax */
-</style>
-
-<style lang="stylus">
-/* Global styles - if needed */
-</style>
-```
-
-### Vue Component Tag Order
-```vue
+### Vue Component Tag Order (ESLint-enforced)
+```html
 <template>...</template>
 <script>...</script>
-<style>...</style>
+<style lang="stylus" scoped>...</style>
 ```
 
-### Stylus CSS Conventions
-- **Indent-based** (no braces, no semicolons)
-- **Use spaces for indentation** (match existing files)
-- **Nested selectors** for scoping
-- **Global styles** use `:root` or class selectors, NOT `<style>` without `scoped`
-
-```stylus
-.example-class
-  color red
-  .nested
-    font-size 14px
-
-  &[active]
-    color blue
-```
-
-### File Naming Conventions
-- Vue components: `PascalCase.vue` (e.g., `HomeAll.vue`, `SpotlightCard.vue`)
-- JS modules: `camelCase.js` (e.g., `storage.js`, `filter.js`)
-- Index files: `index.js`
-- Component directories: `PascalCase/` (e.g., `Home/components/`, `Search/components/`)
-
-### Import Conventions
-```js
-// Alias @/ = src/
-import store from '@/store'
-import api from '@/api'
-import { utils } from '@/utils'
-import Component from '@/components/Component.vue'
-
-// Relative when in same directory
-import Sibling from './Sibling.vue'
-
-// No default import from utils - use named exports
-import { copyText, downloadFile } from '@/utils'
-```
-
-### API Response Handling Pattern
-```js
-async function fetchData() {
-  const res = await api.getSomething()
-  if (res.illusts || res.data) {
-    const list = res.illusts || res.data
-    // process list
-    return { status: 0, data: list }
-  } else if (res.error) {
-    return { status: -1, msg: handleErrMsg(res) }
-  } else {
-    return { status: -1, msg: i18n.t('tip.unknown_err') }
-  }
-}
-```
-
-### Platform Abstraction
-Use `@/platform` for platform-specific code:
-```js
-import platform from '@/platform'
-if (platform.isCapacitor) { /* Capacitor only */ }
-if (platform.isTauri) { /* Tauri only */ }
-if (platform.isAndroid) { /* Android only */ }
-if (platform.isIOS) { /* iOS only */ }
-```
-
-### Vuex Store Patterns
-```js
-// state - use TypeScript-style JSDoc for arrays
-state: {
-  /** @type {number[]} */
-  galleryList: [],
-  /** @type {object|null} */
-  user: null,
-}
-
-// getters - use arrow functions
-getters: {
-  isLoggedIn: state => Boolean(state.user),
-}
-
-// mutations - simple setters
-mutations: {
-  setUser(state, user) { state.user = user },
-}
-
-// actions - async with commit
-actions: {
-  async fetchUser({ commit }) {
-    const user = await api.me()
-    commit('setUser', user)
-  },
-}
-```
-
-### i18n Usage
-```js
-import { i18n } from '@/i18n'
-
-// In templates: this.$t('key') or v-t directive
-// In JS: i18n.t('key')
-// In computed: this.$store.state.appSetting...
-```
-
-### Utility Functions Pattern
-```js
-export function utilityFunction(param) {
-  // Return early for edge cases
-  if (!param) return null
-  
-  // Use async/await for promises
-  // Use optional chaining: obj?.prop
-  // Use nullish coalescing: value ?? default
-  
-  return result
-}
-```
+### Import Paths
+- `@/` = `src/` (webpack alias)
+- `import { copyText } from '@/utils'` — named exports
+- `import _ from '@/lib/lodash'` — lodash wrapper
+- Relative imports for siblings: `import Sibling from './Sibling.vue'`
 
 ---
 
-## Architecture Patterns
+## Architecture
 
-### Directory Structure
+### Directory Layout
 ```
 src/
-├── api/           # API calls
-├── assets/        # Static assets
-├── components/    # Shared components
-├── consts/        # Constants
-├── i18n.js        # i18n setup
-├── icons/         # SVG icons
-├── layouts/       # Layout wrappers
-├── lib/           # Third-party wrappers (lodash)
-├── locales/       # i18n JSON files
-├── platform/      # Platform abstraction
-├── router/        # Vue Router config
-├── store/         # Vuex store
-├── utils/         # Utility functions
-└── views/         # Page components
+├── api/           # API calls + HTTP client (axios)
+│   ├── index.js   # Main API module — all endpoint functions
+│   ├── http.js    # Axios instance + interceptors
+│   ├── client/    # Direct-connect local API (OAuth + Pixiv API)
+│   └── user.js
+├── assets/        # Global styles (Stylus)
+├── components/    # Shared components (25 files incl. layouts-like)
+├── consts/        # Env vars, API URLs, constants
+├── icons/         # SVG icon loader + components
+├── i18n.js        # vue-i18n setup
+├── layouts/       # BaseLayout.vue, MainLayout.vue
+├── lib/           # Third-party wrappers: lodash, vant, polyfill, vant-style
+├── locales/       # 14 locale JSON files (zh-CN is default)
+├── platform/      # Capacitor + Tauri platform modules
+├── router/        # Vue Router config (history mode)
+├── store/         # Vuex store (single store)
+├── utils/         # Utilities: storage, filter, font, novel, translate, ugoira
+└── views/         # Page components (12 view dirs + NotFound.vue)
 ```
 
-### API Response Status Convention
-- `status: 0` = success
-- `status: -1` = error, with `msg` field
-- Data in `data` field on success
+### Vuex Store
+- Single store in `src/store/index.js` (no modules).
+- App settings in `state.appSetting` — persisted to LocalStorage under `PXV_APP_SETTING`.
+- Getters: `isLoggedIn`, `isR18On`, `blockTagsSet`, `blockUidsSet`, `isCensored`, `wfProps`.
+- State includes `contentSetting` (R18/AI filters), `blockTags`, `blockUids`, `routeHistory`.
 
-### Cache Strategy
-- Use `getCache()`/`setCache()` from `@/utils/storage/siteCache` for persistent cache
-- Use `SessionStorage` for session data
-- Use `LocalStorage` for user preferences
+### API Layer
+- **Axios** instance in `src/api/http.js` with nprogress loading bar.
+- Base URL from `HIBIAPI_BASE` in LocalStorage (default: `VUE_APP_DEF_HIBIAPI_MAIN`).
+- Response pattern: `{ status: 0, data: ... }` on success, `{ status: -1, msg: ... }` on error.
+- Aggressive caching via `getCache()`/`setCache()` from `@/utils/storage/siteCache` (localforage-backed).
+- Some endpoints use `SessionStorage` for search results.
+- `src/api/client/` contains OAuth login + direct Pixiv API mode (optional, not always used).
+
+### Two Layouts
+1. **BaseLayout** — outermost wrapper, provides global chrome.
+2. **MainLayout** — inner wrapper with `safeArea` and `showNav` props. Handles nav bar, status bar, scroll handling.
+
+### Route Structure
+- All routes nested under `/` → BaseLayout → MainLayout.
+- MainLayout used twice: once with nav (depth 1 pages: Home, Search, Rank, Following, Setting), once without nav (detail pages: Artwork, Novel, Users, etc.).
+- Meta `__depth` controls UI behavior (1 = primary nav, 2+ = sub-pages).
+- Extensive route aliases matching Pixiv web URLs (`/artworks/:id`, `/novel/:id`, `/users/:id`, `/member.php`, etc.).
+- History mode, base URL from `BASE_URL` const.
+
+### Image Handling
+- All pximg URLs proxied through `imgProxy()` in `src/api/index.js` — replaces `i.pximg.net` with `PXIMG_PROXY_BASE`.
+- PostCSS `postcss-pxtorem` with `rootValue: 75` — 75px = 1rem. Selector blacklist: `van`, `fancybox`, `ispx`.
+- Vant CSS imported via babel `babel-plugin-import` (tree-shaken).
 
 ---
 
 ## Common Tasks
 
-### Adding a New View
-1. Create `src/views/FeatureName/index.vue`
-2. Add route in `src/router/routes.js`
-3. Add component import if needed in `src/views/FeatureName/components/`
+### Adding a View
+1. Create `src/views/FeatureName/index.vue` (or `FeatureName.vue`)
+2. Add route in `src/router/routes.js` — follow existing patterns for depth/meta
+3. Sub-components go in `src/views/FeatureName/components/`
+
+### Adding i18n Keys
+1. Add to `src/locales/zh-CN.json` first (default locale)
+2. Add translations to other locale files as needed
+3. Use `$t('key')` in templates, `i18n.t('key')` in JS
+
+### Adding Dependencies
+```bash
+pnpm add <package>
+pnpm add -D <package>
+```
+If it's a UI library, add tree-shaking config to `babel.config.js`.
 
 ### Adding Platform-Specific Code
 1. Create module in `src/platform/capacitor/` or `src/platform/tauri/`
 2. Export functions with same interface
 3. Use dynamic import in main code
-
-### Adding i18n Keys
-1. Add to `src/locales/zh-CN.json`
-2. Add to other locale files as needed
-3. Use `i18n.t('key')` in JS or `$t('key')` in templates
-
-### Adding Dependencies
-```bash
-pnpm add <package>          # Production
-pnpm add -D <package>      # Dev
-```
-Then update `babel.config.js` if UI library (for tree-shaking).
+4. Guard with `if (platform.isCapacitor)` / `if (platform.isTauri)`
 
 ---
 
-## Important Notes
+## Key Quirks & Gotchas
 
-- **NO TypeScript** - This is a pure JavaScript codebase
-- **Vue 2.x** - Not Vue 3
-- **Stylus** - Not SCSS/CSS
-- **No Jest/Vitest** - No test framework configured
-- **pnpm workspaces** - Some deps are workspace packages (check `packages/`)
-- **Vant UI** - Uses Vant 2.x components (tree-shaken via babel plugin)
-- **px to rem** - CSS uses 75px root for mobile sizing
+- **No TypeScript.** Never use `.ts` files or type annotations.
+- **No Prettier.** ESLint is the only formatter. `lintOnSave: false` in vue.config.js.
+- **`npm run dev:web` sets `VUE_APP_PLATFORM=android`** for Capacitor parity in browser.
+- **Consoles are allowed** — ESLint `no-console: 'off'`. The production build only drops them via Terser (`drop_console: true`).
+- **No tests** — no Jest/Vitest. Verification is manual or lint-based.
+- **Browserslist** varies per build: `capacitor`, `tauri`, `development` envs.
+- **env vars** (CI): `VUE_APP_DEF_HIBIAPI_MAIN`, `VUE_APP_PXIMG_PROXYS`, `VUE_APP_DEF_PXIMG_MAIN`, `VUE_APP_HIBIAPI_ALTS`, `VUE_APP_DEF_APP_API_PROXY`, `VUE_APP_COMMON_PROXY`, `VUE_APP_SILICON_CLOUD_API_KEY` and more.
+- **Umami analytics** tracked via `window.umami?.track(...)`. Can be disabled by user setting.
+- **Fancybox** for image lightbox — loaded on-demand from static files. Not in npm dependencies.
+- **gif.js**, **ts-whammy**, **modern-mp4** for ugoira animation processing.
+- **Swiper 5.x** (not 6+) via `vue-awesome-swiper`.
+- **vue-demi** is the only pnpm `onlyBuiltDependency`.
+- **Android app** builds with `./gradlew assembleDebug` in the `android/` directory.
+- **iOS app** builds unsigned via xcodebuild with `CODE_SIGNING_ALLOWED=NO`.
+- **Tauri v2** uses `src-tauri/` with `<identifier>` plugin pattern and schema v2 config.

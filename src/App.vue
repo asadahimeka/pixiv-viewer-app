@@ -222,7 +222,8 @@ html,body
       right unset
       z-index 999
       width 1.2rem
-      height 100vh
+      height 100% !important
+      height 100vh !important
       opacity 1
       transform: translate(0, 0) !important;
     .nav-bar
