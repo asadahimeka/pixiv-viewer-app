@@ -146,7 +146,9 @@ function addCapListeners() {
       url = url.replace('pixiv://novels', '/novel')
     }
     if (url.startsWith('https://www.pixiv.net/')) {
-      router.push(url.replace('https://www.pixiv.net', ''))
+      url = url.replace('https://www.pixiv.net/en', '')
+      url = url.replace('https://www.pixiv.net', '')
+      router.push(url)
       return
     }
     if (url.startsWith('/')) {

@@ -43,11 +43,13 @@ async function addDownloadHistory(args) {
 
 const isDirect = LocalStorage.get('PXV_PXIMG_DIRECT', false)
 const dlBaseDir = 'pixiv-viewer'
+
 function getDLDir(isCache = false) {
   return platform.isAndroid
     ? (isCache ? Directory.External : Directory.Pictures)
     : Directory.Documents
 }
+
 async function fsDirectDownload(url, fileName, isCache = false) {
   const newUrl = new URL(url)
   if (platform.isIOS) newUrl.protocol = 'http:'
@@ -64,6 +66,7 @@ async function fsDirectDownload(url, fileName, isCache = false) {
   })
   return { res, downloadUrl }
 }
+
 async function fsDownload(url, fileName, isCache = false) {
   const res = await Filesystem.downloadFile({
     url,
@@ -73,6 +76,7 @@ async function fsDownload(url, fileName, isCache = false) {
   })
   return { res, downloadUrl: url }
 }
+
 async function dmDownload(url, fileName) {
   const res = await FileDownload.download({
     uri: url,
@@ -80,6 +84,7 @@ async function dmDownload(url, fileName) {
   })
   return { res, downloadUrl: url }
 }
+
 /**
  * @typedef {keyof import('capacitor-mediastore').MediastorePlugin} MediastoreFn
  * @param {MediastoreFn} func
@@ -92,10 +97,11 @@ async function mediaSave(func, path, fileNameSub) {
   const filename = nameParts.pop()
   const album = [dlBaseDir].concat(nameParts).join('/')
   const { uri } = await Mediastore[func]({ album, filename, path })
-  await Filesystem.deleteFile({ path })
+  await Filesystem.deleteFile({ path }).catch(() => {})
   const dirMap = { savePicture: 'Pictures', saveVideo: 'Movies', saveToDownloads: 'Download' }
   return { uri, tipPath: `/storage/emulated/0/${dirMap[func]}/${func == 'saveToDownloads' ? '' : `${album}/`}${filename}` }
 }
+
 export async function downloadFile(url, fileName, subpath) {
   try {
     fileName = replaceValidFilename(fileName)

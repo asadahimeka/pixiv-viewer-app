@@ -40,6 +40,8 @@ jobs:
           VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
           VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
           VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
+          VUE_APP_ORT_WASM_PATH: ${{ secrets.VUE_APP_ORT_WASM_PATH }}
+          VUE_APP_MODEL_URL_TEMPLATE: ${{ secrets.VUE_APP_MODEL_URL_TEMPLATE }}
           BROWSERSLIST_ENV: 'capacitor'
           VUE_APP_PLATFORM: 'ios'
 
