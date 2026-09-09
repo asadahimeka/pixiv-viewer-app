@@ -84,8 +84,8 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(@capacitor/core@5.6.0)
       capacitor-blob-writer:
-        specifier: 1.1.14
-        version: 1.1.14(@capacitor/core@5.6.0)(@capacitor/filesystem@packages+capacitor-filesystem)
+        specifier: workspace:*
+        version: link:packages/capacitor-blob-writer
       capacitor-mediastore:
         specifier: workspace:*
         version: link:packages/capacitor-mediastore
@@ -104,6 +104,9 @@ importers:
       capacitor-plugin-pixiv-cronet:
         specifier: workspace:*
         version: link:packages/capacitor-plugin-pixiv-cronet
+      capacitor-plugin-saf:
+        specifier: workspace:*
+        version: link:packages/capacitor-plugin-saf
       capacitor-plugin-safe-area:
         specifier: 2.0.6
         version: 2.0.6(@capacitor/core@5.6.0)
@@ -216,6 +219,15 @@ importers:
       xml-loader:
         specifier: 1.2.1
         version: 1.2.1
+
+  packages/capacitor-blob-writer:
+    dependencies:
+      '@capacitor/core':
+        specifier: '>=3.0.0'
+        version: 5.6.0
+      '@capacitor/filesystem':
+        specifier: '>=1.0.0'
+        version: 8.1.3(@capacitor/core@5.6.0)
 
   packages/capacitor-filesystem:
     devDependencies:
@@ -459,6 +471,12 @@ importers:
       typescript:
         specifier: ^4
         version: 4.7.4
+
+  packages/capacitor-plugin-saf:
+    dependencies:
+      '@capacitor/core':
+        specifier: ^5.0.0
+        version: 5.6.0
 
 packages:
 
@@ -1055,6 +1073,11 @@ packages:
     engines: {node: '>=14.5.0'}
     hasBin: true
 
+  '@capacitor/filesystem@8.1.3':
+    resolution: {integrity: sha512-GNBlRkaXEEb+6WP/YsDXr2zygyOHoieuye6viyd2ZkEdBwfseG41jxfarVxLWH0r0owhyNUbwJ/Qi8fubqr6wA==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
   '@capacitor/ios@5.6.0':
     resolution: {integrity: sha512-iswpOcD5us10hIF5zS4w6k/ekW0A+2pXhDV4AHOBXR4VOkOMI8QJaavgl9JvZ/NVvVNJdEN2rOKCMNh4AH08sw==}
     peerDependencies:
@@ -1074,6 +1097,9 @@ packages:
     resolution: {integrity: sha512-7od8CxsBnot1XMK3IeOkproFL4hgoKoWAc3pwUvmDOkQsXoxwQm4SR9mLwQavv1XfxtHbFV9Ukd7FwMxOPSViw==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
+
+  '@capacitor/synapse@1.0.4':
+    resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -1331,30 +1357,35 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@tauri-apps/cli-linux-arm64-musl@2.10.0':
     resolution: {integrity: sha512-GUoPdVJmrJRIXFfW3Rkt+eGK9ygOdyISACZfC/bCSfOnGt8kNdQIQr5WRH9QUaTVFIwxMlQyV3m+yXYP+xhSVA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@tauri-apps/cli-linux-riscv64-gnu@2.10.0':
     resolution: {integrity: sha512-JO7s3TlSxshwsoKNCDkyvsx5gw2QAs/Y2GbR5UE2d5kkU138ATKoPOtxn8G1fFT1aDW4LH0rYAAfBpGkDyJJnw==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@tauri-apps/cli-linux-x64-gnu@2.10.0':
     resolution: {integrity: sha512-Uvh4SUUp4A6DVRSMWjelww0GnZI3PlVy7VS+DRF5napKuIehVjGl9XD0uKoCoxwAQBLctvipyEK+pDXpJeoHng==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@tauri-apps/cli-linux-x64-musl@2.10.0':
     resolution: {integrity: sha512-AP0KRK6bJuTpQ8kMNWvhIpKUkQJfcPFeba7QshOQZjJ8wOS6emwTN4K5g/d3AbCMo0RRdnZWwu67MlmtJyxC1Q==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@tauri-apps/cli-win32-arm64-msvc@2.10.0':
     resolution: {integrity: sha512-97DXVU3dJystrq7W41IX+82JEorLNY+3+ECYxvXWqkq7DBN6FsA08x/EFGE8N/b0LTOui9X2dvpGGoeZKKV08g==}
@@ -2236,12 +2267,6 @@ packages:
     resolution: {integrity: sha512-A9FiIRH/65Z8VGtRVJrXEw5ecoAwY34Dh8y5jYVtB/FLsZwVH0bDgPLBpAA5IlgrlK2xVw0NajjUrRmOegg4uw==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
-
-  capacitor-blob-writer@1.1.14:
-    resolution: {integrity: sha512-hSjvxUMQ0EpOm1cE5vLtgkfPYJx7xMKGQe0+zaXFMou1dQVcJaIgJN6OGgeNj/r+Ml8AQMrBbwJzE/0+uQV3eA==}
-    peerDependencies:
-      '@capacitor/core': '>=3.0.0'
-      '@capacitor/filesystem': '>=1.0.0'
 
   capacitor-native-settings@5.0.1:
     resolution: {integrity: sha512-HH7GCyaVLwWP4FEVqvOQM+cHWveQUjsA2128wfZ5yr9eOQrECVWzO5UXH9ZlikpWi1C7exnovcyEr3TlYO6l8w==}
@@ -6925,6 +6950,11 @@ snapshots:
       minimist: 1.2.8
       typescript: 4.2.4
 
+  '@capacitor/filesystem@8.1.3(@capacitor/core@5.6.0)':
+    dependencies:
+      '@capacitor/core': 5.6.0
+      '@capacitor/synapse': 1.0.4
+
   '@capacitor/ios@5.6.0(@capacitor/core@5.6.0)':
     dependencies:
       '@capacitor/core': 5.6.0
@@ -6940,6 +6970,8 @@ snapshots:
   '@capacitor/status-bar@5.0.6(@capacitor/core@5.6.0)':
     dependencies:
       '@capacitor/core': 5.6.0
+
+  '@capacitor/synapse@1.0.4': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -8749,11 +8781,6 @@ snapshots:
   capacitor-android-shortcuts@5.0.5(@capacitor/core@5.6.0):
     dependencies:
       '@capacitor/core': 5.6.0
-
-  capacitor-blob-writer@1.1.14(@capacitor/core@5.6.0)(@capacitor/filesystem@packages+capacitor-filesystem):
-    dependencies:
-      '@capacitor/core': 5.6.0
-      '@capacitor/filesystem': link:packages/capacitor-filesystem
 
   capacitor-native-settings@5.0.1(@capacitor/core@5.6.0):
     dependencies:

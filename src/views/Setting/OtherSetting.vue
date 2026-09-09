@@ -172,6 +172,13 @@
     </van-cell-group>
 
     <van-cell-group :title="$t('j2tFt08r6GGMmsfbF4HAN')">
+      <van-cell
+        v-if="platform.isAndroid && dlEnvLegacy"
+        center
+        icon="warning-o"
+        :title="$t('tip.dl_legacy_title')"
+        :label="$t('tip.dl_legacy_hint')"
+      />
       <van-cell center :title="$t('5syY7l774noiN5LHKUnqF')" :label="$t('QRASoWf3qDfwihoIa84C9')">
         <template #right-icon>
           <van-switch :disabled="appSetting.isLongpressBlock" :value="appSetting.isLongpressDL" size="24" @change="v => saveAppSetting('isLongpressDL', v, true)" />
@@ -213,6 +220,16 @@
               saveAppSetting('preferMediaStore', v, true);
             }"
           />
+        </template>
+      </van-cell>
+      <van-cell
+        v-if="platform.isAndroid && !appSetting.preferDownloadManager"
+        center
+        :title="$t('setting.dl_saf.title')"
+        :label="$t('setting.dl_saf.desc')"
+      >
+        <template #right-icon>
+          <van-switch :value="safEnabled" size="24" @change="toggleSaf" />
         </template>
       </van-cell>
     </van-cell-group>
@@ -533,7 +550,7 @@
 </template>
 
 <script>
-import { Dialog } from 'vant'
+import { Dialog, Toast } from 'vant'
 import PixivAuth from '@/api/client/pixiv-auth'
 import store from '@/store'
 import platform from '@/platform'
@@ -542,7 +559,7 @@ import { APP_API_PROXYS, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, HIBIAPI_ALTS, PXIMG_P
 import { i18n } from '@/i18n'
 import { localApi } from '@/api'
 import { getSampleFileName } from '@/store/actions/filename'
-import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, readTextFile } from '@/utils'
+import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, readTextFile, checkDlEnvCompat } from '@/utils'
 import { mintVerify } from '@/utils/filter'
 import { LocalStorage, SessionStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
@@ -747,6 +764,8 @@ export default {
       novelFilterTextLenMin: store.state.appSetting.novelFilterTextLenMin,
       novelFilterTagLenMax: store.state.appSetting.novelFilterTagLenMax,
       novelFilterTagSplitMax: store.state.appSetting.novelFilterTagSplitMax,
+      dlEnvLegacy: false,
+      safEnabled: LocalStorage.get('PXV_DL_USE_SAF', false) && !!LocalStorage.get('PXV_DL_SAF_URI'),
     }
   },
   head() {
@@ -798,6 +817,9 @@ export default {
     },
   },
   mounted() {
+    checkDlEnvCompat().then(env => {
+      this.dlEnvLegacy = env.legacy
+    })
     const scrollTop = sessionStorage.getItem('PXV_SETTING_PAGE_SCROLL_TOP')
     console.log('scrollTop: ', scrollTop)
     if (scrollTop) {
@@ -808,6 +830,26 @@ export default {
     }
   },
   methods: {
+    async toggleSaf(v) {
+      if (!v) {
+        this.safEnabled = false
+        LocalStorage.set('PXV_DL_USE_SAF', false)
+        return
+      }
+      try {
+        const { Saf } = await import('capacitor-plugin-saf')
+        const { uri } = await Saf.pickFolder()
+        LocalStorage.set('PXV_DL_SAF_URI', uri)
+        LocalStorage.set('PXV_DL_USE_SAF', true)
+        this.safEnabled = true
+        Toast.success(uri)
+      } catch (err) {
+        console.log('saf pick err: ', err)
+        this.safEnabled = false
+        LocalStorage.set('PXV_DL_USE_SAF', false)
+        Toast.fail(String(err))
+      }
+    },
     reloadPage() {
       sessionStorage.setItem('PXV_SETTING_PAGE_SCROLL_TOP', document.documentElement.scrollTop)
       setTimeout(() => {

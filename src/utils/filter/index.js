@@ -186,7 +186,7 @@ async function fetchTxt(url, timeout = 5000) {
 
 async function ensureACFilter() {
   if (!acFilter) {
-    let filterWords = await getCache('sensitive~filter~words')
+    let filterWords = await getCache('sensitivefilterwords')
     if (!filterWords) {
       const res = await fetchTxt('https://hibiapi.cocomi.eu.org/sensitive-words-filter/words.txt', 1e4)
       filterWords = res.split('\n').concat(presetWords)

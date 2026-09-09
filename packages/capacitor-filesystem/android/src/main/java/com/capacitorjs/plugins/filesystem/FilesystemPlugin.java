@@ -464,6 +464,7 @@ public class FilesystemPlugin extends Plugin {
                 String error = response.getString("error");
                 if (error != null) {
                     call.reject(error);
+                    return;
                 }
 
                 // update mediaStore index only if file was written to external storage
@@ -473,7 +474,8 @@ public class FilesystemPlugin extends Plugin {
                 call.resolve(response);
             }
         } catch (Exception ex) {
-            call.reject("Error downloading file: " + ex.getLocalizedMessage(), ex);
+            String msg = ex.getLocalizedMessage();
+            call.reject("Error downloading file: [" + ex.getClass().getSimpleName() + "] " + (msg != null ? msg : "no message"), ex);
         }
     }
 

@@ -55,12 +55,7 @@ public class MediastorePlugin extends Plugin {
 
     @PluginMethod
     public void saveToDownloads(PluginCall call) {
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            call.reject("method requires API 29+");
-            return;
-        }
-
+        String album = call.getString("album");
         String fileName = call.getString("filename");
         String path = call.getString("path");
         if (path == null) {
@@ -72,7 +67,7 @@ public class MediastorePlugin extends Plugin {
 
         String uri;
         try {
-            uri = this.implementation.saveToDownloads(this.getActivity().getApplicationContext(), fileName, path);
+            uri = this.implementation.saveToDownloads(this.getActivity().getApplicationContext(), album, fileName, path);
         } catch (Exception e) {
             call.reject(e.getMessage());
             return;

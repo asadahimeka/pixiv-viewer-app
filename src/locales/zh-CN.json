@@ -211,6 +211,10 @@
   },
   "setting": {
     "about": "关于",
+    "dl_saf": {
+      "title": "SAF 目录保存",
+      "desc": "通过系统文件访问框架保存到授权目录，权限兼容性最好；开启后首次使用需选择保存目录，下载记录页不会列出此类文件"
+    },
     "other": {
       "title": "偏好设置",
       "lang": "语言",
@@ -330,7 +334,29 @@
     "downloading": "下载中",
     "connect_err": "连接失败，此项不可用。",
     "browser_tip": "请使用 Chrome/Edge 浏览器访问本站",
-    "browser_latest": "请尽量使用最新的 Chrome/Edge 浏览器访问本站"
+    "browser_latest": "请尽量使用最新的 Chrome/Edge 浏览器访问本站",
+    "dl_no_space": "存储空间不足，请清理空间后重试",
+    "dl_no_perm": "没有写入存储的权限，或目标文件被系统/其他应用占用",
+    "dl_dns_fail": "无法解析镜像域名，请检查网络或更换图片镜像",
+    "dl_tls_host": "HTTPS 证书校验失败（直连模式需开启「跳过 SSL 验证」）",
+    "dl_tls_broken": "连接被干扰导致数据损坏，请重试或更换网络",
+    "dl_conn_reset": "连接被重置，请重试",
+    "dl_conn_abort": "连接中断，请重试",
+    "dl_conn_fail": "无法连接到下载服务，请检查网络后重试",
+    "dl_timeout": "连接超时，请重试",
+    "dl_bad_fd": "文件句柄异常，请重试",
+    "dl_busy": "文件被占用，请稍后重试",
+    "dl_no_file": "文件不存在或已被清理",
+    "dl_bad_name": "无法用当前文件名保存，请检查下载文件名模板",
+    "dl_fs_fail": "写入文件失败，请检查存储空间和权限",
+    "dl_http_err": "下载服务返回错误，请稍后再试",
+    "dl_net_err": "网络错误，请检查网络后重试",
+    "dl_unknown": "下载失败，请稍后再试",
+    "dl_legacy_title": "系统或 WebView 版本较低",
+    "dl_legacy_hint": "检测到系统或 WebView 版本较低，部分功能可能受限，建议更新系统或 WebView",
+    "dl_legacy_notify": "系统或 WebView 版本过低，部分功能可能受限",
+    "dl_share_fallback": "保存到相册/下载目录失败，是否改用系统分享手动保存该文件？",
+    "dl_share_done": "已调起系统分享，请在分享面板中选择保存位置"
   },
   "sess": {
     "title": "设置 Pixiv Cookie",

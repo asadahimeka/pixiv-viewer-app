@@ -167,22 +167,200 @@ export function replaceValidFileName(str = '', isDir = false) {
   if (isDir) {
     str = str.replace(/[\\/|?*:<>'"\s.]/g, '_')
   } else {
-    const strArr = str.split('.')
-    const ext = strArr.pop()
-    str = strArr.join('').replace(/[\\/|?*:<>'"\s.]/g, '_') + '.' + ext
+    // 只把最后一个 '.' 之后视为扩展名，并对扩展名同样消毒，
+    // 避免 'xxx.best/148114052' 这类脏名把 '/' 带进文件系统
+    const dotIdx = str.lastIndexOf('.')
+    let ext = dotIdx > 0 ? str.slice(dotIdx + 1).replace(/[\\/|?*:<>'"\s]/g, '_') : ''
+    let base = (dotIdx > 0 ? str.slice(0, dotIdx) : str).replace(/[\\/|?*:<>'"\s.]/g, '_').replace(/_+$/, '')
+    if (!base) {
+      // 标题清洗后为空时，从原始串中恢复作品 id 兜底，避免退化成 '_.png'
+      const id = (str.match(/_(\d{6,})(?:_p\d+)?\./) || [])[1]
+      base = 'PXV_' + (id || Date.now())
+    }
+    if (ext && !ext.replace(/_/g, '')) ext = ''
+    str = ext ? `${base}.${ext}` : base
   }
   if (str.length > maxLen) str = str.slice(-maxLen)
   return str
 }
 
+export function safeDecodeURIComponent(str = '') {
+  try {
+    return decodeURIComponent(str)
+  } catch (e) {
+    return str
+  }
+}
+
+// ==== 下载错误分类 / 归一化 ====
+
+export function getDlErrMsg(err) {
+  if (err == null) return ''
+  if (typeof err == 'string') return err
+  if (err.message) return err.message
+  return `${err}`
+}
+
+const DL_ERR_MATCHERS = [
+  [/ENOSPC|Insufficient space|No space left/i, 'noSpace'],
+  [/EACCES|EPERM|Permission Denial|Permission denied|denied permission request|WRITE_EXTERNAL_STORAGE/i, 'noPerm'],
+  [/Unable to resolve host|No address associated|ENOTFOUND|getaddrinfo/i, 'dnsFail'],
+  [/not verified: certificate|Hostname .*not verified/i, 'tlsHost'],
+  [/BAD_DECRYPT|DECRYPTION_FAILED|BAD_RECORD_MAC/i, 'tlsBroken'],
+  [/unexpected end of stream|Connection reset|reset by peer|connection closed|socket closed|ECONNRESET/i, 'connReset'],
+  [/connection abort|ECONNABORTED/i, 'connAbort'],
+  [/Failed to connect|ECONNREFUSED|Failed to fetch|NetworkError|network error/i, 'connFail'],
+  [/ETIMEDOUT|timed out|timeout/i, 'timeout'],
+  [/EBADF|interrupted by close/i, 'badFd'],
+  [/ETXTBSY|Text file busy/i, 'busy'],
+  [/ENOENT|No such file|File does not exist|Unable to read file/i, 'noFile'],
+  [/Failed to build unique file|Invalid file path/i, 'badName'],
+  [/Parent folder|parent directory|NOT_CREATED_DIR|FILE_NOTCREATED|Unable to write file/i, 'fsFail'],
+  [/HTTP 错误|HTTP error|\bHTTP \d{3}\b/i, 'httpErr'],
+]
+
+export function getDlErrCategory(err) {
+  const msg = getDlErrMsg(err)
+  for (const [reg, key] of DL_ERR_MATCHERS) {
+    if (reg.test(msg)) return key
+  }
+  if (/^https?:\/\//i.test(msg)) return 'httpErr'
+  if (msg.includes('网络错误')) return 'netErr'
+  return 'unknown'
+}
+
+function dlCatKey(category) {
+  return category.replace(/([A-Z])/g, m => '_' + m.toLowerCase())
+}
+
+// 面向用户的错误文案（含低版本环境提示）
+export function dlErrorText(err) {
+  const category = getDlErrCategory(err)
+  let text = i18n.t(`tip.dl_${dlCatKey(category)}`)
+  if (isDlEnvLegacy() && (category == 'noPerm' || category == 'tlsHost')) {
+    text += '\n' + i18n.t('tip.dl_legacy_hint')
+  }
+  return text
+}
+
+// 面向 umami 的归一化分组串：[step] host :: category(:: 抹噪详情)
+export function formatDlError(err) {
+  const category = getDlErrCategory(err)
+  const step = (err && err.dlStep) || 'download'
+  let host = '-'
+  if (err && err.dlUrl) {
+    try {
+      host = new URL(err.dlUrl).host
+    } catch (e) {}
+  }
+  let detail = ''
+  if (category == 'unknown' || category == 'httpErr') {
+    detail =
+      ' :: ' +
+      getDlErrMsg(err)
+        .replace(/0x[0-9a-fA-F]+/g, '0xX')
+        .replace(/\d{4,}/g, '#')
+        .replace(/https?:\/\/\S+/g, 'URL')
+        .slice(0, 80)
+  }
+  return `[${step}] ${host} :: ${category}${detail}`
+}
+
+// 给平台层抛出的错误附加 step/url 上下文（字符串错误会被包装成 Error）
+export function markDlError(err, step, url) {
+  if (err instanceof Error) {
+    if (step && !err.dlStep) err.dlStep = step
+    if (url && !err.dlUrl) err.dlUrl = url
+    return err
+  }
+  const wrapped = new Error(getDlErrMsg(err) || 'unknown error')
+  wrapped.dlStep = step
+  wrapped.dlUrl = url
+  return wrapped
+}
+
+const RETRYABLE_DL_ERR_REG = /unexpected end of stream|Connection reset|reset by peer|connection closed|Software caused connection abort|Failed to connect|Unable to resolve host|No address associated|Failed to fetch|ECONNRESET|ECONNABORTED|ECONNREFUSED|ETIMEDOUT|timed out|timeout|BAD_DECRYPT|DECRYPTION_FAILED|网络错误/i
+
+export function isRetryableDlError(err) {
+  return RETRYABLE_DL_ERR_REG.test(getDlErrMsg(err))
+}
+
+// 带条件的重试：should 返回 false 时立即抛出
+export async function retryWhere(fn, should, retries = 3, delay = 1500) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (i >= retries - 1 || !should(err)) throw err
+      await sleep(delay)
+    }
+  }
+}
+
+// ==== 低版本设备/WebView 检测 ====
+
+const dlEnv = { checked: false, legacy: false, osVersion: '', webViewVersion: '' }
+
+export function isDlEnvLegacy() {
+  return dlEnv.legacy
+}
+
+export function getDlEnv() {
+  return dlEnv
+}
+
+let dlEnvChecking = null
+
+// 单例检测：capacitor 用 @capacitor/device，tauri 桌面端从 UA 解析 WebView2(Edge) 内核版本
+export function checkDlEnvCompat() {
+  if (!dlEnvChecking) {
+    dlEnvChecking = (async () => {
+      try {
+        if (platform.isCapacitor && !platform.isIOS) {
+          const { Device } = await import('@capacitor/device')
+          const info = await Device.getInfo()
+          const osMajor = parseInt(info.osVersion, 10) || 0
+          const wvMajor = parseInt(`${info.webViewVersion || ''}`.split('.')[0], 10) || 0
+          dlEnv.osVersion = info.osVersion || ''
+          dlEnv.webViewVersion = info.webViewVersion || ''
+          dlEnv.legacy = (osMajor > 0 && osMajor < 10) || (wvMajor > 0 && wvMajor < 105)
+        } else if (platform.isTauri) {
+          const ua = navigator.userAgent
+          const m = ua.match(/Edg\/(\d+)/) || ua.match(/Chrome\/(\d+)/)
+          const wvMajor = m ? parseInt(m[1], 10) || 0 : 0
+          dlEnv.webViewVersion = wvMajor ? String(wvMajor) : ''
+          dlEnv.legacy = wvMajor > 0 && wvMajor < 105
+        }
+      } catch (e) {}
+      dlEnv.checked = true
+      return dlEnv
+    })()
+  }
+  return dlEnvChecking
+}
+
+const inflightDlTasks = new Map()
+
 /**
+ * 对外入口：同一目标文件的并发下载共享同一个任务，避免临时文件互相覆盖/删除
  * @param {string|Blob} source
  * @param {string} fileName
  * @param {object} options
  * @param {string} options.message
  * @param {string} options.subDir
+ * @returns {ReturnType<typeof _downloadFile>}
  */
-export async function downloadFile(source, fileName, options = {}) {
+export function downloadFile(source, fileName, options = {}) {
+  const key = `${options.subDir || ''}/${fileName}`
+  if (inflightDlTasks.has(key)) return inflightDlTasks.get(key)
+  const task = _downloadFile(source, fileName, options)
+  const cleanup = () => inflightDlTasks.delete(key)
+  task.then(cleanup, cleanup)
+  inflightDlTasks.set(key, task)
+  return task
+}
+
+async function _downloadFile(source, fileName, options = {}) {
   try {
     if (typeof source == 'string' && !/\.\w+$/.test(fileName)) {
       fileName += `.${source.split('.').pop()}`
@@ -201,7 +379,9 @@ export async function downloadFile(source, fileName, options = {}) {
       const result = source instanceof Blob
         ? await util.downloadBlob(source, fileName, options.subDir)
         : await util.downloadFile(source, fileName, options.subDir)
-      if (result.error) throw new Error(result.error)
+      if (result.error) {
+        throw result.error instanceof Error ? result.error : new Error(result.error)
+      }
       return result
     }
 
@@ -210,7 +390,9 @@ export async function downloadFile(source, fileName, options = {}) {
       const result = source instanceof Blob
         ? await util.downloadBlob(source, fileName, options.subDir)
         : await util.downloadFile(source, fileName, options.subDir)
-      if (result.error) throw new Error(result.error)
+      if (result.error) {
+        throw result.error instanceof Error ? result.error : new Error(result.error)
+      }
       return result
     }
 
@@ -218,15 +400,16 @@ export async function downloadFile(source, fileName, options = {}) {
     loading.clear()
   } catch (err) {
     console.log('err: ', err)
-    window.umami?.track('download_file_err', { err: `${err}` })
+    window.umami?.track('download_file_err', { err: formatDlError(err) })
     Toast.clear(true)
+    const friendly = dlErrorText(err)
     if (typeof source != 'string') {
-      Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + err)
+      Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + friendly)
       return
     }
     const action = await Dialog.confirm({
       title: i18n.t('D8R2062pjASZe9mgvpeLr'),
-      message: err + '<br>' + i18n.t('rTIZ1T04iT1thVsaytEQF'),
+      message: `${friendly}<br>${err}<br>${i18n.t('rTIZ1T04iT1thVsaytEQF')}`,
       lockScroll: false,
       closeOnPopstate: true,
       cancelButtonText: i18n.t('common.cancel'),

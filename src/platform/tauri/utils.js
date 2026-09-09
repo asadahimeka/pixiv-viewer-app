@@ -8,6 +8,12 @@ import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
 import { Toast } from 'vant'
 import { i18n } from '@/i18n'
 import { LocalStorage } from '@/utils/storage'
+import {
+  safeDecodeURIComponent,
+  markDlError,
+  isRetryableDlError,
+  retryWhere,
+} from '@/utils'
 import axiosTauriAdapter from './axios-tauri-adapter'
 
 const sep = sepFn()
@@ -49,36 +55,35 @@ export async function downloadFile(url, fileName, subDir = '') {
     if (subDir) subDir = sep + subDir
     await ensureDownloadDir(subDir)
 
-    let resPath = ''
-    if (isDirect && /\.(jpe?g|png)$/.test(url)) {
+    const isDirectImg = isDirect && /\.(jpe?g|png)$/.test(url)
+    let directUrl = url
+    if (isDirectImg) {
       const newUrl = new URL(url)
       newUrl.protocol = 'http:'
       newUrl.host = window.p_pximg_ip
-      resPath = await invoke('download_file', {
-        url: newUrl.href,
-        writePath: `${await baseDlDir()}${subDir || ''}`,
-        fileName,
-        id: fileName,
-        headers: { Host: 'i.pximg.net', Referer: 'https://www.pixiv.net/' },
-      })
-    } else {
-      resPath = await invoke('download_file', {
-        url,
-        writePath: `${await baseDlDir()}${subDir || ''}`,
-        fileName,
-        id: fileName,
-      })
+      directUrl = newUrl.href
     }
+
+    const resPath = await retryWhere(
+      async () => invoke('download_file', {
+        url: directUrl,
+        writePath: `${await baseDlDir()}${subDir || ''}`,
+        fileName,
+        id: fileName,
+        headers: isDirectImg ? { Host: 'i.pximg.net', Referer: 'https://www.pixiv.net/' } : undefined,
+      }),
+      isRetryableDlError
+    )
 
     Toast.clear(true)
     Toast({
-      message: i18n.t('tip.downloaded') + ': ' + decodeURIComponent(resPath),
+      message: i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(resPath),
       duration: 3000,
     })
 
     return { res: resPath }
   } catch (error) {
-    return { error }
+    return { error: markDlError(error, 'tauriDl', url) }
   }
 }
 
@@ -97,13 +102,13 @@ export async function downloadBlob(blob, fileName, subDir = '') {
 
     Toast.clear(true)
     Toast({
-      message: i18n.t('tip.downloaded') + ': ' + decodeURIComponent(res),
+      message: i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(res),
       duration: 3000,
     })
 
     return { res }
   } catch (error) {
-    return { error }
+    return { error: markDlError(error, 'tauriBlob') }
   }
 }
 

@@ -1,0 +1,27 @@
+{
+  "name": "capacitor-plugin-saf",
+  "version": "1.0.0",
+  "description": "Storage Access Framework folder access for Capacitor",
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native"
+  ],
+  "license": "MIT",
+  "main": "dist/esm/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/definitions.d.ts",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/"
+  ],
+  "peerDependencies": {
+    "@capacitor/core": "^5.0.0"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

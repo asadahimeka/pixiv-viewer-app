@@ -312,8 +312,8 @@ public class Filesystem {
         String urlString = call.getString("url", "");
         JSObject headers = call.getObject("headers", new JSObject());
         JSObject params = call.getObject("params", new JSObject());
-        Integer connectTimeout = call.getInt("connectTimeout");
-        Integer readTimeout = call.getInt("readTimeout");
+        Integer connectTimeout = call.getInt("connectTimeout", 15000);
+        Integer readTimeout = call.getInt("readTimeout", 30000);
         Boolean disableRedirects = call.getBoolean("disableRedirects");
         Boolean shouldEncode = call.getBoolean("shouldEncodeUrlParams", true);
         Boolean progress = call.getBoolean("progress", false);
@@ -352,6 +352,32 @@ public class Filesystem {
         CapacitorHttpUrlConnection connection = connectionBuilder.build();
 
         connection.setSSLSocketFactory(bridge);
+
+        // 让 HTTP 错误状态对调用方可见：平台 HttpURLConnection 对 >=400 抛出的
+        // FileNotFoundException 只会把 URL 当消息，排查时丢失了状态码
+        int responseCode = connection.getResponseCode();
+        if (responseCode >= 400) {
+            String errorBody = "";
+            try {
+                InputStream errorStream = connection.getErrorStream();
+                if (errorStream != null) {
+                    ByteArrayOutputStream errorBuffer = new ByteArrayOutputStream();
+                    byte[] errorBytes = new byte[1024];
+                    int errorLen;
+                    while ((errorLen = errorStream.read(errorBytes)) != -1 && errorBuffer.size() < 2048) {
+                        errorBuffer.write(errorBytes, 0, errorLen);
+                    }
+                    errorStream.close();
+                    errorBody = errorBuffer.toString("UTF-8");
+                }
+            } catch (Exception ignored) {}
+            errorBody = errorBody.replaceAll("\\s+", " ").trim();
+            if (errorBody.length() > 200) {
+                errorBody = errorBody.substring(0, 200);
+            }
+            connection.disconnect();
+            throw new IOException("HTTP error " + responseCode + (errorBody.isEmpty() ? "" : ": " + errorBody));
+        }
 
         InputStream connectionInputStream = connection.getInputStream();
         FileOutputStream fileOutputStream = new FileOutputStream(file, false);

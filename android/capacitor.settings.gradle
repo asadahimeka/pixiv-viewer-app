@@ -27,7 +27,7 @@ include ':capacitor-android-shortcuts'
 project(':capacitor-android-shortcuts').projectDir = new File('../node_modules/.pnpm/capacitor-android-shortcuts@5.0.5_@capacitor+core@5.6.0/node_modules/capacitor-android-shortcuts/android')
 
 include ':capacitor-blob-writer'
-project(':capacitor-blob-writer').projectDir = new File('../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@capacitor+filesystem@packages+capacitor-filesystem/node_modules/capacitor-blob-writer/android')
+project(':capacitor-blob-writer').projectDir = new File('../packages/capacitor-blob-writer/android')
 
 include ':capacitor-mediastore'
 project(':capacitor-mediastore').projectDir = new File('../packages/capacitor-mediastore/android')
@@ -40,6 +40,9 @@ project(':capacitor-navigation-bar').projectDir = new File('../packages/capacito
 
 include ':capacitor-plugin-file-opener'
 project(':capacitor-plugin-file-opener').projectDir = new File('../packages/capacitor-plugin-file-opener/android')
+
+include ':capacitor-plugin-saf'
+project(':capacitor-plugin-saf').projectDir = new File('../packages/capacitor-plugin-saf/android')
 
 include ':capacitor-plugin-filedownload'
 project(':capacitor-plugin-filedownload').projectDir = new File('../packages/capacitor-plugin-filedownload/android')

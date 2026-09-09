@@ -14,7 +14,7 @@ import { SafeArea } from 'capacitor-plugin-safe-area'
 
 import Vue from 'vue'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
-import { Dialog, Toast } from 'vant'
+import { Dialog, Notify, Toast } from 'vant'
 import { vOnLongPress } from '@vueuse/components'
 
 import setupVant from '@/lib/vant'
@@ -33,7 +33,7 @@ import { LocalStorage } from '@/utils/storage'
 import { loadCustomFont } from '@/utils/font'
 import { initBookmarkCache } from '@/utils/storage/siteCache'
 import { login } from '@/api/client/login'
-import { trackEvent } from '@/utils'
+import { trackEvent, checkDlEnvCompat } from '@/utils'
 import platform from '..'
 
 setStatusBar()
@@ -70,6 +70,18 @@ async function setupApp() {
     i18n,
     render: h => h(AppComp),
   }).$mount('#app')
+
+  // 低版本系统/WebView 提醒：每次启动展示片刻自动消失，无永久关闭入口
+  checkDlEnvCompat().then(env => {
+    if (env.legacy) {
+      Notify({
+        message: i18n.t('tip.dl_legacy_notify'),
+        color: '#fff',
+        background: localStorage.PXV_ACT_COLOR || '#f1c25f',
+        duration: 2500,
+      })
+    }
+  })
 }
 
 async function initLocalApi() {

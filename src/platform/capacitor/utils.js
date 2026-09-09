@@ -1,4 +1,4 @@
-import { Toast } from 'vant'
+import { Toast, Dialog } from 'vant'
 import { Capacitor } from '@capacitor/core'
 import { Clipboard } from '@capacitor/clipboard'
 import { Share } from '@capacitor/share'
@@ -9,11 +9,20 @@ import { FileOpener } from 'capacitor-plugin-file-opener'
 import { Mediastore } from 'capacitor-mediastore'
 import { NativeSettings, AndroidSettings, IOSSettings } from 'capacitor-native-settings'
 import { PixivCronet } from 'capacitor-plugin-pixiv-cronet'
+import { Saf } from 'capacitor-plugin-saf'
 import writeBlob from 'capacitor-blob-writer'
 import { LocalStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
-import { formatBytes } from '@/utils'
+import {
+  formatBytes,
+  formatDlError,
+  replaceValidFileName,
+  safeDecodeURIComponent,
+  markDlError,
+  isRetryableDlError,
+  retryWhere,
+} from '@/utils'
 import store from '@/store'
 import platform from '..'
 
@@ -27,12 +36,8 @@ export async function copyText(string, cb, errCb) {
 }
 
 function replaceValidFilename(str = '') {
-  const maxLen = 72
-  const strArr = str.split('.')
-  const ext = strArr.pop()
-  str = strArr.join('').replace(/[\\/|?*:<>'"\s.]/g, '_') + '.' + ext
-  if (str.length > maxLen) str = str.slice(-maxLen)
-  return str
+  // 与全局清洗逻辑一致，但下载文件名上限 72 字符
+  return replaceValidFileName(str).slice(-72)
 }
 
 async function addDownloadHistory(args) {
@@ -92,17 +97,100 @@ async function dmDownload(url, fileName) {
  * @param {string} fileNameSub
  */
 async function mediaSave(func, path, fileNameSub) {
-  path = decodeURIComponent(path.replace('file://', ''))
-  const nameParts = fileNameSub.split('/')
-  const filename = nameParts.pop()
-  const album = [dlBaseDir].concat(nameParts).join('/')
-  const { uri } = await Mediastore[func]({ album, filename, path })
-  await Filesystem.deleteFile({ path }).catch(() => {})
-  const dirMap = { savePicture: 'Pictures', saveVideo: 'Movies', saveToDownloads: 'Download' }
-  return { uri, tipPath: `/storage/emulated/0/${dirMap[func]}/${func == 'saveToDownloads' ? '' : `${album}/`}${filename}` }
+  try {
+    path = safeDecodeURIComponent(path.replace('file://', ''))
+    const nameParts = fileNameSub.split('/')
+    const filename = nameParts.pop()
+    const album = [dlBaseDir].concat(nameParts).join('/')
+    const { uri } = await Mediastore[func]({ album, filename, path })
+    await Filesystem.deleteFile({ path }).catch(() => {})
+    const dirMap = { savePicture: 'Pictures', saveVideo: 'Movies', saveToDownloads: 'Download' }
+    return { uri, tipPath: `/storage/emulated/0/${dirMap[func]}/${album}/${filename}` }
+  } catch (err) {
+    throw markDlError(err, 'mediaSave')
+  }
+}
+
+function toFileUri(path) {
+  return path.startsWith('file://') ? path : 'file://' + path
+}
+
+async function confirmShareFallback() {
+  const action = await Dialog.confirm({
+    title: i18n.t('D8R2062pjASZe9mgvpeLr'),
+    message: i18n.t('tip.dl_share_fallback'),
+    lockScroll: false,
+    closeOnPopstate: true,
+    cancelButtonText: i18n.t('common.cancel'),
+    confirmButtonText: i18n.t('common.confirm'),
+  }).catch(() => 'cancel')
+  return action == 'confirm'
+}
+
+async function shareFile(filePath, fileName) {
+  await Share.share({
+    title: fileName,
+    dialogTitle: i18n.t('tip.dl_share_fallback'),
+    files: [toFileUri(filePath)],
+  })
+}
+
+// 文件已完整但转存失败时：确认后调起系统分享，由用户手动保存
+async function offerShare(filePath, fileName) {
+  if (!(await confirmShareFallback())) return false
+  await shareFile(filePath, fileName)
+  return true
+}
+
+const SAF_URI_KEY = 'PXV_DL_SAF_URI'
+const SAF_ON_KEY = 'PXV_DL_USE_SAF'
+
+export function isSafEnabled() {
+  return platform.isAndroid && LocalStorage.get(SAF_ON_KEY, false) && !!LocalStorage.get(SAF_URI_KEY)
+}
+
+function getMime(fileName) {
+  const ext = (fileName.split('.').pop() || '').toLowerCase()
+  const map = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    avif: 'image/avif',
+    apng: 'image/apng',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    zip: 'application/zip',
+    txt: 'text/plain',
+  }
+  return map[ext] || 'application/octet-stream'
+}
+
+// 把私有目录里的成品文件复制进 SAF 授权目录（同名覆盖，系统自动处理重名去重）
+async function safSave(tempPath, fileName) {
+  try {
+    const nameParts = fileName.split('/')
+    const baseName = nameParts.pop()
+    const relativeDir = [dlBaseDir].concat(nameParts).join('/')
+    const treeUri = LocalStorage.get(SAF_URI_KEY)
+    const res = await Saf.writeFile({
+      treeUri,
+      relativeDir,
+      fileName: baseName,
+      srcPath: tempPath.replace('file://', ''),
+      mime: getMime(fileName),
+    })
+    await Filesystem.deleteFile({ path: tempPath }).catch(() => {})
+    const treeSeg = safeDecodeURIComponent((treeUri || '').split('/').pop())
+    return { uri: res.uri, tipPath: `SAF:/${treeSeg}/${relativeDir}/${res.name || baseName}` }
+  } catch (err) {
+    throw markDlError(err, 'safWrite')
+  }
 }
 
 export async function downloadFile(url, fileName, subpath) {
+  let step = 'fsDownload'
   try {
     fileName = replaceValidFilename(fileName)
     if (subpath) fileName = subpath + '/' + fileName
@@ -112,11 +200,22 @@ export async function downloadFile(url, fileName, subpath) {
       {
         test: () => isDirect && /\.(jpe?g|png|gif)$/.test(url),
         fn: async () => {
-          const result = await fsDirectDownload(url, fileName, preferMediaStore)
+          step = 'fsDirect'
+          const result = await retryWhere(
+            () => fsDirectDownload(url, fileName, preferMediaStore),
+            isRetryableDlError
+          )
           if (preferMediaStore) {
-            const { uri, tipPath } = await mediaSave('savePicture', result.res.path, fileName)
-            result.res.path = uri
-            result.res.tipPath = tipPath
+            step = 'mediaSave'
+            try {
+              const { uri, tipPath } = await mediaSave('savePicture', result.res.path, fileName)
+              result.res.path = uri
+              result.res.tipPath = tipPath
+            } catch (err) {
+              step = 'share'
+              if (!(await offerShare(result.res.path, fileName))) throw err
+              result.res.tipPath = i18n.t('tip.dl_share_done')
+            }
           }
           return result
         },
@@ -124,22 +223,64 @@ export async function downloadFile(url, fileName, subpath) {
       {
         test: () => preferDownloadManager,
         fn: async () => {
-          const result = await dmDownload(url, fileName.split('/').pop())
+          step = 'downloadManager'
+          const result = await retryWhere(
+            () => dmDownload(url, fileName.split('/').pop()),
+            isRetryableDlError
+          )
+          return result
+        },
+      },
+      {
+        test: () => isSafEnabled(),
+        fn: async () => {
+          step = 'fsDownload'
+          const result = await retryWhere(() => fsDownload(url, fileName, true), isRetryableDlError)
+          step = 'safWrite'
+          try {
+            const { uri, tipPath } = await safSave(result.res.path, fileName)
+            result.res.path = uri
+            result.res.tipPath = tipPath
+          } catch (err) {
+            step = 'share'
+            if (!(await offerShare(result.res.path, fileName))) throw err
+            result.res.tipPath = i18n.t('tip.dl_share_done')
+          }
           return result
         },
       },
       {
         test: () => true,
         fn: async () => {
-          const result = await fsDownload(url, fileName, preferMediaStore)
+          step = 'fsDownload'
+          let result
+          try {
+            result = await retryWhere(() => fsDownload(url, fileName, preferMediaStore), isRetryableDlError)
+          } catch (err) {
+            // 直接写公共目录失败且文件还没落地时，询问后改为私有目录下载 + 系统分享保存
+            if (preferMediaStore || !(await confirmShareFallback())) throw err
+            step = 'fsDownload'
+            result = await fsDownload(url, fileName, true)
+            step = 'share'
+            await shareFile(result.res.path, fileName)
+            result.res.tipPath = i18n.t('tip.dl_share_done')
+            return result
+          }
           if (preferMediaStore) {
-            const { uri, tipPath } = await mediaSave(
-              /\.(jpe?g|png|gif)$/.test(url) ? 'savePicture' : 'saveToDownloads',
-              result.res.path,
-              fileName
-            )
-            result.res.path = uri
-            result.res.tipPath = tipPath
+            step = 'mediaSave'
+            try {
+              const { uri, tipPath } = await mediaSave(
+                /\.(jpe?g|png|gif)$/.test(url) ? 'savePicture' : 'saveToDownloads',
+                result.res.path,
+                fileName
+              )
+              result.res.path = uri
+              result.res.tipPath = tipPath
+            } catch (err) {
+              step = 'share'
+              if (!(await offerShare(result.res.path, fileName))) throw err
+              result.res.tipPath = i18n.t('tip.dl_share_done')
+            }
           }
           return result
         },
@@ -151,28 +292,51 @@ export async function downloadFile(url, fileName, subpath) {
 
     Toast.clear(true)
     Toast({
-      message: `${i18n.t('tip.downloaded')}: ${res.tipPath || decodeURIComponent(res.path.replace('file://', ''))}`,
+      message: `${i18n.t('tip.downloaded')}: ${res.tipPath || safeDecodeURIComponent(res.path.replace('file://', ''))}`,
       duration: 3000,
     })
     return { res }
   } catch (error) {
     addDownloadHistory({ status: 'error', url, fileName, error: `${error}` })
-    return { error }
+    return { error: markDlError(error, step, url) }
   }
 }
 
 export async function downloadBlob(blob, fileName, subpath) {
+  let step = 'blobWrite'
   try {
     fileName = replaceValidFilename(fileName)
     if (subpath) fileName = subpath + '/' + fileName
 
     const { preferMediaStore } = store.state.appSetting
+    const useSaf = isSafEnabled()
     const path = `${dlBaseDir}/${fileName}`
-    const directory = getDLDir(preferMediaStore)
-    await writeBlob({ blob, path, directory, recursive: true })
+    const directory = getDLDir(preferMediaStore || useSaf)
+    await writeBlob({
+      blob,
+      path,
+      directory,
+      recursive: true,
+      // 原生快速通道失败会静默回退到 bridge 慢速写入，记录一下便于统计
+      on_fallback: err => {
+        window.umami?.track('dl_blob_fallback', { err: formatDlError(markDlError(err, 'blobFallback')) })
+      },
+    })
     let { uri } = await Filesystem.getUri({ path, directory })
     let tipPath = ''
-    if (preferMediaStore) {
+    if (useSaf) {
+      step = 'safWrite'
+      try {
+        const res = await safSave(uri, fileName)
+        uri = res.uri
+        tipPath = res.tipPath
+      } catch (err) {
+        step = 'share'
+        if (!(await offerShare(uri, fileName))) throw err
+        tipPath = i18n.t('tip.dl_share_done')
+      }
+    } else if (preferMediaStore) {
+      step = 'mediaSave'
       /** @type {[() => boolean, MediastoreFn][]} */
       const actions = [
         [() => /\.(jpe?g|png|gif)$/.test(fileName), 'savePicture'],
@@ -180,21 +344,28 @@ export async function downloadBlob(blob, fileName, subpath) {
         [() => true, 'saveToDownloads'],
       ]
       const func = actions.find(e => e[0]())[1]
-      const res = await mediaSave(func, uri, fileName)
-      uri = res.uri
-      tipPath = res.tipPath
+      try {
+        const res = await mediaSave(func, uri, fileName)
+        uri = res.uri
+        tipPath = res.tipPath
+      } catch (err) {
+        step = 'share'
+        // blob 成品已在私有目录，转存失败时可调起系统分享手动保存
+        if (!(await offerShare(uri, fileName))) throw err
+        tipPath = i18n.t('tip.dl_share_done')
+      }
     }
 
     addDownloadHistory({ status: 'ok', fileName, path: uri })
     Toast.clear(true)
     Toast({
-      message: `${i18n.t('tip.downloaded')}: ${tipPath || decodeURIComponent(uri.replace('file://', ''))}`,
+      message: `${i18n.t('tip.downloaded')}: ${tipPath || safeDecodeURIComponent(uri.replace('file://', ''))}`,
       duration: 3000,
     })
     return { res: { uri } }
   } catch (error) {
     addDownloadHistory({ status: 'error', fileName, error: error + '' })
-    return { error }
+    return { error: markDlError(error, step) }
   }
 }
 

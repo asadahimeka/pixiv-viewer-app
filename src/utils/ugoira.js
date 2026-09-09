@@ -6,7 +6,7 @@ import platform from '@/platform'
 import { i18n } from '@/i18n'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { BASE_URL, UA_Header, ugoiraAvifSrc } from '@/consts'
-import { downloadFile, loadScript, sleep } from '.'
+import { downloadFile, loadScript, sleep, formatDlError, isRetryableDlError, retryWhere } from '.'
 
 export async function loadUgoira(id) {
   const res = await api.ugoiraMetadata(id)
@@ -25,9 +25,11 @@ export async function loadUgoira(id) {
 
   nprogress.start()
   const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
-  const resp = await fetchFn(ugoira.zip, { headers: UA_Header })
-  if (!resp.ok) throw new Error(this.$t('D8R2062pjASZe9mgvpeLr'))
-  const respData = await resp.blob()
+  const respData = await retryWhere(async () => {
+    const resp = await fetchFn(ugoira.zip, { headers: UA_Header })
+    if (!resp.ok) throw new Error(i18n.t('D8R2062pjASZe9mgvpeLr'))
+    return resp.blob()
+  }, isRetryableDlError)
   nprogress.done()
   const { default: JSZip } = await import('jszip')
   const jszip = new JSZip()
@@ -89,7 +91,7 @@ export async function downloadUgoira(type, ugoira, artwork, resetUgoira) {
     }
   } catch (err) {
     console.log('err: ', err)
-    window.umami?.track('download_ugoira_err', { error: err.message })
+    window.umami?.track('download_ugoira_err', { error: formatDlError(err) })
     Toast({ message: i18n.t('H_rYWoPA0uI7TU4YCbIz0') })
   }
 }
