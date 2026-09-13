@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Arriba",
   "9tIV83JmVMkNKF2B8F4LI": "Etiqueta de obra de arte",
   "9y6HjIgJZ9CzHOEy8UKr1": "Buscar colecciones",
-  "9zbbiHNnDhb2eebwLd3HR": "Cuando esta opción se apaga, se utilizará la descarga incorporada",
+  "9zbbiHNnDhb2eebwLd3HR": "Descargue archivos usando el descargador integrado de Android",
   "AHbKrrnigwX4uyEuNTLhD": "Dentro de un año",
   "B6_a-r-LnCBiHNTtnmv_-": "No mostrar elementos que puedan dificultar las búsquedas",
   "BKT3O7AHWaF4y-_ZST_NG": "Debido al entorno de red, la velocidad de carga de imágenes puede ser más lenta. \n\nPuede cambiar al proxy de Pximg en la configuración o abrir la función de conexión directa de imagen después de descargar la versión de Android.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Se recomienda iniciar sesión en este sitio con su propia cuenta antes de usarla, y debe configurar un área no estadounidense/Reino Unido en la página web oficial, y es mejor elegir un área japonesa:",
-  "oaNdIowRN9TQxKA0EECI4": "Puede intentar activar esta opción cuando se encuentra una excepción en el archivo de descarga.",
+  "oaNdIowRN9TQxKA0EECI4": "Este método es el método predeterminado para descargar archivos.",
   "ofVgseiGUCwCT-0m7Gr1h": "Subtítulo",
   "p56suIhQbLp-UUYtYjQoa": "¿Quieres ver esta obra de arte?",
   "pA7B6tF0GBv6m4bI9MJWY": "Descargar directorio",
@@ -656,6 +656,12 @@
       "site": "Sitio web",
       "title": "Enlaces recomendados",
       "tm": "Guión de usuario"
+    },
+    "dl_saf": {
+      "cur_dir": "Directorio de guardado actual (SAF)",
+      "desc": "Guarde en el directorio autorizado a través del marco de acceso a archivos del sistema, que tiene la mejor compatibilidad de permisos. Debe seleccionar el directorio de guardado por primera vez después de abrirlo. Dichos archivos no aparecerán en la página de registro de descargas.",
+      "pick_ok": "El directorio para guardar se ha configurado: {dir}",
+      "title": "Guardar directorio SAF"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Cerrar obras multi-P",
@@ -760,7 +766,29 @@
     "downloaded": "Descarga completa",
     "downloading": "Descargando",
     "rate_limit": "Se superó el límite de API. Vuelve a intentarlo más tarde.",
-    "unknown_err": "Error desconocido"
+    "unknown_err": "Error desconocido",
+    "dl_bad_fd": "Excepción en el manejo del archivo. Inténtelo de nuevo.",
+    "dl_bad_name": "No se puede guardar con el nombre de archivo actual; verifique descargar la plantilla de nombre de archivo",
+    "dl_busy": "El archivo está ocupado, inténtalo de nuevo más tarde.",
+    "dl_conn_abort": "Conexión interrumpida, por favor inténtalo de nuevo.",
+    "dl_conn_fail": "No se puede conectar al servicio de descarga, verifique la red e inténtelo nuevamente",
+    "dl_conn_reset": "La conexión se restableció, inténtalo de nuevo.",
+    "dl_dns_fail": "No se puede resolver el nombre de dominio reflejado, verifique la red o cambie la imagen reflejada",
+    "dl_fs_fail": "No se pudo escribir el archivo. Verifique el espacio de almacenamiento y los permisos.",
+    "dl_http_err": "El servicio de descarga arrojó un error, inténtelo nuevamente más tarde.",
+    "dl_legacy_hint": "Se detecta que la versión del sistema o WebView es baja y algunas funciones pueden estar limitadas. Se recomienda actualizar el sistema o WebView.",
+    "dl_legacy_notify": "La versión del sistema o de WebView es demasiado baja y algunas funciones pueden estar limitadas.",
+    "dl_legacy_title": "La versión del sistema o WebView es anterior",
+    "dl_net_err": "Error de red, verifique la red y vuelva a intentarlo",
+    "dl_no_file": "El archivo no existe o ha sido limpiado",
+    "dl_no_perm": "No hay permiso para escribir en el almacenamiento o el archivo de destino está ocupado por el sistema u otras aplicaciones.",
+    "dl_no_space": "Espacio de almacenamiento insuficiente. Libere espacio e inténtelo de nuevo.",
+    "dl_share_done": "Se ha activado el uso compartido del sistema. Seleccione la ubicación para guardar en el panel para compartir.",
+    "dl_share_fallback": "Error al guardar en el directorio de álbum/descarga. ¿Quieres utilizar el sistema compartido para guardar el archivo manualmente?",
+    "dl_timeout": "Se agotó el tiempo de conexión, inténtalo de nuevo.",
+    "dl_tls_broken": "La conexión se interrumpió, provocando corrupción de datos. Inténtelo de nuevo o cambie la red.",
+    "dl_tls_host": "Error en la verificación del certificado HTTPS (el modo de conexión directa requiere activar \"Omitir verificación SSL\")",
+    "dl_unknown": "Error en la descarga, inténtelo de nuevo más tarde"
   },
   "tips": {
     "click_view": "Click para ver",
@@ -826,5 +854,7 @@
   "zHc8vUk99v88lW41lrprb": "Prefiere usar la API de acceso al sistema de archivos para descargar",
   "zhO6bfsyPM1-GpZgyer-L": "Historial de importación",
   "zlMUy5svAesJpHhvWRc6C": "Ajustes preestablecidos de color de texto",
-  "zuVom-C8Ss8JTEDZIhzBj": "Utilice ffmpeg para convertir en el lado del servidor"
+  "zuVom-C8Ss8JTEDZIhzBj": "Utilice ffmpeg para convertir en el lado del servidor",
+  "vant_cal_weekdays_split_by_space": "",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Si no se selecciona el método de descarga, el archivo se escribirá directamente utilizando el método tradicional"
 }

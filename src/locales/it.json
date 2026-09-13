@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Superiore",
   "9tIV83JmVMkNKF2B8F4LI": "Etichetta dell'opera d'arte",
   "9y6HjIgJZ9CzHOEy8UKr1": "Cerca raccolte",
-  "9zbbiHNnDhb2eebwLd3HR": "Quando questa opzione è disattivata, verrà utilizzato il download integrato",
+  "9zbbiHNnDhb2eebwLd3HR": "Scarica file utilizzando il downloader integrato di Android",
   "AHbKrrnigwX4uyEuNTLhD": "Entro un anno",
   "B6_a-r-LnCBiHNTtnmv_-": "Non mostrare elementi che potrebbero ostacolare le ricerche",
   "BKT3O7AHWaF4y-_ZST_NG": "A causa dell'ambiente di rete, la velocità di caricamento dell'immagine può essere più lenta. \n\nÈ possibile passare al proxy PXIMG nelle impostazioni o aprire la funzione di connessione diretta all'immagine dopo aver scaricato la versione Android.",
@@ -458,7 +458,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Si consiglia di accedere a questo sito con il proprio account prima di utilizzarlo e è necessario impostare un'area non USA/UK sulla pagina Web ufficiale ed è meglio scegliere un'area giapponese:",
-  "oaNdIowRN9TQxKA0EECI4": "Puoi provare ad accendere questa opzione quando si incontra un'eccezione nel file di download.",
+  "oaNdIowRN9TQxKA0EECI4": "Questo metodo è il metodo predefinito per scaricare i file",
   "ofVgseiGUCwCT-0m7Gr1h": "Didascalia",
   "p56suIhQbLp-UUYtYjQoa": "Vuoi vedere questa opera d'arte?",
   "pA7B6tF0GBv6m4bI9MJWY": "Scarica la directory",
@@ -655,6 +655,12 @@
       "site": "Sito web",
       "title": "Link consigliati",
       "tm": "UserScript"
+    },
+    "dl_saf": {
+      "cur_dir": "Directory di salvataggio corrente (SAF)",
+      "desc": "Salva nella directory autorizzata tramite il framework di accesso ai file di sistema, che ha la migliore compatibilità delle autorizzazioni. È necessario selezionare la directory di salvataggio per la prima volta dopo averla aperta. Tali file non verranno elencati nella pagina di registrazione dei download.",
+      "pick_ok": "La directory di salvataggio è stata impostata: {dir}",
+      "title": "Salvataggio della directory SAF"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Chiudi i lavori multi-P",
@@ -759,7 +765,29 @@
     "downloaded": "Download completato",
     "downloading": "Download",
     "rate_limit": "Limite API superato, riprova più tardi",
-    "unknown_err": "Errore sconosciuto"
+    "unknown_err": "Errore sconosciuto",
+    "dl_bad_fd": "Eccezione gestione file, riprova",
+    "dl_bad_name": "Impossibile salvare con il nome file corrente, controlla il modello di nome file di download",
+    "dl_busy": "Il file è occupato, riprova più tardi",
+    "dl_conn_abort": "Connessione interrotta, riprova",
+    "dl_conn_fail": "Impossibile connettersi al servizio di download, controlla la rete e riprova",
+    "dl_conn_reset": "La connessione è stata ripristinata, riprova",
+    "dl_dns_fail": "Impossibile risolvere il nome del dominio mirror, controlla la rete o modifica il mirror dell'immagine",
+    "dl_fs_fail": "Impossibile scrivere il file, controlla lo spazio di archiviazione e le autorizzazioni",
+    "dl_http_err": "Il servizio di download ha restituito un errore, riprova più tardi.",
+    "dl_legacy_hint": "È stato rilevato che la versione del sistema o di WebView è bassa e alcune funzioni potrebbero essere limitate. Si consiglia di aggiornare il sistema o WebView.",
+    "dl_legacy_notify": "La versione del sistema o di WebView è troppo bassa e alcune funzioni potrebbero essere limitate.",
+    "dl_legacy_title": "La versione del sistema o di WebView è precedente",
+    "dl_net_err": "Errore di rete, controlla la rete e riprova",
+    "dl_no_file": "Il file non esiste o è stato ripulito",
+    "dl_no_perm": "Non è disponibile l'autorizzazione per scrivere sull'archivio oppure il file di destinazione è occupato dal sistema/da altre applicazioni",
+    "dl_no_space": "Spazio di archiviazione insufficiente, libera spazio e riprova",
+    "dl_share_done": "La condivisione del sistema è stata attivata. Seleziona la posizione di salvataggio nel pannello di condivisione.",
+    "dl_share_fallback": "Il salvataggio nella directory dell'album/download non è riuscito. Vuoi utilizzare la condivisione del sistema per salvare il file manualmente?",
+    "dl_timeout": "Connessione scaduta, riprova",
+    "dl_tls_broken": "La connessione è stata interrotta, causando il danneggiamento dei dati. Riprova o cambia la rete.",
+    "dl_tls_host": "Verifica del certificato HTTPS non riuscita (la modalità di connessione diretta richiede l'attivazione di \"Ignora verifica SSL\")",
+    "dl_unknown": "Download non riuscito, riprova più tardi"
   },
   "tips": {
     "click_view": "Clicca per vedere",
@@ -826,5 +854,7 @@
   "zHc8vUk99v88lW41lrprb": "Preferisci utilizzare l'API di accesso al file system per il download",
   "zhO6bfsyPM1-GpZgyer-L": "Storia di importazione",
   "zlMUy5svAesJpHhvWRc6C": "Preimpostazioni del colore del testo",
-  "zuVom-C8Ss8JTEDZIhzBj": "Usa ffmpeg per convertire sul lato server"
+  "zuVom-C8Ss8JTEDZIhzBj": "Usa ffmpeg per convertire sul lato server",
+  "lGla4o1MNG0QBOBr2K2DK": "La pagina dei dettagli dell'immagine visualizza la filigrana PID",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Se non viene selezionato il metodo di download, il file verrà scritto direttamente utilizzando il metodo tradizionale"
 }

@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Haut",
   "9tIV83JmVMkNKF2B8F4LI": "Étiquette d'œuvre d'art",
   "9y6HjIgJZ9CzHOEy8UKr1": "Rechercher des collections",
-  "9zbbiHNnDhb2eebwLd3HR": "Lorsque cette option sera désactivée, le téléchargement intégré sera utilisé",
+  "9zbbiHNnDhb2eebwLd3HR": "Téléchargez des fichiers à l'aide du téléchargeur intégré d'Android",
   "AHbKrrnigwX4uyEuNTLhD": "Dans un an",
   "B6_a-r-LnCBiHNTtnmv_-": "Ne pas afficher les éléments susceptibles de gêner les recherches",
   "BKT3O7AHWaF4y-_ZST_NG": "En raison de l'environnement réseau, la vitesse de chargement de l'image peut être plus lente. \n\nVous pouvez passer au proxy PXIMG dans les paramètres, ou ouvrir la fonction de connexion directe d'image après avoir téléchargé la version Android.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Il est recommandé de se connecter à ce site avec votre propre compte avant de l'utiliser et de configurer une zone non américaine / britannique sur la page Web officielle. Il est préférable de choisir une zone japonaise:",
-  "oaNdIowRN9TQxKA0EECI4": "Vous pouvez essayer d'activer cette option lorsqu'une exception est rencontrée dans le fichier de téléchargement.",
+  "oaNdIowRN9TQxKA0EECI4": "Cette méthode est la méthode par défaut pour télécharger des fichiers",
   "ofVgseiGUCwCT-0m7Gr1h": "Légende",
   "p56suIhQbLp-UUYtYjQoa": "Voulez-vous voir cette œuvre?",
   "pA7B6tF0GBv6m4bI9MJWY": "Répertoire de téléchargement",
@@ -656,6 +656,12 @@
       "site": "Site Internet",
       "title": "Liens recommandés",
       "tm": "Script utilisateur"
+    },
+    "dl_saf": {
+      "cur_dir": "Répertoire de sauvegarde actuel (SAF)",
+      "desc": "Enregistrez dans le répertoire autorisé via le cadre d'accès aux fichiers système, qui offre la meilleure compatibilité d'autorisations. Vous devez sélectionner le répertoire de sauvegarde pour la première fois après l'avoir ouvert. Ces fichiers ne seront pas répertoriés sur la page d'enregistrement de téléchargement.",
+      "pick_ok": "Le répertoire de sauvegarde a été défini : {dir}",
+      "title": "Sauvegarde du répertoire SAF"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Fermer les travaux multi-P",
@@ -760,7 +766,29 @@
     "downloaded": "Téléchargement complet",
     "downloading": "Téléchargement",
     "rate_limit": "Limite d'API dépassée, veuillez réessayer plus tard",
-    "unknown_err": "Erreur inconnue"
+    "unknown_err": "Erreur inconnue",
+    "dl_bad_fd": "Exception de descripteur de fichier, veuillez réessayer",
+    "dl_bad_name": "Impossible d'enregistrer avec le nom de fichier actuel. Veuillez vérifier le modèle de nom de fichier téléchargé.",
+    "dl_busy": "Le fichier est occupé, veuillez réessayer plus tard",
+    "dl_conn_abort": "Connexion interrompue, veuillez réessayer",
+    "dl_conn_fail": "Impossible de se connecter au service de téléchargement, veuillez vérifier le réseau et réessayer",
+    "dl_conn_reset": "La connexion a été réinitialisée, veuillez réessayer",
+    "dl_dns_fail": "Impossible de résoudre le nom de domaine miroir, veuillez vérifier le réseau ou modifier l'image miroir",
+    "dl_fs_fail": "Échec de l'écriture du fichier, veuillez vérifier l'espace de stockage et les autorisations",
+    "dl_http_err": "Le service de téléchargement a renvoyé une erreur, veuillez réessayer plus tard.",
+    "dl_legacy_hint": "Il est détecté que la version du système ou de WebView est faible et que certaines fonctions peuvent être limitées. Il est recommandé de mettre à jour le système ou WebView.",
+    "dl_legacy_notify": "La version du système ou de WebView est trop basse et certaines fonctions peuvent être limitées.",
+    "dl_legacy_title": "La version du système ou de WebView est plus ancienne",
+    "dl_net_err": "Erreur réseau, veuillez vérifier le réseau et réessayer",
+    "dl_no_file": "Le fichier n'existe pas ou a été nettoyé",
+    "dl_no_perm": "Il n'y a aucune autorisation d'écrire sur le stockage, ou le fichier cible est occupé par le système/d'autres applications",
+    "dl_no_space": "Espace de stockage insuffisant, veuillez libérer de l'espace et réessayer",
+    "dl_share_done": "Le partage du système a été activé. Veuillez sélectionner l'emplacement de sauvegarde dans le panneau de partage.",
+    "dl_share_fallback": "L'enregistrement dans le répertoire album/téléchargement a échoué. Voulez-vous utiliser le partage système pour enregistrer le fichier manuellement ?",
+    "dl_timeout": "La connexion a expiré, veuillez réessayer",
+    "dl_tls_broken": "La connexion a été interrompue, provoquant une corruption des données. Veuillez réessayer ou changer de réseau.",
+    "dl_tls_host": "La vérification du certificat HTTPS a échoué (le mode de connexion directe nécessite l'activation de « Ignorer la vérification SSL »)",
+    "dl_unknown": "Échec du téléchargement, veuillez réessayer plus tard"
   },
   "tips": {
     "click_view": "Clique pour voir",
@@ -826,5 +854,7 @@
   "zHc8vUk99v88lW41lrprb": "Préférez utiliser l'API d'accès au système de fichiers pour télécharger",
   "zhO6bfsyPM1-GpZgyer-L": "Historique des importations",
   "zlMUy5svAesJpHhvWRc6C": "Préréglages de couleurs de texte",
-  "zuVom-C8Ss8JTEDZIhzBj": "Utilisez ffmpeg pour convertir côté serveur"
+  "zuVom-C8Ss8JTEDZIhzBj": "Utilisez ffmpeg pour convertir côté serveur",
+  "vant_cal_weekdays_split_by_space": "",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Si la méthode de téléchargement n'est pas sélectionnée, le fichier sera écrit directement selon la méthode traditionnelle"
 }

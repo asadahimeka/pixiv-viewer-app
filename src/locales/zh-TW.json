@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Top",
   "9tIV83JmVMkNKF2B8F4LI": "作品標籤",
   "9y6HjIgJZ9CzHOEy8UKr1": "搜尋珍藏冊",
-  "9zbbiHNnDhb2eebwLd3HR": "關閉此選項後將使用內建下載",
+  "9zbbiHNnDhb2eebwLd3HR": "使用安卓系統自備下載器下載文件",
   "AHbKrrnigwX4uyEuNTLhD": "一年內",
   "B6_a-r-LnCBiHNTtnmv_-": "不顯示可能妨礙搜尋的作品",
   "BKT3O7AHWaF4y-_ZST_NG": "受限於網絡環境，圖片加載速度可能會比較慢。\n可以到設定裡切換圖床，或者下載 Android 版本後打開圖片直連功能。",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "建議用自己的賬號登入本站後再使用，並且要在官方網頁端裡面設定選擇非美國/英國的地區，最好選擇日區。",
-  "oaNdIowRN9TQxKA0EECI4": "下載文件遇到異常時可嘗試打開此選項",
+  "oaNdIowRN9TQxKA0EECI4": "預設使用此方式下載文件",
   "ofVgseiGUCwCT-0m7Gr1h": "簡介",
   "p56suIhQbLp-UUYtYjQoa": "是否前往該作品",
   "pA7B6tF0GBv6m4bI9MJWY": "下載目錄",
@@ -656,6 +656,12 @@
       "site": "網站",
       "title": "相關推薦",
       "tm": "使用者腳本"
+    },
+    "dl_saf": {
+      "cur_dir": "目前儲存目錄（SAF）",
+      "desc": "透過系統文件存取框架儲存到授權目錄，權限相容性最佳；開啟後首次使用需選擇儲存目錄，下載記錄頁不會列出此類文件",
+      "pick_ok": "儲存目錄已設定：{dir}",
+      "title": "SAF 目錄保存"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "收起多P作品",
@@ -760,7 +766,29 @@
     "downloaded": "下載完成",
     "downloading": "下載中",
     "rate_limit": "API 超出限制，請稍後重試",
-    "unknown_err": "未知錯誤"
+    "unknown_err": "未知錯誤",
+    "dl_bad_fd": "文件句柄異常，請重試",
+    "dl_bad_name": "無法用目前檔名儲存，請檢查下載檔名模板",
+    "dl_busy": "文件被佔用，請稍後重試",
+    "dl_conn_abort": "連線中斷，請重試",
+    "dl_conn_fail": "無法連線到下載服務，請檢查網路後重試",
+    "dl_conn_reset": "連線已重置，請重試",
+    "dl_dns_fail": "無法解析鏡像域名，請檢查網路或更換圖片鏡像",
+    "dl_fs_fail": "寫入檔案失敗，請檢查儲存空間和權限",
+    "dl_http_err": "下載服務回傳錯誤，請稍後再試",
+    "dl_legacy_hint": "偵測到系統或 WebView 版本較低，部分功能可能受限，建議更新系統或 WebView",
+    "dl_legacy_notify": "系統或 WebView 版本過低，部分功能可能受限",
+    "dl_legacy_title": "系統或 WebView 版本較低",
+    "dl_net_err": "網路錯誤，請檢查網路後重試",
+    "dl_no_file": "文件不存在或已被清理",
+    "dl_no_perm": "沒有寫入儲存的權限，或目標檔案被系統/其他應用程式佔用",
+    "dl_no_space": "儲存空間不足，請清理空間後重試",
+    "dl_share_done": "已調起系統分享，請在分享面板中選擇儲存位置",
+    "dl_share_fallback": "儲存到相簿/下載目錄失敗，是否改用系統分享手動儲存該檔案？",
+    "dl_timeout": "連線逾時，請重試",
+    "dl_tls_broken": "連接幹擾導致資料損壞，請重試或更換網絡",
+    "dl_tls_host": "HTTPS 憑證校驗失敗（直連模式需開啟「跳過 SSL 驗證」）",
+    "dl_unknown": "下載失敗，請稍後再試"
   },
   "tips": {
     "click_view": "點擊查看",
@@ -826,5 +854,7 @@
   "zHc8vUk99v88lW41lrprb": "優先使用 File System Access API 下載",
   "zhO6bfsyPM1-GpZgyer-L": "導入歷史記錄",
   "zlMUy5svAesJpHhvWRc6C": "文字顏色預設",
-  "zuVom-C8Ss8JTEDZIhzBj": "使用 ffmpeg 在服務端轉換"
+  "zuVom-C8Ss8JTEDZIhzBj": "使用 ffmpeg 在服務端轉換",
+  "vant_cal_weekdays_split_by_space": "",
+  "OxDudBbelw-lsaDulb0nc": "⚠️未選擇下載方式，將使用傳統方式直接寫入文件"
 }

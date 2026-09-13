@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Spitze",
   "9tIV83JmVMkNKF2B8F4LI": "Grafik-Tag",
   "9y6HjIgJZ9CzHOEy8UKr1": "Sammlungen durchsuchen",
-  "9zbbiHNnDhb2eebwLd3HR": "Wenn diese Option ausgeschaltet ist, wird der integrierte Download verwendet",
+  "9zbbiHNnDhb2eebwLd3HR": "Laden Sie Dateien mit dem integrierten Downloader von Android herunter",
   "AHbKrrnigwX4uyEuNTLhD": "Innerhalb eines Jahres",
   "B6_a-r-LnCBiHNTtnmv_-": "Zeigen Sie keine Elemente an, die die Suche behindern könnten",
   "BKT3O7AHWaF4y-_ZST_NG": "Aufgrund der Netzwerkumgebung kann die Bildlastgeschwindigkeit langsamer sein. \n\nSie können in den Einstellungen zum PXIMG-Proxy wechseln oder die Direct -Verbindungsfunktion des Bildes öffnen, nachdem Sie die Android -Version heruntergeladen haben.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Es wird empfohlen, sich vor der Verwendung auf dieser Website mit Ihrem eigenen Konto anzumelden und auf der offiziellen Webseite festzustellen, um eine Region Nicht-US-U/UK auszuwählen, und es ist am besten, einen japanischen Bereich auszuwählen:",
-  "oaNdIowRN9TQxKA0EECI4": "Sie können versuchen, diese Option einzuschalten, wenn eine Ausnahme in der Download -Datei auftritt.",
+  "oaNdIowRN9TQxKA0EECI4": "Diese Methode ist die Standardmethode zum Herunterladen von Dateien",
   "ofVgseiGUCwCT-0m7Gr1h": "Untertitel",
   "p56suIhQbLp-UUYtYjQoa": "Möchten Sie dieses Kunstwerk ansehen?",
   "pA7B6tF0GBv6m4bI9MJWY": "Verzeichnis herunterladen",
@@ -656,6 +656,12 @@
       "site": "Webseite",
       "title": "Empfohlene Links",
       "tm": "UserScript"
+    },
+    "dl_saf": {
+      "cur_dir": "Aktuelles Speicherverzeichnis (SAF)",
+      "desc": "Speichern Sie über das Systemdateizugriffsframework, das die beste Berechtigungskompatibilität aufweist, im autorisierten Verzeichnis. Nach dem Öffnen müssen Sie das Speicherverzeichnis zum ersten Mal auswählen. Solche Dateien werden nicht auf der Download-Datensatzseite aufgeführt.",
+      "pick_ok": "Das Speicherverzeichnis wurde festgelegt: {dir}",
+      "title": "Speichern des SAF-Verzeichnisses"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Close Multi-P funktioniert",
@@ -760,7 +766,29 @@
     "downloaded": "Download abgeschlossen",
     "downloading": "wird heruntergeladen",
     "rate_limit": "API-Limit überschritten, bitte versuchen Sie es später noch einmal",
-    "unknown_err": "Unbekannter Fehler"
+    "unknown_err": "Unbekannter Fehler",
+    "dl_bad_fd": "Dateihandle-Ausnahme, bitte versuchen Sie es erneut",
+    "dl_bad_name": "Das Speichern mit dem aktuellen Dateinamen ist nicht möglich. Bitte überprüfen Sie die Dateinamenvorlage zum Herunterladen",
+    "dl_busy": "Die Datei ist belegt. Bitte versuchen Sie es später erneut",
+    "dl_conn_abort": "Verbindung unterbrochen, bitte versuchen Sie es erneut",
+    "dl_conn_fail": "Es konnte keine Verbindung zum Download-Dienst hergestellt werden. Bitte überprüfen Sie das Netzwerk und versuchen Sie es erneut",
+    "dl_conn_reset": "Die Verbindung wurde zurückgesetzt. Bitte versuchen Sie es erneut",
+    "dl_dns_fail": "Der Spiegeldomänenname kann nicht aufgelöst werden. Bitte überprüfen Sie das Netzwerk oder ändern Sie den Bildspiegel",
+    "dl_fs_fail": "Datei konnte nicht geschrieben werden. Bitte überprüfen Sie den Speicherplatz und die Berechtigungen",
+    "dl_http_err": "Der Download-Dienst hat einen Fehler zurückgegeben. Bitte versuchen Sie es später erneut.",
+    "dl_legacy_hint": "Es wurde festgestellt, dass die System- oder WebView-Version niedrig ist und einige Funktionen möglicherweise eingeschränkt sind. Es wird empfohlen, das System oder WebView zu aktualisieren.",
+    "dl_legacy_notify": "Die System- oder WebView-Version ist zu niedrig und einige Funktionen sind möglicherweise eingeschränkt.",
+    "dl_legacy_title": "System- oder WebView-Version ist älter",
+    "dl_net_err": "Netzwerkfehler. Bitte überprüfen Sie das Netzwerk und versuchen Sie es erneut",
+    "dl_no_file": "Die Datei existiert nicht oder wurde bereinigt",
+    "dl_no_perm": "Es besteht keine Berechtigung zum Schreiben auf den Speicher oder die Zieldatei ist vom System/anderen Anwendungen belegt",
+    "dl_no_space": "Nicht genügend Speicherplatz. Bitte löschen Sie Speicherplatz und versuchen Sie es erneut",
+    "dl_share_done": "Die Systemfreigabe wurde aktiviert. Bitte wählen Sie den Speicherort im Freigabebereich aus.",
+    "dl_share_fallback": "Das Speichern im Album-/Download-Verzeichnis ist fehlgeschlagen. Möchten Sie die Systemfreigabe verwenden, um die Datei manuell zu speichern?",
+    "dl_timeout": "Zeitüberschreitung bei der Verbindung. Bitte versuchen Sie es erneut",
+    "dl_tls_broken": "Die Verbindung wurde unterbrochen, was zu Datenbeschädigung führte. Bitte versuchen Sie es erneut oder ändern Sie das Netzwerk.",
+    "dl_tls_host": "Die Überprüfung des HTTPS-Zertifikats ist fehlgeschlagen (der direkte Verbindungsmodus erfordert die Aktivierung von „SSL-Überprüfung überspringen“).",
+    "dl_unknown": "Der Download ist fehlgeschlagen. Bitte versuchen Sie es später noch einmal"
   },
   "tips": {
     "click_view": "Klicke zum Zeigen",
@@ -826,5 +854,7 @@
   "zHc8vUk99v88lW41lrprb": "Verwenden Sie zum Herunterladen lieber die File System Access API",
   "zhO6bfsyPM1-GpZgyer-L": "Importgeschichte",
   "zlMUy5svAesJpHhvWRc6C": "Voreinstellungen für Textfarben",
-  "zuVom-C8Ss8JTEDZIhzBj": "Verwenden Sie ffmpeg zum Konvertieren auf der Serverseite"
+  "zuVom-C8Ss8JTEDZIhzBj": "Verwenden Sie ffmpeg zum Konvertieren auf der Serverseite",
+  "vant_cal_weekdays_split_by_space": "",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Wenn die Download-Methode nicht ausgewählt ist, wird die Datei direkt mit der herkömmlichen Methode geschrieben"
 }

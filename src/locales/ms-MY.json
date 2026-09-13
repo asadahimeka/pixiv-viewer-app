@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Atas",
   "9tIV83JmVMkNKF2B8F4LI": "Tag karya seni",
   "9y6HjIgJZ9CzHOEy8UKr1": "Cari Koleksi",
-  "9zbbiHNnDhb2eebwLd3HR": "Mematikan pilihan ini akan menggunakan muat turun terbina dalam",
+  "9zbbiHNnDhb2eebwLd3HR": "Muat turun fail menggunakan pemuat turun terbina dalam Android",
   "AHbKrrnigwX4uyEuNTLhD": "Dalam masa satu tahun",
   "B6_a-r-LnCBiHNTtnmv_-": "Jangan tunjukkan item yang mungkin menghalang carian",
   "BKT3O7AHWaF4y-_ZST_NG": "Oleh kerana persekitaran rangkaian, kelajuan pemuatan imej mungkin lebih perlahan. \n\nAnda boleh beralih ke proksi pxxy dalam tetapan, atau buka fungsi sambungan langsung gambar selepas memuat turun versi Android.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv untuk pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Adalah disyorkan untuk log masuk ke laman web ini dengan akaun anda sendiri sebelum menggunakannya, dan anda harus menubuhkan kawasan bukan AS/UK di laman web rasmi, dan lebih baik memilih kawasan Jepun:",
-  "oaNdIowRN9TQxKA0EECI4": "Anda boleh cuba menghidupkan pilihan ini apabila memuat turun fail menemui pengecualian",
+  "oaNdIowRN9TQxKA0EECI4": "Kaedah ini ialah kaedah lalai untuk memuat turun fail",
   "ofVgseiGUCwCT-0m7Gr1h": "Kapsyen",
   "p56suIhQbLp-UUYtYjQoa": "Adakah anda ingin melihat karya seni ini?",
   "pA7B6tF0GBv6m4bI9MJWY": "Muat turun direktori",
@@ -656,6 +656,12 @@
       "site": "Laman web",
       "title": "Pautan yang disyorkan",
       "tm": "Pengguna"
+    },
+    "dl_saf": {
+      "cur_dir": "Direktori simpan semasa (SAF)",
+      "desc": "Simpan ke direktori yang dibenarkan melalui rangka kerja akses fail sistem, yang mempunyai keserasian kebenaran terbaik. Anda perlu memilih direktori simpan buat kali pertama selepas membukanya. Fail sedemikian tidak akan disenaraikan pada halaman rekod muat turun.",
+      "pick_ok": "Direktori simpan telah ditetapkan: {dir}",
+      "title": "Simpan direktori SAF"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Tutup kerja berbilang P",
@@ -760,7 +766,29 @@
     "downloaded": "Muat turun Lengkap",
     "downloading": "Memuat turun",
     "rate_limit": "Had API melebihi, sila cuba sebentar lagi",
-    "unknown_err": "Kesalahan yang tidak diketahui"
+    "unknown_err": "Kesalahan yang tidak diketahui",
+    "dl_bad_fd": "Pengecualian pemegang fail, sila cuba lagi",
+    "dl_bad_name": "Tidak dapat menyimpan dengan nama fail semasa, sila semak muat turun templat nama fail",
+    "dl_busy": "Fail telah diduduki, sila cuba sebentar lagi",
+    "dl_conn_abort": "Sambungan terganggu, sila cuba lagi",
+    "dl_conn_fail": "Tidak dapat menyambung ke perkhidmatan muat turun, sila semak rangkaian dan cuba lagi",
+    "dl_conn_reset": "Sambungan telah ditetapkan semula, sila cuba lagi",
+    "dl_dns_fail": "Tidak dapat menyelesaikan nama domain cermin, sila semak rangkaian atau tukar cermin imej",
+    "dl_fs_fail": "Gagal menulis fail, sila semak ruang storan dan kebenaran",
+    "dl_http_err": "Perkhidmatan muat turun mengembalikan ralat, sila cuba sebentar lagi.",
+    "dl_legacy_hint": "Ia dikesan bahawa sistem atau versi WebView adalah rendah dan beberapa fungsi mungkin terhad. Adalah disyorkan untuk mengemas kini sistem atau WebView.",
+    "dl_legacy_notify": "Sistem atau versi WebView terlalu rendah, dan beberapa fungsi mungkin terhad.",
+    "dl_legacy_title": "Versi Sistem atau WebView lebih lama",
+    "dl_net_err": "Ralat rangkaian, sila semak rangkaian dan cuba lagi",
+    "dl_no_file": "Fail tidak wujud atau telah dibersihkan",
+    "dl_no_perm": "Tiada kebenaran untuk menulis ke storan, atau fail sasaran diduduki oleh sistem/aplikasi lain",
+    "dl_no_space": "Ruang storan tidak mencukupi, sila kosongkan ruang dan cuba lagi",
+    "dl_share_done": "Perkongsian sistem telah diaktifkan. Sila pilih lokasi simpan dalam panel perkongsian.",
+    "dl_share_fallback": "Gagal menyimpan ke direktori album/muat turun. Adakah anda mahu menggunakan perkongsian sistem untuk menyimpan fail secara manual?",
+    "dl_timeout": "Sambungan tamat masa, sila cuba lagi",
+    "dl_tls_broken": "Sambungan telah terganggu, menyebabkan kerosakan data. Sila cuba lagi atau tukar rangkaian.",
+    "dl_tls_host": "Pengesahan sijil HTTPS gagal (mod sambungan langsung memerlukan \"Langkau pengesahan SSL\")",
+    "dl_unknown": "Muat turun gagal, sila cuba lagi kemudian"
   },
   "tips": {
     "click_view": "Klik untuk Lihat",
@@ -827,5 +855,6 @@
   "zHc8vUk99v88lW41lrprb": "Lebih suka menggunakan API Akses Sistem Fail untuk dimuat turun",
   "zhO6bfsyPM1-GpZgyer-L": "Sejarah import",
   "zlMUy5svAesJpHhvWRc6C": "Pratetap warna teks",
-  "zuVom-C8Ss8JTEDZIhzBj": "Gunakan FFMPEG untuk menukar di sebelah pelayan"
+  "zuVom-C8Ss8JTEDZIhzBj": "Gunakan FFMPEG untuk menukar di sebelah pelayan",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Jika kaedah muat turun tidak dipilih, fail akan ditulis terus menggunakan kaedah tradisional"
 }

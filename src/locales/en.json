@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Top",
   "9tIV83JmVMkNKF2B8F4LI": "Artwork tag",
   "9y6HjIgJZ9CzHOEy8UKr1": "Search Collections",
-  "9zbbiHNnDhb2eebwLd3HR": "When this option is turned off, the built-in download will be used",
+  "9zbbiHNnDhb2eebwLd3HR": "Download files using Android’s built-in downloader",
   "AHbKrrnigwX4uyEuNTLhD": "Within one year",
   "B6_a-r-LnCBiHNTtnmv_-": "Don't show items that might hinder searches",
   "BKT3O7AHWaF4y-_ZST_NG": "Due to the network environment, the image loading speed may be slower. \nYou can switch to the PXIMG proxy in the settings, or open the picture direct connection function after downloading the Android version.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "It is recommended to log in to this site with your own account before using it, and you should set up a non-US/UK area on the official webpage, and it is best to choose a Japanese area:",
-  "oaNdIowRN9TQxKA0EECI4": "You can try to turn on this option when an exception is encountered in the download file.",
+  "oaNdIowRN9TQxKA0EECI4": "This method is the default method for downloading files",
   "ofVgseiGUCwCT-0m7Gr1h": "Caption",
   "p56suIhQbLp-UUYtYjQoa": "Do you want to view this artwork?",
   "pA7B6tF0GBv6m4bI9MJWY": "Download directory",
@@ -656,6 +656,12 @@
       "site": "Website",
       "title": "Recommended Links",
       "tm": "UserScript"
+    },
+    "dl_saf": {
+      "cur_dir": "Current save directory (SAF)",
+      "desc": "Save to the authorized directory through the system file access framework, which has the best permission compatibility. You need to select the save directory for the first time after opening it. Such files will not be listed on the download record page.",
+      "pick_ok": "The save directory has been set: {dir}",
+      "title": "SAF directory save"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Close multi-P works",
@@ -760,7 +766,29 @@
     "downloaded": "Download complete",
     "downloading": "Downloading",
     "rate_limit": "API limit exceeded, please try again later",
-    "unknown_err": "Unknown Error"
+    "unknown_err": "Unknown Error",
+    "dl_bad_fd": "File handle exception, please try again",
+    "dl_bad_name": "Unable to save with current file name, please check download file name template",
+    "dl_busy": "The file is occupied, please try again later",
+    "dl_conn_abort": "Connection interrupted, please try again",
+    "dl_conn_fail": "Unable to connect to the download service, please check the network and try again",
+    "dl_conn_reset": "The connection was reset, please try again",
+    "dl_dns_fail": "Unable to resolve the mirror domain name, please check the network or change the image mirror",
+    "dl_fs_fail": "Failed to write file, please check storage space and permissions",
+    "dl_http_err": "The download service returned an error, please try again later.",
+    "dl_legacy_hint": "It is detected that the system or WebView version is low and some functions may be limited. It is recommended to update the system or WebView.",
+    "dl_legacy_notify": "The system or WebView version is too low, and some functions may be limited.",
+    "dl_legacy_title": "System or WebView version is older",
+    "dl_net_err": "Network error, please check the network and try again",
+    "dl_no_file": "The file does not exist or has been cleaned",
+    "dl_no_perm": "There is no permission to write to the storage, or the target file is occupied by the system/other applications",
+    "dl_no_space": "Insufficient storage space, please clear space and try again",
+    "dl_share_done": "System sharing has been activated. Please select the save location in the sharing panel.",
+    "dl_share_fallback": "Saving to the album/download directory failed. Do you want to use system sharing to save the file manually?",
+    "dl_timeout": "Connection timed out, please try again",
+    "dl_tls_broken": "The connection was interrupted, causing data corruption. Please try again or change the network.",
+    "dl_tls_host": "HTTPS certificate verification failed (direct connection mode requires turning on \"Skip SSL verification\")",
+    "dl_unknown": "Download failed, please try again later"
   },
   "tips": {
     "click_view": "Click to view",
@@ -827,5 +855,6 @@
   "zHc8vUk99v88lW41lrprb": "Prefer using File System Access API to download",
   "zhO6bfsyPM1-GpZgyer-L": "Import history",
   "zlMUy5svAesJpHhvWRc6C": "Text color presets",
-  "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg to convert on the server side"
+  "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg to convert on the server side",
+  "OxDudBbelw-lsaDulb0nc": "⚠️If the download method is not selected, the file will be written directly using the traditional method"
 }

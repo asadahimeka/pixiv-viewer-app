@@ -59,7 +59,7 @@
   "9t4q1l50WKJY_iuXpTo66": "Principal",
   "9tIV83JmVMkNKF2B8F4LI": "Etiqueta de arte",
   "9y6HjIgJZ9CzHOEy8UKr1": "Pesquisar coleções",
-  "9zbbiHNnDhb2eebwLd3HR": "Quando esta opção for desativada, o download interno será usado",
+  "9zbbiHNnDhb2eebwLd3HR": "Baixe arquivos usando o downloader integrado do Android",
   "AHbKrrnigwX4uyEuNTLhD": "Dentro de um ano",
   "B6_a-r-LnCBiHNTtnmv_-": "Não mostre itens que possam atrapalhar as pesquisas",
   "BKT3O7AHWaF4y-_ZST_NG": "Devido ao ambiente de rede, a velocidade de carregamento da imagem pode ser mais lenta. \n\nVocê pode alternar para o proxy PIXG nas configurações ou abrir a função de conexão direta da imagem após o download da versão Android.",
@@ -459,7 +459,7 @@
   },
   "nsbx-CsTvalHU191r4ncN": "ppixiv for Pixiv",
   "oIpHR8FnQhPgVI2BizbAn": "Recomenda-se fazer login neste site com sua própria conta antes de usá-la e você deve configurar uma área não americana/britânica na página oficial da Web e é melhor escolher uma área japonesa:",
-  "oaNdIowRN9TQxKA0EECI4": "Você pode tentar ativar esta opção quando uma exceção for encontrada no arquivo de download.",
+  "oaNdIowRN9TQxKA0EECI4": "Este método é o método padrão para baixar arquivos",
   "ofVgseiGUCwCT-0m7Gr1h": "Rubrica",
   "p56suIhQbLp-UUYtYjQoa": "Quer ver esta obra de arte?",
   "pA7B6tF0GBv6m4bI9MJWY": "Baixar diretório",
@@ -656,6 +656,12 @@
       "site": "Local na rede Internet",
       "title": "Links recomendados",
       "tm": "UserScript"
+    },
+    "dl_saf": {
+      "cur_dir": "Diretório de salvamento atual (SAF)",
+      "desc": "Salve no diretório autorizado por meio da estrutura de acesso a arquivos do sistema, que possui a melhor compatibilidade de permissões. Você precisa selecionar o diretório de salvamento pela primeira vez após abri-lo. Esses arquivos não serão listados na página de registro de download.",
+      "pick_ok": "O diretório de salvamento foi definido: {dir}",
+      "title": "Salvar diretório SAF"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Fechar trabalhos multi-P",
@@ -760,7 +766,29 @@
     "downloaded": "Download completo",
     "downloading": "Baixando",
     "rate_limit": "Limite de API excedido. Tente novamente mais tarde",
-    "unknown_err": "Erro desconhecido"
+    "unknown_err": "Erro desconhecido",
+    "dl_bad_fd": "Exceção de identificador de arquivo. Tente novamente",
+    "dl_bad_name": "Não foi possível salvar com o nome de arquivo atual. Verifique o modelo de nome de arquivo para download",
+    "dl_busy": "O arquivo está ocupado, tente novamente mais tarde",
+    "dl_conn_abort": "Conexão interrompida, tente novamente",
+    "dl_conn_fail": "Não foi possível conectar-se ao serviço de download. Verifique a rede e tente novamente",
+    "dl_conn_reset": "A conexão foi redefinida, tente novamente",
+    "dl_dns_fail": "Não foi possível resolver o nome de domínio do espelho, verifique a rede ou altere o espelho da imagem",
+    "dl_fs_fail": "Falha ao gravar o arquivo, verifique o espaço de armazenamento e as permissões",
+    "dl_http_err": "O serviço de download retornou um erro. Tente novamente mais tarde.",
+    "dl_legacy_hint": "É detectado que a versão do sistema ou do WebView está baixa e algumas funções podem estar limitadas. Recomenda-se atualizar o sistema ou WebView.",
+    "dl_legacy_notify": "A versão do sistema ou do WebView é muito baixa e algumas funções podem ser limitadas.",
+    "dl_legacy_title": "A versão do sistema ou WebView é mais antiga",
+    "dl_net_err": "Erro de rede, verifique a rede e tente novamente",
+    "dl_no_file": "O arquivo não existe ou foi limpo",
+    "dl_no_perm": "Não há permissão para gravar no armazenamento ou o arquivo de destino está ocupado pelo sistema/outros aplicativos",
+    "dl_no_space": "Espaço de armazenamento insuficiente. Libere espaço e tente novamente",
+    "dl_share_done": "O compartilhamento do sistema foi ativado. Selecione o local para salvar no painel de compartilhamento.",
+    "dl_share_fallback": "Falha ao salvar no diretório de álbum/download. Deseja usar o compartilhamento do sistema para salvar o arquivo manualmente?",
+    "dl_timeout": "A conexão expirou. Tente novamente",
+    "dl_tls_broken": "A conexão foi interrompida, causando corrupção de dados. Tente novamente ou mude de rede.",
+    "dl_tls_host": "Falha na verificação do certificado HTTPS (o modo de conexão direta requer a ativação de \"Ignorar verificação SSL\")",
+    "dl_unknown": "Falha no download, tente novamente mais tarde"
   },
   "tips": {
     "click_view": "Clique para ver",
@@ -827,5 +855,6 @@
   "zHc8vUk99v88lW41lrprb": "Prefira usar a API File System Access para fazer download",
   "zhO6bfsyPM1-GpZgyer-L": "História de importação",
   "zlMUy5svAesJpHhvWRc6C": "Predefinições de cores de texto",
-  "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg para converter no lado do servidor"
+  "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg para converter no lado do servidor",
+  "OxDudBbelw-lsaDulb0nc": "⚠️Se o método de download não for selecionado, o arquivo será gravado diretamente usando o método tradicional"
 }
