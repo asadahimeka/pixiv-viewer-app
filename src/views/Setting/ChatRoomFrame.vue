@@ -26,8 +26,7 @@ export default {
 <style lang="stylus" scoped>
 .chat-room-frame
   width 100%
-  height 99vh
-  height 99dvh
+  height calc(99vh - var(--nav-bar-height))
 </style>
 <style lang="stylus">
 .app-main:has(.chat-room-frame)

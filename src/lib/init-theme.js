@@ -16,6 +16,9 @@ function initVisualTheme() {
     return
   }
   const ua = navigator.userAgent
+  const m = ua.match(/Chrome\/(\d+)/)
+  const wvMajor = m ? parseInt(m[1], 10) || 0 : 0
+  if (wvMajor > 0 && wvMajor < 105) return
   if (/Android/i.test(ua)) {
     changeVisualTheme('md')
   } else if (/iPhone|iPod|Macintosh|MacIntel/i.test(ua)) {

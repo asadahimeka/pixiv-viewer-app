@@ -5,7 +5,7 @@
     <van-cell-group :title="$t('GS0J0mAbmiqPGKw20ORPi')">
       <van-cell center :title="$t('setting.other.lang')" is-link :label="selLangLabel" @click="lang.show = true" />
       <van-cell center :title="$t('psoXLFqv51j1SeKjTbnms')" is-link :label="`${accentColor} ${actTheme}`" to="/setting/accent_color" />
-      <van-cell v-if="!isDark" center :title="$t('theme.title')" is-link :label="$t('setting.lab.title')" @click="visualTheme.show = true" />
+      <van-cell v-if="!isDark && !dlEnvLegacy" center :title="$t('theme.title')" is-link :label="$t('setting.lab.title')" @click="visualTheme.show = true" />
       <van-cell center :title="$t('setting.dark.title')" :label="$t('setting.lab.title')">
         <template #right-icon>
           <van-switch :value="isDark" size="24" @change="onDarkChange" />
