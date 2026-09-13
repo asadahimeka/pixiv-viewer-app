@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "分享 Pixiv 用户",
   "8ko0ip_aETyyaSIMQmLqR": "扩充 API 实例选择",
   "8msFTe9uT5LS1hBRYrhDQ": "如何获取 RefreshToken",
-  "8uktANA7hP_We9wM_o8lN": "使用系统下载器下载",
+  "8uktANA7hP_We9wM_o8lN": "使用系统下载器下载图片",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "到系统设置里给予本应用存储权限，或者下载最新版本后再进行尝试",
   "9H-9VJU67Fuabl8OgbhOr": "点击发表评论",
@@ -590,7 +590,7 @@
       "title": "深色模式"
     },
     "dl_saf": {
-      "title": "SAF 目录保存",
+      "title": "使用存储访问框架（SAF）保存文件",
       "desc": "通过系统文件访问框架保存到授权目录，权限兼容性最好；开启后首次使用需选择保存目录，下载记录页不会列出此类文件",
       "cur_dir": "当前保存目录（SAF）",
       "pick_ok": "保存目录已设置：{dir}"
@@ -855,5 +855,7 @@
   "zhO6bfsyPM1-GpZgyer-L": "导入历史记录",
   "zlMUy5svAesJpHhvWRc6C": "文字颜色预设",
   "zuVom-C8Ss8JTEDZIhzBj": "使用 ffmpeg 在服务端转换",
-  "OxDudBbelw-lsaDulb0nc": "⚠️未选择下载方式，将使用传统方式直接写入文件"
+  "OxDudBbelw-lsaDulb0nc": "⚠️未选择下载方式，将使用传统方式直接写入文件",
+  "QZOw48iT5SKQidzpwW8W3": "聊天室",
+  "LW9GF5ptpR-d48im0oiMT": "点击前往 Pixiv Viewer 讨论频道"
 }

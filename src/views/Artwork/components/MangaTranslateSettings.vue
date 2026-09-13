@@ -108,12 +108,6 @@
         <div v-if="translationTranslator == 'microsoft'" class="engine-help">
           <van-icon name="info-o" /> 使用 Microsoft Edge 免费接口，无需 API Key。
         </div>
-        <div class="engine-help">
-          <van-icon name="info-o" /> 如需更好体验，推荐安装 <a href="https://chromewebstore.google.com/detail/pgehhpbnifjlalmmnpiebkjhphojffef" target="_blank" rel="noreferrer">ShinobuTranslator 浏览器扩展</a>
-        </div>
-        <div class="engine-help">
-          <van-icon name="info-o" /> Firefox 用户可前往 <a href="https://github.com/DonutShinobu/ShinobuTranslator" target="_blank" rel="noreferrer">GitHub Releases</a> 手动安装
-        </div>
       </van-cell-group>
 
       <van-cell-group v-if="translationTranslator == 'llm'" title="翻译提供商" style="padding-bottom: 1px">

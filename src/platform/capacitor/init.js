@@ -7,7 +7,7 @@ import '@/assets/style/sakuria.styl'
 import '@/assets/style/md.styl'
 import '@/assets/style/ios26.styl'
 import '@/assets/style/vta.css'
-import '@/lib/polyfill'
+import './polyfill'
 import '@/lib/init-theme'
 
 import { App as CapApp } from '@capacitor/app'

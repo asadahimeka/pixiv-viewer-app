@@ -1,5 +1,5 @@
 <template>
-  <div class="rank">
+  <div class="rank RankNovel">
     <div class="top">
       <van-popover
         v-model="showRankCat"
@@ -293,6 +293,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     top: 0;
+    left 0
     width: 100%;
     min-height: 100px;
     padding: var(--status-bar-height) 20px 10px;

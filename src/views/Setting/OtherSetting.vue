@@ -175,7 +175,7 @@
 
     <van-cell-group v-if="showTranslationGroup" title="翻译设置">
       <template v-if="!appSetting.useNovelWebview">
-        <van-cell center title="自动加载简约翻译(KISS Translator)脚本并翻译" label="如已安装 KISS Translator 浏览器扩展或用户脚本则无需加载。翻译范围：小说正文、作品标题与简介、作品评论、用户简介">
+        <van-cell center title="自动加载 KISS Translator 脚本并翻译" label="翻译范围：小说正文、作品标题与简介、作品评论、用户简介">
           <template #right-icon>
             <van-switch :value="appSetting.isAutoLoadKissT" size="24" @change="changeAutoLoadKissT" />
           </template>

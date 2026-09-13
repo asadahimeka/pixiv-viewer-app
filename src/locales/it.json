@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Condividi gli utenti Pixiv",
   "8ko0ip_aETyyaSIMQmLqR": "Selezione estesa dell'istanza API",
   "8msFTe9uT5LS1hBRYrhDQ": "Come ottenere \"RefreshToken\"",
-  "8uktANA7hP_We9wM_o8lN": "Scarica utilizzando il downloader di sistema",
+  "8uktANA7hP_We9wM_o8lN": "Scarica le immagini utilizzando il downloader di sistema",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Fornisci questa autorizzazione di archiviazione dell'applicazione nelle impostazioni di sistema o scarica l'ultima versione prima di provare",
   "9H-9VJU67Fuabl8OgbhOr": "Fare clic per pubblicare un commento",
@@ -660,7 +660,7 @@
       "cur_dir": "Directory di salvataggio corrente (SAF)",
       "desc": "Salva nella directory autorizzata tramite il framework di accesso ai file di sistema, che ha la migliore compatibilità delle autorizzazioni. È necessario selezionare la directory di salvataggio per la prima volta dopo averla aperta. Tali file non verranno elencati nella pagina di registrazione dei download.",
       "pick_ok": "La directory di salvataggio è stata impostata: {dir}",
-      "title": "Salvataggio della directory SAF"
+      "title": "Salvare i file utilizzando Storage Access Framework (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Chiudi i lavori multi-P",
@@ -856,5 +856,7 @@
   "zlMUy5svAesJpHhvWRc6C": "Preimpostazioni del colore del testo",
   "zuVom-C8Ss8JTEDZIhzBj": "Usa ffmpeg per convertire sul lato server",
   "lGla4o1MNG0QBOBr2K2DK": "La pagina dei dettagli dell'immagine visualizza la filigrana PID",
-  "OxDudBbelw-lsaDulb0nc": "⚠️Se non viene selezionato il metodo di download, il file verrà scritto direttamente utilizzando il metodo tradizionale"
+  "OxDudBbelw-lsaDulb0nc": "⚠️Se non viene selezionato il metodo di download, il file verrà scritto direttamente utilizzando il metodo tradizionale",
+  "QZOw48iT5SKQidzpwW8W3": "Chat room",
+  "LW9GF5ptpR-d48im0oiMT": "Fare clic per accedere al canale di discussione di Pixiv Viewer"
 }

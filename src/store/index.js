@@ -43,8 +43,6 @@ export default new Vuex.Store({
       engine: 'vl-api',
       /** @type {boolean} 用户是否已同意首次下载 Shinobu 模型 */
       shinobuModelConsent: false,
-      /** @type {boolean} 用户是否已知晓 HTTP Helper 用户脚本提示 */
-      helperConsent: false,
       /** @type {'translate'|'erase'|'original'} */
       processMode: 'translate',
       bubble: true,
@@ -99,7 +97,7 @@ export default new Vuex.Store({
       dlSubDirByAuthor: false,
       dlFileNameTpl: '{author}_{title}_{pid}_p{index}',
       dlFileNameNoSingleP0: false,
-      isImgLazy: isMobile,
+      isImgLazy: true,
       searchListMinFavNum: '5',
       isImageCardBorderRadius: true,
       isImageCardBoxShadow: true,

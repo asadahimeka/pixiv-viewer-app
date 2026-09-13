@@ -1,9 +1,9 @@
 // src/utils/translate/llmClient.js
 // 统一 LLM 请求层：OpenAI 兼容端点。
-// 请求链路：流式 fetch → (网络级失败且油猴可用) GM_xmlhttpRequest 整包 → 报引导错误。
+// 请求链路：流式 fetch → (网络级失败且原生请求桥可用) 整包 → 报引导错误。
 // 注意：本文件禁止 import '@/...'，保持可被 node --test 直接加载。
 
-const HELPER_HINT = '未检测到 HTTP Helper 用户脚本，且该 API 地址不允许浏览器直连（CORS）。请安装/更新 Pxve HTTP Helper 用户脚本，或改用支持浏览器直连的服务商（如 SiliconCloud / DeepSeek / OpenRouter）。'
+const HELPER_HINT = '该 API 地址不允许浏览器直连（CORS）且请求失败。请改用支持直连的服务商（如 SiliconCloud / DeepSeek / OpenRouter），或在偏好设置中检查 API 地址与网络。'
 
 export class LlmApiError extends Error {
   /**
@@ -82,7 +82,7 @@ function normalizeHelperError(err) {
 }
 
 /**
- * 通过油猴脚本发请求（无 CORS 限制，仅整包响应）
+ * 通过内置原生请求桥发请求（无 CORS 限制，仅整包响应）
  * @param {string} url
  * @param {{ method?: string, headers?: object, data?: any }} config
  * @returns {Promise<any>} resp.data
@@ -127,8 +127,8 @@ async function throwHttpError(resp) {
 
 /**
  * 流式 chat/completions。
- * 收到 HTTP 状态码（401 等）说明 CORS 已通，直接抛 ApiError，不走油猴重试；
- * 仅当 fetch 抛网络异常（TypeError）时才降级油猴整包返回。
+ * 收到 HTTP 状态码（401 等）说明 CORS 已通，直接抛 ApiError，不走桥重试；
+ * 仅当 fetch 抛网络异常（TypeError）时才降级桥整包返回。
  *
  * @param {{ baseUrl: string, apiKey: string, body: object, onRead: (c: {content: string, done: boolean}) => void, signal?: AbortSignal }} opts
  */
@@ -149,7 +149,7 @@ export async function chatCompletionStream({ baseUrl, apiKey, body, onRead, sign
   } catch (err) {
     if (err?.name === 'AbortError') throw err
     if (classifyFetchFailure(err) === 'network' && isHelperAvailable()) {
-      // 油猴兜底：整包返回后一次性输出
+      // 请求桥兜底：整包返回后一次性输出
       try {
         delete body.stream
         const data = await helperRequest(endpoint, { method: 'POST', headers, data: body })

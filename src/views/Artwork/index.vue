@@ -605,18 +605,6 @@ export default {
       this.handleTranslate(pageIndex)
     },
     async translateByShinobu(pageIndex) {
-      // 提示安装 HTTP Helper 用户脚本（一次性，仅未安装时）
-      if (!window.__httpRequest__ && !store.state.translateConfig.helperConsent) {
-        const helperRes = await Dialog.confirm({
-          title: '提示',
-          message: '建议安装 Tampermonkey 浏览器扩展并安装 HTTP Helper 用户脚本，否则可能无法进行翻译。<br><br><p>Tampermonkey 扩展: <a href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">前往安装</a></p><p>HTTP Helper 用户脚本: <a href="https://fastly.jsdelivr.net/gh/asadahimeka/pixiv-viewer@master/public/helper/helper.user.js" target="_blank" rel="noreferrer">点击安装</a></p>',
-          messageAlign: 'left',
-          confirmButtonText: '知道了',
-          cancelButtonText: '取消',
-        }).catch(() => 'cancel')
-        if (helperRes === 'confirm') store.commit('SET_TRANSLATE_CONFIG', { helperConsent: true })
-        // 无论确认与否，都不阻断翻译
-      }
       // 首次使用需确认下载模型（检测/OCR/去字，约 199MB）
       if (!store.state.translateConfig.shinobuModelConsent) {
         const res = await Dialog.confirm({
@@ -709,7 +697,7 @@ export default {
       this.pipelineAbort = abortController
 
       try {
-        // Shinobu 图片获取降级链: 油猴 __httpRequest__ → imgProxy → fetch
+        // Shinobu 图片获取降级链: 内置请求桥 __httpRequest__ → imgProxy → fetch
         let imageBlob = null
         if (window.__httpRequest__) {
           try {
@@ -719,13 +707,14 @@ export default {
             }))
             if (data instanceof Blob) imageBlob = data
           } catch (e) {
-            console.warn('[shinobu] 油猴图片获取失败，降级:', e)
+            console.warn('[shinobu] 请求桥图片获取失败，降级:', e)
           }
         }
         if (!imageBlob) {
           const fetchUrl = new URL(imageUrl)
           fetchUrl.hostname = 'prox.spacetimee.xyz'
-          const res = await fetch(fetchUrl)
+          const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
+          const res = await fetchFn(fetchUrl)
           if (!res.ok) throw new Error(`图片下载失败 HTTP ${res.status}`)
           imageBlob = await res.blob()
         }

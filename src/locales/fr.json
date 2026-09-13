@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Partager les utilisateurs de Pixiv",
   "8ko0ip_aETyyaSIMQmLqR": "Sélection des instances API étendue",
   "8msFTe9uT5LS1hBRYrhDQ": "Comment obtenir \"RefreshToken\"",
-  "8uktANA7hP_We9wM_o8lN": "Télécharger en utilisant le téléchargeur système",
+  "8uktANA7hP_We9wM_o8lN": "Télécharger des images à l'aide du téléchargeur système",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Donnez à cette application des autorisations de stockage dans les paramètres du système ou téléchargez la dernière version avant d'essayer",
   "9H-9VJU67Fuabl8OgbhOr": "Cliquez pour poster un commentaire",
@@ -661,7 +661,7 @@
       "cur_dir": "Répertoire de sauvegarde actuel (SAF)",
       "desc": "Enregistrez dans le répertoire autorisé via le cadre d'accès aux fichiers système, qui offre la meilleure compatibilité d'autorisations. Vous devez sélectionner le répertoire de sauvegarde pour la première fois après l'avoir ouvert. Ces fichiers ne seront pas répertoriés sur la page d'enregistrement de téléchargement.",
       "pick_ok": "Le répertoire de sauvegarde a été défini : {dir}",
-      "title": "Sauvegarde du répertoire SAF"
+      "title": "Enregistrer des fichiers à l'aide de Storage Access Framework (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Fermer les travaux multi-P",
@@ -856,5 +856,7 @@
   "zlMUy5svAesJpHhvWRc6C": "Préréglages de couleurs de texte",
   "zuVom-C8Ss8JTEDZIhzBj": "Utilisez ffmpeg pour convertir côté serveur",
   "vant_cal_weekdays_split_by_space": "",
-  "OxDudBbelw-lsaDulb0nc": "⚠️Si la méthode de téléchargement n'est pas sélectionnée, le fichier sera écrit directement selon la méthode traditionnelle"
+  "OxDudBbelw-lsaDulb0nc": "⚠️Si la méthode de téléchargement n'est pas sélectionnée, le fichier sera écrit directement selon la méthode traditionnelle",
+  "QZOw48iT5SKQidzpwW8W3": "Salon de discussion",
+  "LW9GF5ptpR-d48im0oiMT": "Cliquez pour accéder au canal de discussion Pixiv Viewer"
 }

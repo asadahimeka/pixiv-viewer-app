@@ -5,7 +5,7 @@
     <van-cell-group :title="$t('about.about_site')">
       <van-cell center :title="$t('about.version')" clickable :label="ver" />
       <template v-if="platform.isCapacitor">
-        <van-cell v-if="appInfo.version" center :title="'APP '+$t('about.version')" clickable :label="`${appInfo.version}(${appInfo.build})`" />
+        <van-cell v-if="appInfo.build" center :title="'APP '+$t('about.version')" clickable :label="appInfo.build" />
         <van-cell v-if="wvVersion" center :title="'Webview '+$t('about.version')" clickable :label="wvVersion" />
       </template>
       <van-cell center :title="$t('about.disclaimer')" is-link :label="$t('tips.click_view')" to="/setting/about/disclaimer" />
@@ -129,9 +129,9 @@
       />
       <van-cell
         center
-        title="聊天室"
+        :title="$t('QZOw48iT5SKQidzpwW8W3')"
         is-link
-        label="点击前往 Pixiv Viewer 讨论频道"
+        :label="$t('LW9GF5ptpR-d48im0oiMT')"
         to="/chat-room"
       />
     </van-cell-group>

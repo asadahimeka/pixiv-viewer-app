@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Teilen Sie Pixiv -Benutzer",
   "8ko0ip_aETyyaSIMQmLqR": "Erweiterte API -Instanzauswahl",
   "8msFTe9uT5LS1hBRYrhDQ": "Wie man \"RefreshToken\" bekommt",
-  "8uktANA7hP_We9wM_o8lN": "Laden Sie mit dem System -Downloader herunter",
+  "8uktANA7hP_We9wM_o8lN": "Laden Sie Bilder mit dem System-Downloader herunter",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Geben Sie diese Anwendungsspeicherberechtigungen in den Systemeinstellungen an oder laden Sie die neueste Version herunter, bevor Sie es versuchen",
   "9H-9VJU67Fuabl8OgbhOr": "Klicken Sie hier, um einen Kommentar zu posten",
@@ -661,7 +661,7 @@
       "cur_dir": "Aktuelles Speicherverzeichnis (SAF)",
       "desc": "Speichern Sie über das Systemdateizugriffsframework, das die beste Berechtigungskompatibilität aufweist, im autorisierten Verzeichnis. Nach dem Öffnen müssen Sie das Speicherverzeichnis zum ersten Mal auswählen. Solche Dateien werden nicht auf der Download-Datensatzseite aufgeführt.",
       "pick_ok": "Das Speicherverzeichnis wurde festgelegt: {dir}",
-      "title": "Speichern des SAF-Verzeichnisses"
+      "title": "Speichern Sie Dateien mit dem Storage Access Framework (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Close Multi-P funktioniert",
@@ -856,5 +856,7 @@
   "zlMUy5svAesJpHhvWRc6C": "Voreinstellungen für Textfarben",
   "zuVom-C8Ss8JTEDZIhzBj": "Verwenden Sie ffmpeg zum Konvertieren auf der Serverseite",
   "vant_cal_weekdays_split_by_space": "",
-  "OxDudBbelw-lsaDulb0nc": "⚠️Wenn die Download-Methode nicht ausgewählt ist, wird die Datei direkt mit der herkömmlichen Methode geschrieben"
+  "OxDudBbelw-lsaDulb0nc": "⚠️Wenn die Download-Methode nicht ausgewählt ist, wird die Datei direkt mit der herkömmlichen Methode geschrieben",
+  "QZOw48iT5SKQidzpwW8W3": "Chatraum",
+  "LW9GF5ptpR-d48im0oiMT": "Klicken Sie hier, um zum Pixiv Viewer-Diskussionskanal zu gelangen"
 }

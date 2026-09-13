@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Share Pixiv users",
   "8ko0ip_aETyyaSIMQmLqR": "Extended API instance selection",
   "8msFTe9uT5LS1hBRYrhDQ": "How to get RefreshToken",
-  "8uktANA7hP_We9wM_o8lN": "Download using the system downloader",
+  "8uktANA7hP_We9wM_o8lN": "Download pictures using system downloader",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Give this application storage permissions in the system settings, or download the latest version before trying",
   "9H-9VJU67Fuabl8OgbhOr": "Click to post a comment",
@@ -661,7 +661,7 @@
       "cur_dir": "Current save directory (SAF)",
       "desc": "Save to the authorized directory through the system file access framework, which has the best permission compatibility. You need to select the save directory for the first time after opening it. Such files will not be listed on the download record page.",
       "pick_ok": "The save directory has been set: {dir}",
-      "title": "SAF directory save"
+      "title": "Save files using the Storage Access Framework (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Close multi-P works",
@@ -856,5 +856,7 @@
   "zhO6bfsyPM1-GpZgyer-L": "Import history",
   "zlMUy5svAesJpHhvWRc6C": "Text color presets",
   "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg to convert on the server side",
-  "OxDudBbelw-lsaDulb0nc": "⚠️If the download method is not selected, the file will be written directly using the traditional method"
+  "OxDudBbelw-lsaDulb0nc": "⚠️If the download method is not selected, the file will be written directly using the traditional method",
+  "QZOw48iT5SKQidzpwW8W3": "Chat room",
+  "LW9GF5ptpR-d48im0oiMT": "Click to go to the Pixiv Viewer discussion channel"
 }

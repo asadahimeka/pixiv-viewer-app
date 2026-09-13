@@ -8,7 +8,7 @@ export async function loadKISSTranslator(isAutoLoad = false, isAutoTrigger = isA
   if (!isAutoLoad && !localStorage.getItem('PXV_KISST_CFMED')) {
     const res = await Dialog.confirm({
       title: '加载 KISS Translator 脚本',
-      message: '提示：如果已安装 KISS Translator 浏览器扩展或用户脚本则无需加载。可在偏好设置中打开自动加载 KISS Translator 脚本。',
+      message: '提示：可在偏好设置中打开自动加载 KISS Translator 脚本。',
       lockScroll: false,
       closeOnPopstate: true,
       cancelButtonText: '取消',

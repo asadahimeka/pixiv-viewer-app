@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Compartir usuarios de Pixiv",
   "8ko0ip_aETyyaSIMQmLqR": "Selección de instancia de API extendida",
   "8msFTe9uT5LS1hBRYrhDQ": "Cómo obtener \"RefreshToken\"",
-  "8uktANA7hP_We9wM_o8lN": "Descargar usando el descargador del sistema",
+  "8uktANA7hP_We9wM_o8lN": "Descargar imágenes usando el descargador del sistema",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Proporcione estos permisos de almacenamiento de aplicaciones en la configuración del sistema, o descargue la última versión antes de intentarlo",
   "9H-9VJU67Fuabl8OgbhOr": "Haga clic para publicar un comentario",
@@ -661,7 +661,7 @@
       "cur_dir": "Directorio de guardado actual (SAF)",
       "desc": "Guarde en el directorio autorizado a través del marco de acceso a archivos del sistema, que tiene la mejor compatibilidad de permisos. Debe seleccionar el directorio de guardado por primera vez después de abrirlo. Dichos archivos no aparecerán en la página de registro de descargas.",
       "pick_ok": "El directorio para guardar se ha configurado: {dir}",
-      "title": "Guardar directorio SAF"
+      "title": "Guarde archivos usando Storage Access Framework (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Cerrar obras multi-P",
@@ -856,5 +856,7 @@
   "zlMUy5svAesJpHhvWRc6C": "Ajustes preestablecidos de color de texto",
   "zuVom-C8Ss8JTEDZIhzBj": "Utilice ffmpeg para convertir en el lado del servidor",
   "vant_cal_weekdays_split_by_space": "",
-  "OxDudBbelw-lsaDulb0nc": "⚠️Si no se selecciona el método de descarga, el archivo se escribirá directamente utilizando el método tradicional"
+  "OxDudBbelw-lsaDulb0nc": "⚠️Si no se selecciona el método de descarga, el archivo se escribirá directamente utilizando el método tradicional",
+  "QZOw48iT5SKQidzpwW8W3": "sala de chat",
+  "LW9GF5ptpR-d48im0oiMT": "Haga clic para ir al canal de discusión de Pixiv Viewer"
 }

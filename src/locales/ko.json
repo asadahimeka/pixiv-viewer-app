@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "pixiv 사용자를 공유하십시오",
   "8ko0ip_aETyyaSIMQmLqR": "확장 된 API 인스턴스 선택",
   "8msFTe9uT5LS1hBRYrhDQ": "\"RefreshToken\"을 얻는 방법",
-  "8uktANA7hP_We9wM_o8lN": "시스템 다운로더를 사용하여 다운로드하십시오",
+  "8uktANA7hP_We9wM_o8lN": "시스템 다운로더를 사용하여 사진 다운로드",
   "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "시스템 설정 에서이 애플리케이션 스토리지 권한을 부여하거나 시도하기 전에 최신 버전을 다운로드하십시오.",
   "9H-9VJU67Fuabl8OgbhOr": "댓글을 게시하려면 클릭하세요.",
@@ -661,7 +661,7 @@
       "cur_dir": "현재 저장 디렉터리(SAF)",
       "desc": "권한 호환성이 가장 뛰어난 시스템 파일 액세스 프레임워크를 통해 승인된 디렉터리에 저장합니다. 저장 디렉터리를 연 후 처음으로 선택해야 합니다. 이러한 파일은 다운로드 기록 페이지에 나열되지 않습니다.",
       "pick_ok": "저장 디렉터리가 설정되었습니다: {dir}",
-      "title": "SAF 디렉토리 저장"
+      "title": "SAF(Storage Access Framework)를 사용하여 파일 저장"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "멀티P 작품 닫기",
@@ -856,5 +856,7 @@
   "zhO6bfsyPM1-GpZgyer-L": "수입 기록",
   "zlMUy5svAesJpHhvWRc6C": "텍스트 색상 사전 설정",
   "zuVom-C8Ss8JTEDZIhzBj": "ffmpeg를 사용하여 서버 측에서 변환",
-  "OxDudBbelw-lsaDulb0nc": "⚠️다운로드 방법을 선택하지 않으면 기존 방법을 사용하여 파일이 직접 작성됩니다."
+  "OxDudBbelw-lsaDulb0nc": "⚠️다운로드 방법을 선택하지 않으면 기존 방법을 사용하여 파일이 직접 작성됩니다.",
+  "QZOw48iT5SKQidzpwW8W3": "채팅방",
+  "LW9GF5ptpR-d48im0oiMT": "클릭하시면 Pixiv Viewer 토론 채널로 이동합니다"
 }

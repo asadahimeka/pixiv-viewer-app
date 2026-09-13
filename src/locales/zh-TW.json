@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "分享 Pixiv 使用者",
   "8ko0ip_aETyyaSIMQmLqR": "擴充 API 實例選擇",
   "8msFTe9uT5LS1hBRYrhDQ": "如何獲取 RefreshToken",
-  "8uktANA7hP_We9wM_o8lN": "使用系統下載器下載",
+  "8uktANA7hP_We9wM_o8lN": "使用系統下載器下載圖片",
   "8zJrQTdrphmkCMMgL9SPW": "App API（OAuth）",
   "94IU-NPgYBjKNVa_XspuT": "到系統設定裡給予本應用程式儲存權限，或者下載最新版本後再進行嘗試",
   "9H-9VJU67Fuabl8OgbhOr": "點擊發表評論",
@@ -661,7 +661,7 @@
       "cur_dir": "目前儲存目錄（SAF）",
       "desc": "透過系統文件存取框架儲存到授權目錄，權限相容性最佳；開啟後首次使用需選擇儲存目錄，下載記錄頁不會列出此類文件",
       "pick_ok": "儲存目錄已設定：{dir}",
-      "title": "SAF 目錄保存"
+      "title": "使用儲存存取框架（SAF）儲存文件"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "收起多P作品",
@@ -856,5 +856,7 @@
   "zlMUy5svAesJpHhvWRc6C": "文字顏色預設",
   "zuVom-C8Ss8JTEDZIhzBj": "使用 ffmpeg 在服務端轉換",
   "vant_cal_weekdays_split_by_space": "",
-  "OxDudBbelw-lsaDulb0nc": "⚠️未選擇下載方式，將使用傳統方式直接寫入文件"
+  "OxDudBbelw-lsaDulb0nc": "⚠️未選擇下載方式，將使用傳統方式直接寫入文件",
+  "QZOw48iT5SKQidzpwW8W3": "聊天室",
+  "LW9GF5ptpR-d48im0oiMT": "點擊前往 Pixiv Viewer 討論頻道"
 }

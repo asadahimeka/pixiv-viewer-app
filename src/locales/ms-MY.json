@@ -48,7 +48,7 @@
   "8dWKEVyxLa8UjO0iuOA78": "Kongsi pengguna Pixiv",
   "8ko0ip_aETyyaSIMQmLqR": "Pemilihan contoh API yang dilanjutkan",
   "8msFTe9uT5LS1hBRYrhDQ": "Cara mendapatkan refreshtoken",
-  "8uktANA7hP_We9wM_o8lN": "Muat turun menggunakan pemuat turun sistem",
+  "8uktANA7hP_We9wM_o8lN": "Muat turun gambar menggunakan pemuat turun sistem",
   "8zJrQTdrphmkCMMgL9SPW": "API App (OAuth)",
   "94IU-NPgYBjKNVa_XspuT": "Beri kebenaran penyimpanan aplikasi ini dalam tetapan sistem, atau muat turun versi terkini sebelum mencuba",
   "9H-9VJU67Fuabl8OgbhOr": "Klik untuk menyiarkan komen",
@@ -661,7 +661,7 @@
       "cur_dir": "Direktori simpan semasa (SAF)",
       "desc": "Simpan ke direktori yang dibenarkan melalui rangka kerja akses fail sistem, yang mempunyai keserasian kebenaran terbaik. Anda perlu memilih direktori simpan buat kali pertama selepas membukanya. Fail sedemikian tidak akan disenaraikan pada halaman rekod muat turun.",
       "pick_ok": "Direktori simpan telah ditetapkan: {dir}",
-      "title": "Simpan direktori SAF"
+      "title": "Simpan fail menggunakan Rangka Kerja Akses Storan (SAF)"
     }
   },
   "skzCJPKUWOVtXHRV3puwB": "Tutup kerja berbilang P",
@@ -856,5 +856,7 @@
   "zhO6bfsyPM1-GpZgyer-L": "Sejarah import",
   "zlMUy5svAesJpHhvWRc6C": "Pratetap warna teks",
   "zuVom-C8Ss8JTEDZIhzBj": "Gunakan FFMPEG untuk menukar di sebelah pelayan",
-  "OxDudBbelw-lsaDulb0nc": "⚠️Jika kaedah muat turun tidak dipilih, fail akan ditulis terus menggunakan kaedah tradisional"
+  "OxDudBbelw-lsaDulb0nc": "⚠️Jika kaedah muat turun tidak dipilih, fail akan ditulis terus menggunakan kaedah tradisional",
+  "QZOw48iT5SKQidzpwW8W3": "Bilik sembang",
+  "LW9GF5ptpR-d48im0oiMT": "Klik untuk pergi ke saluran perbincangan Pixiv Viewer"
 }
