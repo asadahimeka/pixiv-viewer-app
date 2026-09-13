@@ -6,7 +6,7 @@
     </div>
     <div class="author-info" :class="{ is_novel: isNovel, hidePIDMask }">
       <Pximg
-        v-if="!isNovel"
+        v-if="!isNovel && !hidePIDMask"
         class="avatar"
         nobg
         :src="artwork.author.avatar"
@@ -28,6 +28,7 @@
           </router-link>
         </div>
         <div class="author" :class="{ is_followed: artwork.author.is_followed }" @click="toAuthor(artwork.author.id)">
+          <Pximg v-if="hidePIDMask" class="avatar" nobg :src="artwork.author.avatar" alt="" />
           {{ artwork.author.name }}
         </div>
       </div>
@@ -106,7 +107,7 @@
           #{{ tag.name }}
         </li>
         <li
-          v-if="showTranslatedTags && tag.translated_name"
+          v-if="tag.translated_name"
           :key="ti + tag.translated_name + '_2'"
           class="tag translated"
           @click="toSearch(tag.translated_name)"
@@ -116,7 +117,7 @@
       </template>
     </ul>
     <div :class="{ shrink: isShrink }" @click="isShrink = false">
-      <div class="caption" :class="{ censored }" @click.stop.prevent="handleClick($event)" v-html="artwork.caption">
+      <div class="caption" :class="{ censored, no_caption: !artwork.caption }" @click.stop.prevent="handleClick($event)" v-html="artwork.caption">
       </div>
       <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4" />
     </div>
@@ -130,7 +131,6 @@
           :icon="bookmarkId ? 'like' : 'like-o'"
           plain
           color="#E87A90"
-          style="margin-right: 0.15rem;"
           @click="toggleBookmark"
         >
           {{ bookmarkId ? $t('user.faved') : $t('user.fav') }}
@@ -141,7 +141,6 @@
           size="small"
           plain
           color="#5DAC81"
-          style="margin-right: 0.15rem;"
           @click="downloadArtwork()"
         >
           {{ $t('common.download') }}
@@ -149,24 +148,46 @@
         <van-button type="info" icon="comment-o" size="small" plain color="#005CAF" @click="showComments = true">
           <span>{{ $t('user.view_comments') }}</span>
         </van-button>
-        <van-popup v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
-          <template v-if="showComments">
-            <p class="comments-title">{{ $t('hGqGftQ7v772prEac1hbJ') }}</p>
-            <CommentsArea :id="artwork.id" :count="0" :limit="10" />
-          </template>
-        </van-popup>
+        <van-button
+          v-if="showPicTranslateBtn"
+          type="info"
+          icon="setting-o"
+          size="small"
+          plain
+          @click.stop="showTranslateSettings = true"
+        >
+          <span>翻译设置</span>
+        </van-button>
       </div>
     </template>
+    <van-popup v-if="!isNovel" v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
+      <template v-if="showComments">
+        <p class="comments-title">{{ $t('hGqGftQ7v772prEac1hbJ') }}</p>
+        <CommentsArea :id="artwork.id" :count="0" :limit="10" />
+      </template>
+    </van-popup>
+    <van-popup
+      v-if="!isNovel && showPicTranslateBtn"
+      v-model="showTranslateSettings"
+      position="bottom"
+      class="translate-settings-popup"
+      round
+      closeable
+      close-icon-position="top-right"
+      get-container="body"
+    >
+      <MangaTranslateSettings />
+    </van-popup>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import _ from '@/lib/lodash'
 import store from '@/store'
 import { copyText, downloadFile, formatIntlDate, formatIntlNumber } from '@/utils'
-import { i18n, isCNLocale } from '@/i18n'
+import { isCNLocale } from '@/i18n'
 import { isIllustBookmarked, addBookmark, removeBookmark } from '@/api/user'
 import { getBookmarkRestrictTags, localApi } from '@/api'
 import { getCache, setCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
@@ -174,6 +195,7 @@ import { isAiIllust } from '@/utils/filter'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { COMMON_IMAGE_PROXY } from '@/consts'
 import CommentsArea from './Comment/CommentsArea.vue'
+import MangaTranslateSettings from './MangaTranslateSettings.vue'
 
 const {
   isDefBookmarkPrivate,
@@ -187,7 +209,10 @@ const {
 
 export default {
   name: 'ArtworkMeta',
-  components: { CommentsArea },
+  components: {
+    CommentsArea,
+    MangaTranslateSettings,
+  },
   props: {
     artwork: {
       type: Object,
@@ -201,6 +226,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    showPicTranslateBtn: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -208,15 +237,13 @@ export default {
       bookmarkId: null,
       favLoading: false,
       showComments: false,
+      showTranslateSettings: false,
     }
   },
   computed: {
     ...mapGetters(['isCensored', 'isLoggedIn']),
     censored() {
       return this.isCensored(this.artwork)
-    },
-    showTranslatedTags() {
-      return i18n.locale.includes('zh')
     },
     isAiIllust() {
       return isAiIllust(this.artwork)
@@ -551,37 +578,17 @@ export default {
 .meta_btns {
   display flex
   margin-top 16px
-  ::v-deep button {
+  gap 0.15rem
+  flex-wrap wrap
+  ::v-deep .van-button {
     flex 1
-    padding 0 5px
+    width max-content
+    min-width max-content
+    transition: filter 0.2s
+    filter: none
 
-    &:nth-child(1) {
-      transition 0.2s
-      filter: none;
-      &:hover {
-        color: #e74767 !important;
-        border-color: #e74767 !important;
-        background: #FEDFE1;
-        filter: brightness(1.05);
-      }
-    }
-
-    &:nth-child(2) {
-      transition 0.2s
-      filter: none;
-      &:hover {
-        background: #e2ffef;
-        filter: brightness(1.05);
-      }
-    }
-
-    &:nth-child(3) {
-      transition 0.2s
-      filter: none;
-      &:hover {
-        background: #d4ebff
-        filter: brightness(1.05);
-      }
+    &:hover {
+      filter: brightness(1.05);
     }
   }
 }
@@ -696,10 +703,6 @@ export default {
         font-size 24px
         line-height 1.2
         color #666
-        &::before {
-          content: 'by '
-          color #999
-        }
       }
     }
 
@@ -711,19 +714,17 @@ export default {
     }
 
     &.hidePIDMask {
-      .avatar {
-        display none
+      .author {
+        display flex
+        align-items center
+        margin-top 0.2rem
+        margin-left 0
+        line-height 1.5
       }
-      .name-box {
-        max-width unset
-        .title, .author {
-          display inline-block
-        }
-        .author {
-          margin-top 0
-          margin-left 0.1rem
-          line-height 1.5
-        }
+      .avatar {
+        min-width unset
+        width 0.5rem
+        height 0.5rem
       }
     }
 

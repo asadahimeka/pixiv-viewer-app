@@ -1,11 +1,11 @@
 import dayjs from 'dayjs'
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import { get } from './http'
 import { SessionStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
 import { filterCensoredIllusts, filterCensoredNovels, isBlockTagHit, mintFilter } from '@/utils/filter'
-import { PXIMG_PROXY_BASE, notSelfHibiApi, PIXIV_NOW_URL, PIXIV_NEXT_URL, COMMON_PROXY, COMMON_IMAGE_PROXY, PXIMG_PID_BASE } from '@/consts'
+import { PXIMG_PROXY_BASE, PIXIV_NOW_URL, PIXIV_NEXT_URL, COMMON_PROXY, COMMON_IMAGE_PROXY, PXIMG_PID_BASE } from '@/consts'
 import { setProperFontSize } from '@/utils'
 
 const isSupportWebP = (() => {
@@ -1457,27 +1457,85 @@ const api = {
     return { status: 0, data: artwork }
   },
 
+  async getNovelHtml(id) {
+    try {
+      const cacheKey = `novel.html.${id}`
+      let html = await getCache(cacheKey)
+      if (!html) {
+        html = await get('/webview_novel', { id, raw: 'true' })
+        await setCache(cacheKey, html, -1)
+      }
+      if (!html) return null
+
+      html = html.replace(/i\.pximg\.net/g, PXIMG_PROXY_BASE)
+      const doc = new DOMParser().parseFromString(html, 'text/html')
+
+      const jsElems = doc.querySelectorAll('script')
+      const jsList = []
+      for (const el of jsElems) {
+        if (!el.getAttribute('src')) {
+          if (el.innerHTML.includes('/cdn-cgi/challenge-platform')) {
+            el.remove()
+          }
+          continue
+        }
+        let js = await getCache(el.src)
+        if (!js) {
+          js = await fetch(PIXIV_NEXT_URL + '/' + el.src).then(r => r.text())
+          await setCache(el.src, js)
+        }
+        jsList.push(js)
+        el.remove()
+      }
+
+      const cssLinks = [...doc.querySelectorAll('link[href$=".css"]')]
+      const cssList = []
+      for (const link of cssLinks) {
+        let css = await getCache(link.href)
+        if (!css) {
+          css = await fetch(PIXIV_NEXT_URL + '/' + link.href).then(r => r.text())
+          await setCache(link.href, css)
+        }
+        cssList.push(css)
+        link.remove()
+      }
+
+      doc.head.insertAdjacentHTML('beforeend', `
+        ${cssList.map(e => `<style>${e}</style>`).join('\n')}
+        <style>
+          #root>div:not(:nth-child(1),:nth-child(2)){display:none}
+          ::-webkit-scrollbar{width: 5px;height: 5px;}
+          ::-webkit-scrollbar-track{background: transparent;}
+          ::-webkit-scrollbar-thumb{background: #b0b0b0;border-radius: 7px;}
+          ::-webkit-scrollbar-thumb:hover{background: #666;}
+          @media screen and (max-width: 600px) { ::-webkit-scrollbar{width: 0 !important} }
+        </style>
+      `)
+      jsList.forEach(e => {
+        const script = document.createElement('script')
+        script.innerHTML = e
+        doc.head.appendChild(script)
+      })
+
+      const result = doc.documentElement.outerHTML
+      return result
+    } catch (err) {
+      console.log('err: ', err)
+      return null
+    }
+  },
+
   async getNovelText(id) {
     const cacheKey = `novel_text_${id}`
     let artwork = await getCache(cacheKey)
 
     if (!artwork) {
-      let res
-      if (notSelfHibiApi) {
-        res = await get(`${PIXIV_NOW_URL}/ajax/novel/${id}`).then(r => ({
-          text: r.content,
-          prev: r.seriesNavData?.prev,
-          next: r.seriesNavData?.next,
-          embedImgs: r.textEmbeddedImages,
-        }))
-      } else {
-        res = await get('/webview_novel', { id }).then(r => ({
-          text: r.text,
-          prev: r.seriesNavigation?.prevNovel,
-          next: r.seriesNavigation?.nextNovel,
-          embedImgs: r.images,
-        }))
-      }
+      const res = await get('/webview_novel', { id }).then(r => ({
+        text: r.text,
+        prev: r.seriesNavigation?.prevNovel,
+        next: r.seriesNavigation?.nextNovel,
+        embedImgs: r.images,
+      }))
 
       if (res.text) {
         artwork = res
@@ -1748,6 +1806,7 @@ const api = {
   async getMemberArtwork(id, page, illust_type = 'illust') {
     const cacheKey = `memberArtwork_${id}_${illust_type}_p${page}`
     let memberArtwork = await getCache(cacheKey)
+    let hasNext = true
 
     if (!memberArtwork) {
       const res = await get('/member_illust', {
@@ -1758,6 +1817,7 @@ const api = {
 
       if (res.illusts) {
         memberArtwork = res.illusts.map(art => parseIllust(art))
+        hasNext = Boolean(res.next_url)
         setCache(cacheKey, memberArtwork, 60 * 60 * 6)
       } else if (res.error) {
         return {
@@ -1772,7 +1832,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: filterCensoredIllusts(memberArtwork) }
+    return { status: 0, data: filterCensoredIllusts(memberArtwork), hasNext: Boolean(hasNext && memberArtwork.length) }
   },
 
   async getMemberIllustSeries(id, page = 1) {
@@ -2313,6 +2373,7 @@ const api = {
         const act = thumbnail.novel[nid]
         if (!act) return
         const figure = a.querySelector('figure')
+        if (!figure) return
         figure.setAttribute('src', act.url)
         figure.setAttribute('alt', act.title)
         figure.setAttribute('style', 'object-fit: cover; object-position: center center;')
@@ -2326,7 +2387,7 @@ const api = {
         const act = thumbnail.novel[nid]
         if (!act) return
         const caption = el.querySelector('.break-all.w-full > [class*="line-clamp-1"] + [title=""][class*="line-clamp-2"]')
-        if (!caption.innerHTML.trim()) caption.innerHTML = act.description
+        if (caption && !caption.innerHTML.trim()) caption.innerHTML = act.description
       })
       setProperFontSize(
         doc.querySelectorAll('[data-ga4-label="thumbnail"]:not(:has(a[href^="/novel/show.php"])) div[lang][style*="font-family"]')

@@ -2,7 +2,7 @@
   <div class="setting-page">
     <top-bar id="top-bar-wrap" />
     <h3 class="af_title">{{ $t('user.sess.login') }}</h3>
-    <div>
+    <div class="setting-cell-group">
       <van-cell size="large" center :title="$t('hqciRRXfoN19LYLh8xr4D')" is-link @click="openConfirmDialog('showTokenDialog')" />
       <van-cell size="large" center :title="$t('8zJrQTdrphmkCMMgL9SPW')" is-link @click="openConfirmDialog('showConfirmDialog')" />
       <van-cell size="large" center :title="$t('3ZvAP-w7q7teBcLoqOgCc')" is-link to="/account/session" />
@@ -50,12 +50,12 @@
 </template>
 
 <script>
-import { Dialog } from 'vant'
 import { localApi } from '@/api'
 import platform from '@/platform'
 import PixivAuth from '@/api/client/pixiv-auth'
 import { getLoginURL } from '@/api/client/login'
 import { LocalStorage } from '@/utils/storage'
+import { Dialog } from '@/lib/vant-apis'
 
 export default {
   name: 'Login',

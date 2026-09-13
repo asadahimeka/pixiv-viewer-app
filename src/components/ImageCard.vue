@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { Dialog, ImagePreview } from 'vant'
+import { Dialog, ImagePreview } from '@/lib/vant-apis'
 import { mapGetters } from 'vuex'
 import _ from '@/lib/lodash'
 import store from '@/store'
@@ -86,7 +86,7 @@ const {
 const isOuterMeta = store.getters.isNoOuterMeta ? false : isImageCardOuterMeta
 const isLargeWebp = imgReso == 'Large(WebP)'
 const getLargeWebpSrc = (src, fbk) => {
-  return src?.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/c/1200x1200_90_webp/') || fbk
+  return src?.replace(/\/c\/\d+x\d+\w*\//g, '/c/1200x1200_90_webp/') || fbk
 }
 
 export default {
@@ -266,7 +266,7 @@ export default {
       }
       const getSrc = isLargeWebp
         ? e => getLargeWebpSrc(e.l)
-        : e => e.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/')
+        : e => e.l.replace(/\/c\/\d+x\d+\w*\//g, '/')
       if (store.state.appSetting.isUseFancybox) {
         fancyboxShow(this.artwork, 0, getSrc)
       } else {

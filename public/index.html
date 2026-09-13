@@ -21,6 +21,11 @@
         d.classList.add('custom_theme', 't_' + localStorage.PXV_THEME);
         d.style.setProperty('--accent-color', localStorage.PXV_ACT_COLOR);
       }
+      var vt = localStorage.PXV_VISUAL_THEME;
+      if (vt && vt !== 'default') {
+        if (!d.classList.contains('custom_theme')) d.classList.add('custom_theme');
+        d.classList.add('t_' + vt + '-visual');
+      }
     }();
   </script>
   <% if (process.env.NODE_ENV === 'production' && process.env.VUE_APP_UMAMI_SRC) { %>

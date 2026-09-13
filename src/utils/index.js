@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { Dialog, Toast } from 'vant'
+import { Dialog, Toast } from '@/lib/vant-apis'
 import store from '@/store'
 import platform from '@/platform'
 import { i18n, isCNLocale } from '@/i18n'
@@ -361,6 +361,7 @@ export function downloadFile(source, fileName, options = {}) {
 }
 
 async function _downloadFile(source, fileName, options = {}) {
+  let loading
   try {
     if (typeof source == 'string' && !/\.\w+$/.test(fileName)) {
       fileName += `.${source.split('.').pop()}`
@@ -368,13 +369,30 @@ async function _downloadFile(source, fileName, options = {}) {
     fileName = replaceValidFileName(fileName)
     if (options.subDir) options.subDir = replaceValidFileName(options.subDir, true)
 
-    const loading = Toast.loading({
+    Toast.allowMultiple()
+    loading = Toast({
       duration: 0,
       // forbidClick: true,
-      message: options.message || (i18n.t('tip.downloading') + ': ' + fileName),
+      className: 'download-toast',
+      message: options.message ? `${options.message}: ${fileName}` : `${i18n.t('tip.downloading')}: ${fileName}`,
+      getContainer: '#app .app-base',
     })
 
+    const doneToast = msg => {
+      try {
+        loading.message = msg || `${i18n.t('tip.downloaded')}: ${fileName}`
+        setTimeout(() => {
+          loading.clear()
+        }, 2000)
+      } catch (err) {}
+    }
+
     if (platform.isCapacitor) {
+      if (store.state.appSetting.preferDownloadManager) {
+        setTimeout(() => {
+          loading?.clear?.()
+        }, 2000)
+      }
       const util = await import('@/platform/capacitor/utils')
       const result = source instanceof Blob
         ? await util.downloadBlob(source, fileName, options.subDir)
@@ -382,6 +400,7 @@ async function _downloadFile(source, fileName, options = {}) {
       if (result.error) {
         throw result.error instanceof Error ? result.error : new Error(result.error)
       }
+      doneToast(result.successMsg)
       return result
     }
 
@@ -393,15 +412,16 @@ async function _downloadFile(source, fileName, options = {}) {
       if (result.error) {
         throw result.error instanceof Error ? result.error : new Error(result.error)
       }
+      doneToast(result.successMsg)
       return result
     }
 
     downloadLink(source, fileName)
-    loading.clear()
+    doneToast()
   } catch (err) {
     console.log('err: ', err)
     window.umami?.track('download_file_err', { err: formatDlError(err) })
-    Toast.clear(true)
+    loading?.clear()
     const friendly = dlErrorText(err)
     if (typeof source != 'string') {
       Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + friendly)
@@ -742,4 +762,30 @@ export async function calculateFileHash(file, algorithm = 'SHA-256') {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   return hashHex
+}
+
+/**
+ * 带超时与 onerror 保护地加载 Blob 为 Image；失败 reject 而非永久挂起
+ * @param {Blob} blob
+ * @returns {Promise<Image>}
+ */
+export function loadBlobAsImage(blob) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(blob)
+    const timer = setTimeout(() => {
+      URL.revokeObjectURL(url)
+      reject(new Error('缓存图片加载超时'))
+    }, 5000)
+    img.onload = () => {
+      clearTimeout(timer)
+      resolve(img)
+    }
+    img.onerror = () => {
+      clearTimeout(timer)
+      URL.revokeObjectURL(url)
+      reject(new Error('缓存图片解码失败'))
+    }
+    img.src = url
+  })
 }

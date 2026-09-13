@@ -329,6 +329,7 @@ html:has(.van-tabs__content--animated)
       user-select none !important
 
 html.dark
+  color-scheme: dark
   background #16161a
   color #fff
   ::-webkit-scrollbar
@@ -354,7 +355,22 @@ html.dark
   .van-dialog__message--has-title
     color #fff
   a
-   color #dba5ff
+    color #dba5ff
+  .translate-settings-popup,
+  .llm-model-select-popup
+    background #16161a !important
+    color #fff !important
+    .van-search
+      background #16161a !important
+    .van-search__content
+      background #333 !important
+    .van-cell,
+    .van-cell-group,
+    .van-cell-group__title,
+    .van-field__label,
+    .van-radio__label
+      background transparent !important
+      color #fff !important
 
 .dark #app
   min-height 100vh
@@ -475,6 +491,7 @@ html.dark
   .rank .top
     background #16161a
     backdrop-filter: none
+    -webkit-backdrop-filter: none
   .search-dropdown
     background #16161a
     backdrop-filter: none
@@ -601,10 +618,13 @@ html.dark
   .image-slide
     border 1PX solid #16161a
 
-  .artwork-meta
-    .whid .svg-icon,
-    .tag-list .tag
-      filter: invert(1) hue-rotate(180deg);
+  .artwork-meta .whid .svg-icon,
+  .artwork-meta .tag-list .tag,
+  .users .user_id_sns .svg-icon
+      filter: invert(1) hue-rotate(180deg)
+
+  .artwork-meta .author-info.hidePIDMask+div[style*="background"]
+    opacity 0
 
   .ss-title,
   .ss-author,
@@ -708,6 +728,10 @@ html.dark
 
 .image-card .btn-play
   font-size 1.2rem !important
+
+.swiper-wrapper
+  will-change: transform
+  backface-visibility: hidden
 
 .swiper-slide .image
   transform none !important
@@ -858,6 +882,7 @@ body .comments-popup
     transition 0.2s
     opacity 1 !important
     backdrop-filter: saturate(200%) blur(.08rem);
+    -webkit-backdrop-filter: saturate(200%) blur(.08rem);
     background: rgba(255, 255, 255, 0.72);
 
 body .Home .com_sel_tabs
@@ -956,9 +981,10 @@ body .Home .com_sel_tabs
       height 88%
       border-radius: 1rem
       background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9)), var(--accent-color, #f2c358)
-  @media screen and (min-width: 1280px)
-    // transform: translateX(-0.2rem);
-    transform: translateX(0.1rem);
+  @media screen and (min-width: 1120px)
+    transform: none
+    width 100%
+    border-radius 0 10PX 10PX 0
     li:has(.active)
       &::before
         display none
@@ -1117,3 +1143,51 @@ body.dark::before
 
 .van-dialog__content
   user-select text !important
+
+.download-toast
+  transform: none !important
+  top: 50PX !important
+  bottom: unset !important
+  left: unset !important
+  right: 10PX !important
+  max-width: 6rem !important
+  max-height: 36PX !important
+  white-space: nowrap !important
+  pointer-events none
+  .van-toast__text
+    width 100% !important
+    overflow hidden !important
+    white-space: nowrap !important
+    text-overflow: ellipsis !important
+  for i in 3..18
+    &:nth-child({i})
+      top ((i - 2) * 42 + 50) * 1PX !important
+
+.search_param_sel .van-dropdown-item__option
+  justify-content center
+  gap 0.2rem
+  > div
+    flex none
+  &:not(.van-dropdown-item__option--active)
+    .van-cell__title
+      margin-right: 0.45rem
+
+.search_params:has(.showPopPreview)::after
+  display none
+
+.artwork.isSafari .ia-cont,
+.artwork.novel .ia-cont.isSafari
+  .ia-left
+    align-items start
+    max-height 100vh
+    overflow-y auto
+
+@media screen and (min-width: 1120px)
+  #app .artwork .ia-cont
+    .ia-left
+      flex 1
+      width auto
+      min-width unset
+    .ia-right
+      max-width 30%
+      padding-right 0

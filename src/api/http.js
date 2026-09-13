@@ -1,11 +1,11 @@
 import axios from 'axios'
 import nprogress from 'nprogress'
-import { BASE_API_URL, UA_Header } from '@/consts'
+import { PIXIV_NEXT_URL, UA_Header } from '@/consts'
 import platform from '@/platform'
 import { retry } from '@/utils'
 import { localApi } from '.'
 
-axios.defaults.baseURL = BASE_API_URL
+axios.defaults.baseURL = `${PIXIV_NEXT_URL}/api/pixiv`
 axios.defaults.timeout = 20000
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 

@@ -1,4 +1,4 @@
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import _ from '@/lib/lodash'
 import dayjs from 'dayjs'
 import store from '@/store'
@@ -56,10 +56,12 @@ export async function fetchNotices() {
       res = await resp.json()
       LocalStorage.set('PXV_NOTICES', res, 3600)
     }
-    const { notices = [], effects = [], buids = [], rntm = [], rnta = [] } = res
+    const { notices = [], effects = [], buids = [], rntm = [], rnta = [], promo = [] } = res
+    store.commit('setScPromo', promo)
     setAppNotice(notices)
     setSeasonEffects(effects)
     store.commit('addBlockUids', buids)
+    store.commit('setScPromo', promo)
     HiddenAuthors.NO_TYPE_MANGA = rntm
     HiddenAuthors.NO_TYPE_AI = rnta
   } catch (err) {

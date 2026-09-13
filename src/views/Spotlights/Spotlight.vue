@@ -178,7 +178,7 @@ export default {
   .flexbin .image {
     height: 400PX !important;
   }
-  @media (max-width: 1280px) {
+  @media (max-width: 1120PX) {
     .flexbin:after {
       min-width: 40vw !important;
     }

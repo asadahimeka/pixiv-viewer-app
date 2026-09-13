@@ -23,7 +23,7 @@
 
 <script>
 import api from '@/api'
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 
 export default {
   components: {
@@ -171,7 +171,7 @@ export default {
       }
     }
 
-    @media screen and (min-width: 1280px) {
+    @media screen and (min-width: 1120PX) {
       &:hover {
         img {
           transform scale(1.1)

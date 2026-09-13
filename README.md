@@ -5,7 +5,7 @@
 
 <p align="center">
 <img src="https://img.shields.io/github/package-json/v/asadahimeka/pixiv-viewer-app" >
-<img src="https://img.shields.io/badge/license-MIT-green" >
+<img src="https://img.shields.io/badge/license-AGPL--3.0-orange" >
 <img src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/total?logo=github" alt >
 <img src="https://img.shields.io/badge/JavaScript-%23323330.svg?style=flat&logo=javascript&logoColor=%23F7DF1E" alt >
 <img src="https://img.shields.io/badge/Vue.js-%2335495e.svg?style=flat&logo=vuedotjs&logoColor=%234FC08D" alt >
@@ -192,4 +192,4 @@ This project is intended for communication and learning only and may not be used
 
 ## LICENSE
 
-[![MIT License](https://img.shields.io/github/license/asadahimeka/pixiv-viewer-app)](https://github.com/asadahimeka/pixiv-viewer-app/blob/master/LICENSE)
+[![AGPL-3.0 License](https://img.shields.io/github/license/asadahimeka/pixiv-viewer-app)](https://github.com/asadahimeka/pixiv-viewer-app/blob/master/LICENSE)

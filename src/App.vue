@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="app-base">
     <Preload />
     <div v-if="platform.isCapacitor" id="nav-bar-overlay"></div>
     <router-view />
@@ -102,6 +102,7 @@ html,body
     // background: white
     background: rgba(255,255,255,0.8)
     backdrop-filter: saturate(200%) blur(10PX)
+    -webkit-backdrop-filter: saturate(200%) blur(10PX)
     .home-title
       position absolute
       top calc(50% + var(--status-bar-height) / 2)

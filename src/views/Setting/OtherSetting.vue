@@ -1,10 +1,11 @@
 <template>
-  <div class="setting-page">
+  <div class="setting-page app-preference-settings">
     <top-bar id="top-bar-wrap" />
     <h3 class="af_title">{{ $t('setting.other.title') }}</h3>
     <van-cell-group :title="$t('GS0J0mAbmiqPGKw20ORPi')">
       <van-cell center :title="$t('setting.other.lang')" is-link :label="selLangLabel" @click="lang.show = true" />
       <van-cell center :title="$t('psoXLFqv51j1SeKjTbnms')" is-link :label="`${accentColor} ${actTheme}`" to="/setting/accent_color" />
+      <van-cell v-if="!isDark" center :title="$t('theme.title')" is-link :label="$t('setting.lab.title')" @click="visualTheme.show = true" />
       <van-cell center :title="$t('setting.dark.title')" :label="$t('setting.lab.title')">
         <template #right-icon>
           <van-switch :value="isDark" size="24" @change="onDarkChange" />
@@ -57,6 +58,13 @@
           <van-switch :value="isDisableStatusbarOverlay" size="24" @change="changeStatusbarOverlayOff" />
         </template>
       </van-cell>
+      <van-cell
+        center
+        :title="$t('search.jump.default_title')"
+        :label="searchDefaultIdTypeLabel"
+        is-link
+        @click="showDefaultTypeSheet = true"
+      />
     </van-cell-group>
 
     <van-cell-group v-if="clientConfig.useLocalAppApi" :title="$t('YEPi_dV_gdvw9NzE4iBEu')">
@@ -104,25 +112,19 @@
 
     <van-cell-group :title="$t('novel.settings.title')">
       <van-cell center :title="$t('j1tomH0kHtIiXUQ-6NhcS')" :label="$t('UiF3Ob-tYkIolJhNVMUFM')" is-link @click="showNovelConfig" />
-      <van-cell center :title="$t('MIvoTULAIywXTtFIKsEuD')" :label="novelDlFmtLabel" is-link @click="novelDlFmt.show = true" />
-      <van-cell v-if="appSetting.novelDefDlFormat == 'epub'" center :title="$t('sJimI61fn8ruloG-3ObJs')">
-        <template #right-icon>
-          <van-switch :value="appSetting.novelDlRmStyle" size="24" @change="v => saveAppSetting('novelDlRmStyle', v)" />
-        </template>
-      </van-cell>
-      <template v-if="showAutoLoadImtSwitch">
-        <van-cell center title="小说默认翻译服务" :label="novelTranslateLabel" is-link @click="novelTranslate.show = true" />
-        <van-cell center title="自动加载简约翻译(KISS Translator)脚本并翻译">
+      <template v-if="!appSetting.useNovelWebview">
+        <van-cell center :title="$t('MIvoTULAIywXTtFIKsEuD')" :label="novelDlFmtLabel" is-link @click="novelDlFmt.show = true" />
+        <van-cell v-if="appSetting.novelDefDlFormat == 'epub'" center :title="$t('sJimI61fn8ruloG-3ObJs')">
           <template #right-icon>
-            <van-switch :value="appSetting.isAutoLoadKissT" size="24" @change="changeAutoLoadKissT" />
+            <van-switch :value="appSetting.novelDlRmStyle" size="24" @change="v => saveAppSetting('novelDlRmStyle', v)" />
           </template>
         </van-cell>
-        <!-- <van-cell center title="自动加载沉浸式翻译 SDK 并翻译" label="如已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK">
-          <template #right-icon>
-            <van-switch :value="appSetting.isAutoLoadImt" size="24" @change="changeAutoLoadImt" />
-          </template>
-        </van-cell> -->
       </template>
+      <van-cell center :title="$t('vZ9Q2hLHXeOtQQd787htm')">
+        <template #right-icon>
+          <van-switch :value="appSetting.useNovelWebview" size="24" @change="v => saveAppSetting('useNovelWebview', v, true)" />
+        </template>
+      </van-cell>
       <van-cell center :title="$t('FQPdJ3lYL_mVbUQ09Ly4m')">
         <template #right-icon>
           <van-switch :value="appSetting.novelFilterNoLongTag" size="24" @change="v => saveAppSetting('novelFilterNoLongTag', v, true)" />
@@ -169,6 +171,20 @@
           <van-button size="small" type="info" @click="saveAppSetting('novelFilterTextLenMin', novelFilterTextLenMin, true)">{{ $t('common.save') }}</van-button>
         </template>
       </van-field>
+    </van-cell-group>
+
+    <van-cell-group v-if="showTranslationGroup" title="翻译设置">
+      <template v-if="!appSetting.useNovelWebview">
+        <van-cell center title="自动加载简约翻译(KISS Translator)脚本并翻译" label="如已安装 KISS Translator 浏览器扩展或用户脚本则无需加载。翻译范围：小说正文、作品标题与简介、作品评论、用户简介">
+          <template #right-icon>
+            <van-switch :value="appSetting.isAutoLoadKissT" size="24" @change="changeAutoLoadKissT" />
+          </template>
+        </van-cell>
+        <van-cell center title="KISS Translator 设置" is-link url="/kiss-translator/options.html" />
+      </template>
+      <van-cell center title="小说翻译设置" is-link @click="showNovelTranslateSetting = true" />
+      <van-cell center title="漫画翻译设置" is-link @click="showMangaTranslateSetting = true" />
+      <van-cell center title="Shinobu 漫画翻译管线环境检测" is-link @click="checkShinobuRuntime" />
     </van-cell-group>
 
     <van-cell-group :title="$t('j2tFt08r6GGMmsfbF4HAN')">
@@ -235,16 +251,15 @@
     </van-cell-group>
 
     <van-cell-group :title="$t('7-drBPGRIz_BsYuc9ybCm')">
-      <van-cell v-if="(pximgBed_.actions.length || hibiapi_.actions.length) && (!clientConfig.useLocalAppApi || !appSetting.isDirectPximg)" center :title="$t('setting.other.manual_input')" :label="$t('setting.other.manual_input_label')">
+      <van-cell v-if="!clientConfig.useLocalAppApi" center :title="$t('setting.api.title')" is-link :label="hibiapi.value" @click="hibiapi.show = true" />
+      <van-cell v-if="pximgBed_.actions.length && (!clientConfig.useLocalAppApi || !appSetting.isDirectPximg)" center :title="$t('setting.other.manual_input')" :label="$t('setting.other.manual_input_label')">
         <template #right-icon>
           <van-switch v-model="hideApSelect" size="24" />
         </template>
       </van-cell>
       <van-cell v-if="hideApSelect && !appSetting.isDirectPximg" center :title="$t('setting.img_proxy.title')" is-link :label="pximgBed.value" @click="pximgBed.show = true" />
-      <van-cell v-if="!clientConfig.useLocalAppApi && hideApSelect" center :title="$t('setting.api.title')" is-link :label="hibiapi.value" @click="hibiapi.show = true" />
       <van-cell v-if="!hideApSelect && !appSetting.isDirectPximg && pximgBed_.actions.length" center :title="$t('setting.img_proxy.title2')" is-link :label="pximgBedLabel" @click="pximgBed_.show = true" />
-      <van-cell v-if="!clientConfig.useLocalAppApi && !hideApSelect && hibiapi_.actions.length" center :title="$t('setting.api.title2')" is-link :label="hibiapiLabel" @click="hibiapi_.show = true" />
-      <van-cell center :title="$t('lGZGzwfWz9tW_KQey3AmQ')" :label="appSetting.isDirectPximg?$t('1bFB0dqSmKBnjbVLFyJKp', [directApiHosts.pximg]):$t('OA8ygupG-4FcNWHtwEUG-')">
+      <van-cell center :title="$t('lGZGzwfWz9tW_KQey3AmQ')" :label="$t('OA8ygupG-4FcNWHtwEUG-')">
         <template #right-icon>
           <van-switch :value="appSetting.isDirectPximg" size="24" @change="setDirectPximg" />
         </template>
@@ -351,6 +366,7 @@
       <van-cell v-if="platform.isAndroid" center :title="$t('V8DX1WzGd142O8SUrOlMP')" is-link @click="shareSettings" />
       <van-cell center :title="$t('zhO6bfsyPM1-GpZgyer-L')" is-link @click="importHistory" />
       <van-cell center :title="$t('VV1Yh4x2vpWMf-YwVIRSl')" is-link @click="exportHistory" />
+      <van-cell center :title="$t('sync.config_title')" is-link @click="syncDialogShow = true" />
     </van-cell-group>
 
     <van-dialog
@@ -364,7 +380,7 @@
     >
       <van-cell>{{ $t('setting.img_proxy.desc') }}</van-cell>
       <van-cell>{{ $t('setting.img_proxy.desc2') }}</van-cell>
-      <van-field v-model="pximgBed.value" :label="$t('setting.input')" label-width="3.5em" :placeholder="$t('setting.img_proxy.title4')" />
+      <van-field v-model="pximgBed.value" :label="$t('setting.input')" label-width="4.5em" :placeholder="$t('setting.img_proxy.title4')" />
     </van-dialog>
     <van-dialog
       v-model="hibiapi.show"
@@ -376,10 +392,10 @@
       @confirm="changeHibiapi"
     >
       <van-cell>{{ $t('setting.api.desc') }}</van-cell>
-      <van-cell>{{ $t('setting.api.desc2', ['https://api.pxve.cc/api/pixiv']) }}</van-cell>
-      <van-cell>{{ $t('setting.api.desc3') }}: <a href="https://github.com/asadahimeka/pxve-api" target="_blank">🔗PxveAPI</a>&nbsp;<a href="https://github.com/mixmoe/HibiAPI" target="_blank">🔗HibiAPI</a></van-cell>
+      <van-cell>{{ $t('setting.api.desc2', ['https://api.pxve.cc']) }}</van-cell>
+      <van-cell>{{ $t('setting.api.desc3') }}: <a href="https://github.com/asadahimeka/pxve-api" target="_blank">🔗PxveAPI</a></van-cell>
       <!-- <van-cell>{{ $t('setting.api.desc5') }}</van-cell> -->
-      <van-field v-model="hibiapi.value" :label="$t('setting.input')" label-width="3.5em" :placeholder="$t('setting.api.title3')" />
+      <van-field v-model="hibiapi.value" :label="$t('setting.input')" label-width="4.5em" :placeholder="$t('setting.api.title3')" />
     </van-dialog>
     <van-action-sheet
       v-model="apiProxySel.show"
@@ -439,14 +455,6 @@
       @select="e => saveAppSetting('novelDefDlFormat', e._value)"
     />
     <van-action-sheet
-      v-model="novelTranslate.show"
-      :actions="novelTranslate.actions"
-      :cancel-text="$t('common.cancel')"
-      description="小说默认翻译服务"
-      close-on-click-action
-      @select="e => saveAppSetting('novelDefTranslate', e._value)"
-    />
-    <van-action-sheet
       v-model="appStartPage.show"
       :actions="appStartPage.actions"
       :cancel-text="$t('common.cancel')"
@@ -463,21 +471,20 @@
       @select="changeLang"
     />
     <van-action-sheet
+      v-model="visualTheme.show"
+      :actions="visualTheme.actions"
+      :cancel-text="$t('common.cancel')"
+      :description="$t('theme.pick_desc')"
+      close-on-click-action
+      @select="changeVisualTheme"
+    />
+    <van-action-sheet
       v-model="pximgBed_.show"
       :actions="pximgBed_.actions"
       :cancel-text="$t('common.cancel')"
       :description="$t('setting.img_proxy.ph')"
       close-on-click-action
       @select="changePximgBed_"
-    />
-    <van-action-sheet
-      v-model="hibiapi_.show"
-      :actions="hibiapi_.actions"
-      :cancel-text="$t('common.cancel')"
-      :description="$t('setting.api.ph')"
-      close-on-click-action
-      class="hibiapi-actions"
-      @select="changeHibiapi_"
     />
     <NovelTextConfig ref="novelConfigRef" style="left: 50%;right: unset;" />
     <van-dialog
@@ -543,36 +550,82 @@
           <span>{{ $t('P2gkznjKnjtHZDGXgzYfg') }}</span>
         </div>
       </div>
-      <van-field v-model="dlFileNameTpl" :label="$t('498jRU7yCP-NoupL7HBFk')" label-width="2.5em" />
+      <van-cell v-if="dlFileNameTpl.endsWith('_p{index}')">
+        <div class="flex">
+          <span style="margin-right: 0.3rem">{{ $t('Y3hzjy9MHFQ8kFiI6r0o-') }}</span>
+          <van-switch :value="appSetting.dlFileNameNoSingleP0" size="24" @change="v => saveAppSetting('dlFileNameNoSingleP0', v)" />
+        </div>
+      </van-cell>
+      <van-field v-model="dlFileNameTpl" :label="$t('498jRU7yCP-NoupL7HBFk')" label-width="4.5em" />
       <van-cell>{{ $t('vrHKCLkhV92dZ7eyvgFx8') }}:&nbsp;&nbsp;&nbsp;&nbsp;{{ sampleArtFileName }}</van-cell>
     </van-dialog>
+    <SyncDialog v-model="syncDialogShow" />
+    <van-action-sheet
+      v-model="showDefaultTypeSheet"
+      :actions="defaultTypeActions"
+      :cancel-text="$t('common.cancel')"
+      close-on-click-action
+      @select="onDefaultTypeSelect"
+      @cancel="showDefaultTypeSheet = false"
+    />
+    <van-popup
+      v-if="showTranslationGroup"
+      v-model="showMangaTranslateSetting"
+      position="bottom"
+      class="translate-settings-popup"
+      round
+      closeable
+      close-icon-position="top-right"
+      get-container="body"
+    >
+      <MangaTranslateSettings />
+    </van-popup>
+    <van-popup
+      v-if="showTranslationGroup"
+      v-model="showNovelTranslateSetting"
+      position="bottom"
+      class="translate-settings-popup"
+      round
+      closeable
+      close-icon-position="top-right"
+      get-container="body"
+    >
+      <NovelTranslateSettings />
+    </van-popup>
   </div>
 </template>
 
 <script>
-import { Dialog, Toast } from 'vant'
+import { Dialog, Toast } from '@/lib/vant-apis'
 import PixivAuth from '@/api/client/pixiv-auth'
 import store from '@/store'
 import platform from '@/platform'
 import localDb from '@/utils/storage/localDb'
-import { APP_API_PROXYS, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, HIBIAPI_ALTS, PXIMG_PROXYS } from '@/consts'
+import { APP_API_PROXYS, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, PXIMG_PROXYS } from '@/consts'
 import { i18n } from '@/i18n'
+import { applyVisualTheme } from '@/utils/theme'
+import { changeVisualTheme } from '@/store/actions/change-theme'
 import { localApi } from '@/api'
 import { getSampleFileName } from '@/store/actions/filename'
 import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, readTextFile, checkDlEnvCompat } from '@/utils'
 import { mintVerify } from '@/utils/filter'
 import { LocalStorage, SessionStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
-import { aiModelMap } from '@/utils/translate'
 import { ugoiraDownloadActions } from '@/utils/ugoira'
 import NovelTextConfig from '../Artwork/components/NovelTextConfig.vue'
 import PageFontSelect from '../Artwork/components/PageFontSelect.vue'
+import MangaTranslateSettings from '../Artwork/components/MangaTranslateSettings.vue'
+import NovelTranslateSettings from '../Artwork/components/NovelTranslateSettings.vue'
+import SyncDialog from './SyncDialog.vue'
 
 export default {
   name: 'SettingOthers',
   components: {
     NovelTextConfig,
     PageFontSelect,
+    MangaTranslateSettings,
+    NovelTranslateSettings,
+    SyncDialog,
   },
   data() {
     return {
@@ -603,29 +656,19 @@ export default {
       },
       hibiapi: {
         show: false,
-        value: LocalStorage.get('HIBIAPI_BASE', DEF_HIBIAPI_MAIN),
-      },
-      hibiapi_: {
-        show: false,
-        value: LocalStorage.get('HIBIAPI_BASE', DEF_HIBIAPI_MAIN),
-        actions: HIBIAPI_ALTS.split(';').map(e => {
-          const [name, _value] = e.split(',')
-          return { name, _value }
-        }),
+        value: LocalStorage.get('PXVEAPI_BASE', DEF_HIBIAPI_MAIN),
       },
       wfType: {
         show: false,
         actions: [
-          { name: 'Masonry', subname: this.$t('setting.layout.m') },
+          { name: 'Masonry2', subname: this.$t('setting.layout.m') },
           { name: 'Grid', subname: this.$t('setting.layout.g') },
-          { name: 'Justified', subname: this.$t('setting.layout.j') },
-          // { name: 'VirtualMasonry', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
-          // { name: 'VirtualGrid', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.g') + ' - ' + this.$t('setting.lab.title') },
-          // { name: 'VirtualJustified', subname: this.$t('4DPjs7ecYtMrqrD1DNkAE') + ' - ' + this.$t('setting.layout.j') + ' - ' + this.$t('setting.lab.title') },
-          { name: 'VirtualSlide', subname: this.$t('WrsiY7DP94fbUlQ6SoLlH') },
-          { name: 'Masonry(CSSGrid)', subname: this.$t('setting.layout.m') },
           { name: 'Justified(Transform)', subname: this.$t('setting.layout.j') },
-          // { name: 'Masonry(FlexOrder)', subname: this.$t('setting.layout.m') + ' - ' + this.$t('setting.lab.title') },
+          { name: 'VirtualSlide', subname: this.$t('WrsiY7DP94fbUlQ6SoLlH') },
+          { name: 'Justified', subname: this.$t('setting.layout.j') },
+          { name: 'Masonry', subname: this.$t('setting.layout.m') },
+          { name: 'Masonry(CSSGrid)', subname: this.$t('setting.layout.m') },
+          // { name: 'Masonry(FlexOrder)', subname: this.$t('setting.layout.m') },
         ],
       },
       imgRes: {
@@ -661,7 +704,7 @@ export default {
         show: false,
         actions: [
           { name: '', subname: i18n.t('ks96nwuAms0B8wSWBWhil') },
-          ...ugoiraDownloadActions,
+          ...ugoiraDownloadActions(),
         ],
       },
       ugoiraBitrates: {
@@ -696,19 +739,6 @@ export default {
           { name: 'DOC', _value: 'doc' },
           { name: 'MD', _value: 'md' },
         ].filter(Boolean),
-      },
-      novelTranslate: {
-        show: false,
-        actions: [
-          { name: '不设置', _value: '' },
-          { name: '微软翻译', _value: 'ms' },
-          { name: '谷歌翻译', _value: 'gg' },
-          ...Object.keys(aiModelMap).map(k => ({
-            name: `AI 翻译(${aiModelMap[k].split('/').pop()})`,
-            _value: `sc_${k}`,
-          })),
-          { name: '有道翻译', _value: 'yd' },
-        ],
       },
       appStartPage: {
         show: false,
@@ -745,9 +775,11 @@ export default {
           { name: i18n.t('nav.setting'), _value: '/setting' },
         ],
       },
-      hideApSelect: LocalStorage.get('__HIDE_AP_SEL', true),
+      hideApSelect: LocalStorage.get('PXV_HIDE_AP_SEL', true),
       isDark: !!localStorage.getItem('PXV_DARK'),
-      showAutoLoadImtSwitch: i18n.locale.includes('zh'),
+      showTranslationGroup: i18n.locale.includes('zh'),
+      showNovelTranslateSetting: false,
+      showMangaTranslateSetting: false,
       actTheme: localStorage.PXV_THEME || '',
       accentColor: localStorage.PXV_ACT_COLOR || 'Default',
       showDlFileNameTplDialog: false,
@@ -760,12 +792,29 @@ export default {
         pximg: window.p_pximg_ip,
       },
       saveFileDir: LocalStorage.get('PXV_DL_DIR'),
-      isNavSHSetShow: document.documentElement.clientWidth <= 1270,
+      isNavSHSetShow: document.documentElement.clientWidth <= 1120,
       novelFilterTextLenMin: store.state.appSetting.novelFilterTextLenMin,
       novelFilterTagLenMax: store.state.appSetting.novelFilterTagLenMax,
       novelFilterTagSplitMax: store.state.appSetting.novelFilterTagSplitMax,
       dlEnvLegacy: false,
       safEnabled: LocalStorage.get('PXV_DL_USE_SAF', false) && !!LocalStorage.get('PXV_DL_SAF_URI'),
+      syncDialogShow: false,
+      showDefaultTypeSheet: false,
+      defaultTypeActions: [
+        { name: this.$t('search.jump.ask'), value: '' },
+        { name: this.$t('search.jump.artwork'), value: 'artwork' },
+        { name: this.$t('search.jump.novel'), value: 'novel' },
+        { name: this.$t('search.jump.user'), value: 'user' },
+      ],
+      visualTheme: {
+        show: false,
+        actions: [
+          { name: this.$t('common.default'), _value: 'default' },
+          { name: 'Sakuria', _value: 'sakuria' },
+          { name: 'MD', _value: 'md' },
+          { name: 'iOS', _value: 'ios26' },
+        ],
+      },
     }
   },
   head() {
@@ -781,9 +830,6 @@ export default {
     pximgBedLabel() {
       return this.pximgBed_.actions.find(e => e._value == this.pximgBed_.value)?.name || ''
     },
-    hibiapiLabel() {
-      return this.hibiapi_.actions.find(e => e._value == this.hibiapi_.value)?.name || ''
-    },
     apiProxyLabel() {
       return this.apiProxySel.actions.find(e => e._value == this.clientConfig.apiProxy)?.name || ''
     },
@@ -796,8 +842,8 @@ export default {
     novelDlFmtLabel() {
       return this.novelDlFmt.actions.find(e => e._value == store.state.appSetting.novelDefDlFormat)?.name || ''
     },
-    novelTranslateLabel() {
-      return this.novelTranslate.actions.find(e => e._value == store.state.appSetting.novelDefTranslate)?.name || ''
+    searchDefaultIdTypeLabel() {
+      return this.defaultTypeActions.find(e => e.value == store.state.appSetting.searchDefaultIdType)?.name || this.$t('search.jump.ask')
     },
     sampleArtFileName() {
       return getSampleFileName(this.dlFileNameTpl)
@@ -808,9 +854,8 @@ export default {
   },
   watch: {
     hideApSelect(val) {
-      LocalStorage.set('__HIDE_AP_SEL', val)
+      LocalStorage.set('PXV_HIDE_AP_SEL', val)
       if (val) {
-        LocalStorage.set('HIBIAPI_BASE', DEF_HIBIAPI_MAIN)
         LocalStorage.set('PXIMG_PROXY', DEF_PXIMG_MAIN)
       }
       this.reloadPage()
@@ -905,7 +950,6 @@ export default {
       }
       this.$nextTick(() => {
         this.hibiapi.show = false
-        this.hibiapi_.show = false
         this.pximgBed.show = false
         this.pximgBed_.show = false
       })
@@ -1001,22 +1045,12 @@ export default {
     async changeHibiapi() {
       const url = this.hibiapi.value
       const res = await this.checkURL(url, () => {
-        return checkUrlAvailable(`${url}/rank?_t=${Date.now()}`)
+        return checkUrlAvailable(`${url}/api/pixiv/rank?_t=${Date.now()}`)
       })
       if (!res) return
       SessionStorage.clear()
       await localDb.clear()
-      this.saveSetting('HIBIAPI_BASE', this.hibiapi.value)
-    },
-    async changeHibiapi_({ _value }) {
-      const res = await this.checkURL(_value, () => {
-        return checkUrlAvailable(`${_value}/rank?_t=${Date.now()}`)
-      })
-      if (!res) return
-      this.hibiapi_.value = _value
-      SessionStorage.clear()
-      await localDb.clear()
-      this.saveSetting('HIBIAPI_BASE', _value)
+      this.saveSetting('PXVEAPI_BASE', this.hibiapi.value)
     },
     changeStatusbarOverlayOff(val) {
       window.umami?.track('DisableStatusbarOverlay', { val })
@@ -1031,6 +1065,7 @@ export default {
       this.isDark = val
       localStorage.setItem('PXV_DARK', val || '')
       if (val) {
+        applyVisualTheme('default')
         document.documentElement.classList.add('dark')
         document.body.classList.add('dark')
       } else {
@@ -1049,6 +1084,10 @@ export default {
     showNovelConfig() {
       this.$refs.novelConfigRef?.open()
     },
+    onDefaultTypeSelect(item) {
+      this.saveAppSetting('searchDefaultIdType', item.value)
+      this.showDefaultTypeSheet = false
+    },
     async changeAutoLoadKissT(val) {
       // if (val) {
       //   const res = await Dialog.confirm({
@@ -1063,20 +1102,6 @@ export default {
       // }
       this.saveAppSetting('isAutoLoadKissT', val, true)
     },
-    // async changeAutoLoadImt(val) {
-    //   if (val) {
-    //     const res = await Dialog.confirm({
-    //       title: '自动加载沉浸式翻译 SDK',
-    //       message: '提示：如果已安装沉浸式翻译浏览器扩展则无需加载沉浸式翻译 SDK',
-    //       lockScroll: false,
-    //       closeOnPopstate: true,
-    //       cancelButtonText: '取消',
-    //       confirmButtonText: '确定',
-    //     }).catch(() => 'cancel')
-    //     if (res != 'confirm') return
-    //   }
-    //   this.saveAppSetting('isAutoLoadImt', val, true)
-    // },
     changeLang({ _value }) {
       this.lang.value = _value
       window.umami?.track('set_lang', { lang: _value })
@@ -1092,6 +1117,11 @@ export default {
         this.saveSetting('PXV_DL_DIR', selected)
       }
     },
+    changeVisualTheme({ _value }) {
+      window.umami?.track('set_visual_theme', { _value })
+      changeVisualTheme(_value)
+      this.reloadPage()
+    },
     onAnalyticsChange(val) {
       window.umami?.track('AnalyticsChange', { val })
       this.isAnalyticsOn = val
@@ -1106,7 +1136,7 @@ export default {
       input.onchange = async e => {
         try {
           const text = await readTextFile(e.target.files[0])
-          const settings = JSON.parse(decodeURI(atob(text)))
+          const settings = text[0] == '{' ? JSON.parse(text) : JSON.parse(decodeURIComponent(escape(atob(text))))
           console.log('settings: ', settings)
           Object.keys(settings).forEach(k => {
             localStorage.setItem(k, settings[k])
@@ -1129,7 +1159,7 @@ export default {
         const keyName = localStorage.key(i)
         settings[keyName] = localStorage.getItem(keyName)
       }
-      const blob = new Blob([btoa(encodeURI(JSON.stringify(settings)))], { type: 'text/plain;charset=utf-8' })
+      const blob = new Blob([btoa(unescape(encodeURIComponent(JSON.stringify(settings))))])
       if (action == 'return-blob') return blob
       window.umami?.track('exportSettings')
       downloadFile(blob, 'pixiv-viewer-settings.txt', { subDir: 'backup' })
@@ -1176,6 +1206,30 @@ export default {
         getCache('users.history'),
       ])
       downloadFile(new Blob([JSON.stringify(history)]), `pixiv-viewer-history-${Date.now()}.json`, { subDir: 'backup' })
+    },
+    async checkShinobuRuntime() {
+      const loading = this.$toast.loading({
+        duration: 0,
+        forbidClick: true,
+        message: '检测运行环境中…',
+      })
+      try {
+        const { runRuntimeSelfCheck } = await import('@/utils/translate/shinobu/runtime/selfCheck')
+        const report = await runRuntimeSelfCheck()
+        Dialog.alert({
+          title: '诊断信息',
+          width: '9rem',
+          message: `<p style="font-family: Consolas, monospace, sans-serif">${JSON.stringify(report, null, 2)}</p>`,
+          messageAlign: 'left',
+        })
+        loading.clear()
+      } catch (error) {
+        loading.clear()
+        Dialog.alert({
+          message: `检测运行环境异常：${error}`,
+          confirmButtonText: 'OK',
+        })
+      }
     },
     async checkURL(val, checkFn) {
       if (!isURL(val)) {
@@ -1224,8 +1278,8 @@ export default {
 }
 </script>
 
-<style lang="stylus" scoped>
-.setting-page
+<style lang="stylus">
+.setting-page.app-preference-settings
   min-height 80vh
   #top-bar-wrap
     width 1.4rem

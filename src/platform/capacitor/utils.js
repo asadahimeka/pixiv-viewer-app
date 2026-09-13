@@ -1,4 +1,4 @@
-import { Toast, Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import { Capacitor } from '@capacitor/core'
 import { Clipboard } from '@capacitor/clipboard'
 import { Share } from '@capacitor/share'
@@ -290,12 +290,8 @@ export async function downloadFile(url, fileName, subpath) {
 
     addDownloadHistory({ status: 'ok', url: downloadUrl, fileName, path: res.path })
 
-    Toast.clear(true)
-    Toast({
-      message: `${i18n.t('tip.downloaded')}: ${res.tipPath || safeDecodeURIComponent(res.path.replace('file://', ''))}`,
-      duration: 3000,
-    })
-    return { res }
+    const successMsg = `${i18n.t('tip.downloaded')}: ${res.tipPath || safeDecodeURIComponent(res.path.replace('file://', ''))}`
+    return { res, successMsg }
   } catch (error) {
     addDownloadHistory({ status: 'error', url, fileName, error: `${error}` })
     return { error: markDlError(error, step, url) }
@@ -357,12 +353,9 @@ export async function downloadBlob(blob, fileName, subpath) {
     }
 
     addDownloadHistory({ status: 'ok', fileName, path: uri })
-    Toast.clear(true)
-    Toast({
-      message: `${i18n.t('tip.downloaded')}: ${tipPath || safeDecodeURIComponent(uri.replace('file://', ''))}`,
-      duration: 3000,
-    })
-    return { res: { uri } }
+
+    const successMsg = `${i18n.t('tip.downloaded')}: ${tipPath || safeDecodeURIComponent(uri.replace('file://', ''))}`
+    return { res: { uri }, successMsg }
   } catch (error) {
     addDownloadHistory({ status: 'error', fileName, error: error + '' })
     return { error: markDlError(error, step) }

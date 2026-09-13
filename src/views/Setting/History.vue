@@ -63,6 +63,11 @@ export default {
   ::v-deep .van-tab__pane .illusts
      > div, .virtual-waterfall
       padding-bottom 1rem
+  ::v-deep .van-tabs__nav--line
+    padding-bottom 0
+    border-radius 10PX
+    .van-tabs__line
+      bottom 0
 
 .af_title
   position relative

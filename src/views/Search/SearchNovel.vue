@@ -12,7 +12,7 @@
         @focus="onFocus"
         @search="onSearch"
       />
-      <div ref="words" class="search-bar-word" @click="handleWordsClick($event)">
+      <div v-show="!focus" ref="words" class="search-bar-word" @click="handleWordsClick($event)">
         <span v-if="keywordsList.length === 0 && !lastWord" class="placeholder">{{ $t('search.placeholder') }}</span>
         <div v-for="(word, index) in keywordsList" :key="index" class="word">
           <span class="text">{{ word }}</span>
@@ -23,7 +23,7 @@
         </div>
       </div>
       <div
-        v-if="(isSelfHibi && keywords.trim() && artList.length)"
+        v-if="keywords.trim() && artList.length"
         class="show_pop_icon"
         @click="(showPopPreview = !showPopPreview)"
       >
@@ -71,6 +71,7 @@
           <template v-if="!showPopPreview">
             <van-dropdown-item v-model="searchParams.mode" :options="searchModes" />
             <van-dropdown-item v-model="searchParams.sort" :options="searchOrders" />
+            <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
           </template>
           <van-dropdown-item
             ref="s_date"
@@ -90,6 +91,7 @@
               :show-title="false"
               :min-date="minDate"
               :max-date="maxDate"
+              :max-range="365"
               @confirm="v => { searchDateVals = v; $refs.s_date.toggle() }"
             />
             <div style="width: 9.4rem;margin: 5px auto 10px">
@@ -104,13 +106,18 @@
             </div>
           </van-dropdown-item>
           <template v-if="!showPopPreview">
-            <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
             <van-dropdown-item v-model="searchParams.duration" :options="searchDuration" />
-            <van-dropdown-item v-if="showNonCNLangParam" v-model="nonCNLang" :options="nonCNLangOptions" />
+            <van-dropdown-item v-model="searchParams.search_ai_type" :disabled="!isAIOn" :options="searchAIOptions" />
+            <van-dropdown-item v-model="searchParams.searchR18Type" :disabled="!isR18On" :options="searchR18Options" />
+            <van-dropdown-item v-model="searchParams.lang" :title="searchLangLabel" :options="searchLangOptions" />
+            <van-dropdown-item v-model="searchParams.searchTextLength" :disabled="!!searchParams.searchReadingTime" :options="searchTextLengthOptions" />
+            <van-dropdown-item v-model="searchParams.searchReadingTime" :disabled="!!searchParams.searchTextLength" :options="searchReadingTimeOptions" />
+            <van-dropdown-item v-model="searchParams.genre" :title="searchGeneLabel" :options="searchGeneOptions" />
+            <van-dropdown-item v-model="searchParams.include_potential_violation_works" :options="searchPotentialViolations" />
           </template>
         </van-dropdown-menu>
       </div>
-      <PopularPreviewNovel v-if="(isSelfHibi && showPopPreview && keywords.trim())" ref="popPreview" :word="keywords" :params="searchParams" />
+      <PopularPreviewNovel v-if="showPopPreview && keywords.trim()" ref="popPreview" :word="keywords" :params="searchParams" />
       <van-list
         v-else-if="keywords.trim()"
         v-model="loading"
@@ -139,15 +146,14 @@
 import dayjs from 'dayjs'
 import { mapState, mapActions } from 'vuex'
 import _ from '@/lib/lodash'
-import api, { localApi } from '@/api'
+import api from '@/api'
 import store from '@/store'
-import { notSelfHibiApi } from '@/consts'
 import { mintVerify, BLOCK_SEARCH_WORD_RE, BLOCK_INPUT_WORDS, BLOCK_LAST_WORD_RE } from '@/utils/filter'
-import { i18n, isCNLocale } from '@/i18n'
-import { detectLanguage } from '@/utils/novel'
+import { i18n } from '@/i18n'
 import { sleep } from '@/utils'
-import TagsNovel from './components/TagsNovel'
+import { searchOtherOptions } from './searchOptions'
 import NovelCard from '@/components/NovelCard.vue'
+import TagsNovel from './components/TagsNovel'
 import PopularPreviewNovel from './components/PopularPreviewNovel.vue'
 
 export default {
@@ -171,7 +177,6 @@ export default {
       finished: false,
       autoCompleteTagList: [],
       showPopPreview: false,
-      isSelfHibi: !notSelfHibiApi,
       usersIriTag: '',
       usersIriTags: [
         { text: this.$t('7PnT90lP_mZTPfL3Uwlhl'), value: '' },
@@ -179,8 +184,7 @@ export default {
           return { text: i18n.t('8SuotxAmYS7l1QCfLz0Yv', [e]), value: `${e}users入り` }
         }),
       ],
-      // minDate: new Date('2007/09/13'),
-      minDate: dayjs().subtract(1, 'year').toDate(),
+      minDate: new Date('2007/09/13'),
       maxDate: new Date(),
       searchParams: {
         mode: 'partial_match_for_tags',
@@ -188,13 +192,20 @@ export default {
         duration: '',
         start_date: '',
         end_date: '',
+        search_ai_type: '',
+        searchR18Type: '',
+        searchReadingTime: '',
+        searchTextLength: '',
+        genre: '',
+        lang: '',
+        include_potential_violation_works: 'false',
       },
       searchDateVals: [null, null],
       searchModes: [
         { text: this.$t('search.mode.partial'), value: 'partial_match_for_tags' },
         { text: this.$t('search.mode.exact'), value: 'exact_match_for_tags' },
         { text: this.$t('-cm0i-Kb6i1rhmSk3FXnf'), value: 'text' },
-        { text: this.$t('vCd3kQ1QluX-OCbnI2v_6'), value: 'keyword' },
+        { text: this.$t('dMmUqu2l6ysykwKgWNf2g'), value: 'keyword' },
       ],
       searchOrders: [
         { text: this.$t('search.date.desc'), value: 'date_desc' },
@@ -206,12 +217,35 @@ export default {
         { text: this.$t('search.dura.week'), value: 'within_last_week' },
         { text: this.$t('search.dura.month'), value: 'within_last_month' },
       ],
-      showNonCNLangParam: localApi.APP_CONFIG.useLocalAppApi && isCNLocale(),
-      nonCNLang: 'no',
-      nonCNLangOptions: [
-        { text: '显示非中文', value: 'no' },
-        { text: '隐藏非中文', value: 'yes' },
+      searchR18Options: [
+        { text: this.$t('ZrjYwXfoy-1VsGd5GPUaG'), value: '' },
+        { text: this.$t('KaQ9vCtHFcDpPCx80CpoW'), value: 'R' },
+        { text: this.$t('q3dZB--IevljTdxWdrQMC'), value: 'S' },
       ],
+      searchAIOptions: [
+        { text: this.$t('D3kINSMv_LLXKunaXRBkY'), value: '' },
+        { text: this.$t('VTewlLtKnSV8muyw35y8P'), value: '1' },
+      ],
+      searchTextLengthOptions: [
+        { text: this.$t('b4Z0tyOi4KgPITHgVZHgR'), value: '' },
+        { text: this.$t('MOL7mtE_cwD7UrrWKA_KY'), value: '{"text_length_max":4999}' },
+        { text: this.$t('aGi6-G43d6bBRplncagM6'), value: '{"text_length_min":5000,"text_length_max":19999}' },
+        { text: this.$t('t8HeCQrkT3qqQrkA7DBKf'), value: '{"text_length_min":20000,"text_length_max":79999}' },
+        { text: this.$t('NXJTd9URNAGtiKInqNbea'), value: '{"text_length_min":80000}' },
+      ],
+      searchReadingTimeOptions: [
+        { text: this.$t('ipc0irpOaiPg6Nmax2GHe'), value: '' },
+        { text: this.$t('PeBLdM6XIt1DHgMsYu-pp'), value: '{"reading_time_max":9}' },
+        { text: this.$t('bOu37IsJxDx-rIht66jrg'), value: '{"reading_time_min":10,"reading_time_max":59}' },
+        { text: this.$t('IWPUGTpHanYkZF2MbYARR'), value: '{"reading_time_min":60,"reading_time_max":179}' },
+        { text: this.$t('gzf8-BPK-2znvFR8qe6jz'), value: '{"reading_time_min":180}' },
+      ],
+      searchPotentialViolations: [
+        { text: this.$t('bsUkOJL1hGMF910TAuAs7'), value: 'true' },
+        { text: this.$t('B6_a-r-LnCBiHNTtnmv_-'), value: 'false' },
+      ],
+      searchLangOptions: searchOtherOptions.novel.lang,
+      searchGeneOptions: searchOtherOptions.novel.genre,
     }
   },
   head() {
@@ -224,6 +258,12 @@ export default {
     isLoggedIn() {
       return store.getters.isLoggedIn
     },
+    isR18On() {
+      return store.getters.isR18On
+    },
+    isAIOn() {
+      return store.state.contentSetting.ai
+    },
     pidOrUidList() {
       return this.keywords.match(/(\d+)/g) || []
     },
@@ -232,15 +272,18 @@ export default {
         !this.pidOrUidList.length &&
         !this.keywords.includes('R-18')
     },
+    searchLangLabel() {
+      const text = this.searchLangOptions.find(e => e.value == this.searchParams.lang)?.text
+      return text && text != 'All' ? text : this.$t('w_o-jyGfUrVwuq-c1ktF_')
+    },
+    searchGeneLabel() {
+      const text = this.searchGeneOptions.find(e => e.value == this.searchParams.genre)?.text
+      return text && text != 'All' ? text : this.$t('TVYNquFy9f2ysUtkiyrVd')
+    },
   },
   watch: {
     usersIriTag(val) {
       // window.umami?.track('search_novel_usersIriTag', { val })
-      this.reset()
-      this.doSearch(this.keywords)
-    },
-    nonCNLang(val) {
-      window.umami?.track('search_novel_nonCNLang', { val })
       this.reset()
       this.doSearch(this.keywords)
     },
@@ -263,6 +306,16 @@ export default {
         start_date: vals[0] && dayjs(vals[0]).format('YYYY-MM-DD'),
         end_date: vals[1] && dayjs(vals[1]).format('YYYY-MM-DD'),
       })
+    },
+    searchTextLength(val) {
+      if (val) {
+        this.searchParams.searchReadingTime = ''
+      }
+    },
+    searchReadingTime(val) {
+      if (val) {
+        this.searchParams.searchTextLength = ''
+      }
     },
     $route() {
       if (!['SearchNovel', 'SearchNovelKeyword'].includes(this.$route.name)) {
@@ -383,7 +436,7 @@ export default {
 
       this.setSearchHistory(val)
 
-      if (!(this.$store.state.contentSetting.r18 || this.$store.state.contentSetting.r18g)) {
+      if (!this.isR18On) {
         if (BLOCK_INPUT_WORDS.some(e => e.test(val))) {
           this.artList = []
           this.finished = true
@@ -396,8 +449,22 @@ export default {
       }
       if (this.usersIriTag) val += ' ' + this.usersIriTag
       const params = _.pickBy(this.searchParams, Boolean)
-      if (!this.$store.state.contentSetting.ai) {
-        params.search_ai_type = 1
+      if (params.searchTextLength) {
+        Object.assign(params, JSON.parse(params.searchTextLength))
+        delete params.searchTextLength
+      }
+      if (params.searchReadingTime) {
+        Object.assign(params, JSON.parse(params.searchReadingTime))
+        delete params.searchReadingTime
+      }
+      if (params.genre) {
+        params.is_original_only = 'true'
+      } else {
+        delete params.is_original_only
+      }
+      delete params.searchR18Type
+      if (!this.isAIOn || val.includes(' -AI')) {
+        params.search_ai_type = 1 // 不显示AI作品
       }
 
       this.loading = true
@@ -411,15 +478,11 @@ export default {
             artList = artList.filter(e => e.like > Number(match && match[0]))
           }
 
-          if (this.nonCNLang == 'yes') {
-            artList = artList.filter(e => detectLanguage(e.title + e.caption).language == 'zh')
-          }
-
-          if (this.keywords__.includes(' R-18')) {
+          if (this.searchParams.searchR18Type == 'R' || this.keywords__.includes(' R-18')) {
             artList = artList.filter(e => e.x_restrict > 0)
           }
 
-          if (this.keywords__.includes(' -R-18')) {
+          if (this.searchParams.searchR18Type == 'S' || this.keywords__.includes(' -R-18')) {
             artList = artList.filter(e => e.x_restrict == 0)
           }
 
@@ -455,7 +518,6 @@ export default {
       })
     },
     onSearchInput: _.debounce(async function () {
-      if (notSelfHibiApi) return
       if (!this.lastWord || !this.keywords.trim()) {
         this.autoCompleteTagList = []
         return
@@ -742,22 +804,43 @@ export default {
 .search_params
   position relative
   top -24px
-  @media screen and (max-width: 1280px)
-    overflow-x: auto;
-    &::-webkit-scrollbar
-      display none
+  @media screen and (max-width: 1120PX)
+    &::after
+      content: "→"
+      position: absolute;
+      right: 0.25rem;
+      bottom: 0;
+      font-size 0.6rem
+      line-height 1
+      color var(--accent-color, #f2c358)
+      transform: translateX(0);
+      opacity: 0.6;
+      animation: fade 1.5s infinite;
+      pointer-events none
+    .search_param_sel
+      width 100%
     ::v-deep .van-dropdown-menu
       padding-bottom 0.3rem
+    ::v-deep .van-dropdown-menu__bar
+      width 100%
+      overflow-x auto
+      &::-webkit-scrollbar
+        display none
+
+@keyframes fade {
+  0% { opacity: 0.2; transform: translateX(0); }
+  50% { opacity: 0.8; transform: translateX(5px); }
+  100% { opacity: 0.2; transform: translateX(0); }
+}
 
 .search_param_sel
   height 70px
-
   ::v-deep .van-dropdown-menu__title
     font-size 0.24rem
   ::v-deep .van-dropdown-menu__bar
     background none
     height 100% !important
-    @media screen and (max-width: 1280px)
+    @media screen and (max-width: 1120PX)
       .van-dropdown-menu__item
         min-width: max-content;
         padding: 0 0.2rem;
@@ -784,6 +867,12 @@ export default {
 .dropdown
   &.search-bar-wrap .search-bar
     background #fff
+    ::v-deep .van-cell input
+      opacity: 1
+      color: #333
+      caret-color: #000
+      &::placeholder
+        color: transparent
 
 .search-dropdown
   position: fixed;
@@ -792,7 +881,6 @@ export default {
   z-index: 14;
   width 100%
   background: #fff
-
   .pid-n-uid
     display flex
     flex-wrap wrap

@@ -35,6 +35,7 @@ import ClearCache from '@/views/Setting/ClearCache.vue'
 import ContentsDisplay from '@/views/Setting/ContentsDisplay.vue'
 import SettingOthers from '@/views/Setting/OtherSetting.vue'
 import SettingAbout from '@/views/Setting/About.vue'
+import SettingChatRoomFrame from '@/views/Setting/ChatRoomFrame.vue'
 import SettingFAQ from '@/views/Setting/FAQ.vue'
 import SettingDisclaimer from '@/views/Setting/Disclaimer.vue'
 import SettingAccentColor from '@/views/Setting/AccentColor.vue'
@@ -171,6 +172,7 @@ export const routes = [
           },
           {
             path: '/setting',
+            alias: ['/settings'],
             name: 'Setting',
             component: Setting,
             meta: { __depth: 1 },
@@ -325,6 +327,12 @@ export const routes = [
             name: 'SettingAbout',
             component: SettingAbout,
             meta: { __depth: 2 },
+          },
+          {
+            path: '/chat-room',
+            name: 'SettingChatRoomFrame',
+            component: SettingChatRoomFrame,
+            meta: { __depth: 3 },
           },
           {
             path: '/setting/about/faq',

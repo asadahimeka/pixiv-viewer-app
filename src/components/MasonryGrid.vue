@@ -3,7 +3,7 @@
     <div
       v-for="(item, index) in itemsWithSpan"
       :key="item[itemKey]"
-      :style="{ gridRowEnd: `span ${item.span}` }"
+      :style="{ gridRowEnd: `span ${item._span}` }"
     >
       <slot :item="item" :index="index"></slot>
     </div>
@@ -119,55 +119,41 @@ export default {
 
         return {
           ...item,
-          span: Math.max(1, span),
+          _span: Math.max(1, span),
         }
       })
     },
   },
   mounted() {
     this.$nextTick(() => {
-      this._setupResizeObserver()
-      if (this.$el && this.$el.offsetWidth) {
+      this._setupResizeListener()
+      if (this.$el) {
         this.containerWidth = this.$el.offsetWidth
       }
     })
   },
   beforeDestroy() {
-    this._cleanupResizeObserver()
+    this._cleanupResizeListener()
   },
   methods: {
-    _setupResizeObserver() {
-      if (typeof ResizeObserver !== 'undefined') {
-        this._resizeObserver = new ResizeObserver(entries => {
-          for (const entry of entries) {
-            this._handleResize(entry.contentRect.width)
-          }
-        })
-        this._resizeObserver.observe(this.$el)
-      } else {
-        window.addEventListener('resize', this._handleResize)
-      }
+    _setupResizeListener() {
+      window.addEventListener('resize', this._handleResize)
     },
-    _cleanupResizeObserver() {
-      if (this._resizeObserver) {
-        this._resizeObserver.disconnect()
-        this._resizeObserver = null
-      }
+    _cleanupResizeListener() {
       window.removeEventListener('resize', this._handleResize)
       if (this._resizeTimer) {
         clearTimeout(this._resizeTimer)
         this._resizeTimer = null
       }
     },
-    _handleResize(width) {
+    _handleResize() {
       const viewportWidth = getWindowWidth()
-      const newContainerWidth = width || 0
       if (this._resizeTimer) {
         clearTimeout(this._resizeTimer)
       }
       this._resizeTimer = setTimeout(() => {
         this.viewportWidth = viewportWidth
-        this.containerWidth = newContainerWidth
+        this.containerWidth = this.$el.offsetWidth || 0
       }, 100)
     },
   },

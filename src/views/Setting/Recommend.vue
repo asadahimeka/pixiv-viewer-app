@@ -54,6 +54,8 @@ export default {
   ::v-deep .van-tabs__content
     margin-top 10px
     overflow hidden !important
+  ::v-deep .van-tabs__nav
+    background none !important
 
 .af_title
   position relative

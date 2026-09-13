@@ -12,7 +12,7 @@
         @focus="onFocus"
         @search="onSearch"
       />
-      <div ref="words" class="search-bar-word" @click="handleWordsClick($event)">
+      <div v-show="!focus" ref="words" class="search-bar-word" @click="handleWordsClick($event)">
         <span v-if="keywordsList.length === 0 && !lastWord" class="placeholder">{{ $t('search.placeholder') }}</span>
         <div v-for="(word, index) in keywordsList" :key="index" class="word">
           <span class="text">{{ word }}</span>
@@ -23,7 +23,7 @@
         </div>
       </div>
       <div
-        v-if="(isSelfHibi && keywords.trim() && artList.length)"
+        v-if="(keywords.trim() && artList.length)"
         class="show_pop_icon"
         @click="togglePopPreview"
       >
@@ -73,11 +73,12 @@
     </div>
     <div class="list-wrap" :class="{ focus: focus }" :style="{ paddingTop: keywords.trim() ? '1.6rem' : '2.6rem' }">
       <div v-show="keywords.trim()" class="search_params">
-        <van-dropdown-menu class="search_param_sel" :class="{ showPopPreview }" active-color="#f2c358">
+        <van-dropdown-menu class="search_param_sel" :class="{ showPopPreview }" active-color="#f2c358" z-index="99">
           <template v-if="!showPopPreview">
             <van-dropdown-item v-model="searchParams.mode" :options="searchModes" />
-            <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
+            <van-dropdown-item v-model="searchParams.content_type" :title="$t('FowunigEBlCKmDG2YhR44')" :options="searchContents" />
             <van-dropdown-item v-model="searchParams.order" :options="searchOrders" />
+            <van-dropdown-item v-model="usersIriTag" :options="usersIriTags" />
           </template>
           <van-dropdown-item
             ref="s_date"
@@ -98,6 +99,7 @@
               :show-title="false"
               :min-date="minDate"
               :max-date="maxDate"
+              :max-range="365"
               @confirm="v => { searchDateVals = v; $refs.s_date.toggle() }"
             />
             <div style="width: 9.4rem;margin: 5px auto 10px">
@@ -115,7 +117,11 @@
             <van-dropdown-item v-model="searchDurationParam" :options="searchDurations" @change="handleDurationChange" />
             <van-dropdown-item v-model="searchParams.search_ai_type" :disabled="!isAIOn" :options="searchAIOptions" />
             <van-dropdown-item v-model="searchParams.searchR18Type" :disabled="!isR18On" :options="searchR18Options" />
-            <van-dropdown-item v-model="searchParams.ratioFilter" :options="ratioOptions" />
+            <van-dropdown-item v-if="searchParams.content_type == 'manga'" v-model="searchParams.lang" :title="searchLangLabel" :options="searchLangOptions" />
+            <van-dropdown-item v-model="searchParams.searchResolution" :options="searchResolutions" />
+            <van-dropdown-item v-model="searchParams.ratio_pattern" :options="searchRatioOptions" />
+            <van-dropdown-item v-model="searchParams.tool" :title="searchToolLabel" :options="searchToolOptions" />
+            <van-dropdown-item v-model="searchParams.include_potential_violation_works" :options="searchPotentialViolations" />
           </template>
         </van-dropdown-menu>
       </div>
@@ -165,6 +171,22 @@
       <van-loading v-if="!isPagination && keywords.trim() && artList.length == 0 && !finished" class="loading" :size="'50px'" />
       <div class="mask" @click="focus = false"></div>
     </div>
+    <van-dialog
+      v-model="showNumberDialog"
+      :title="$t('search.jump.title')"
+      :show-confirm-button="false"
+      close-on-click-overlay
+    >
+      <div style="padding: 10px 20px 20px;">
+        <van-cell
+          v-for="item in numberDialogActions"
+          :key="item.value"
+          :title="item.name"
+          is-link
+          @click="onNumberChoice(item.value)"
+        />
+      </div>
+    </van-dialog>
   </div>
 </template>
 
@@ -174,10 +196,10 @@ import _ from '@/lib/lodash'
 import dayjs from 'dayjs'
 import api from '@/api'
 import store from '@/store'
-import { notSelfHibiApi } from '@/consts'
 import { mintVerify, BLOCK_INPUT_WORDS, BLOCK_LAST_WORD_RE, BLOCK_SEARCH_WORD_RE, BLOCK_RESULT_RE, isAiIllust } from '@/utils/filter'
 import { i18n } from '@/i18n'
 import { sleep } from '@/utils'
+import { searchOtherOptions } from './searchOptions'
 import ImageList from '@/components/ImageList.vue'
 import PopularPreview from './components/PopularPreview.vue'
 import TagStorySlides from './components/TagStorySlides.vue'
@@ -211,8 +233,7 @@ export default {
           return { text: i18n.t('8SuotxAmYS7l1QCfLz0Yv', [e]), value: `${e}users入り` }
         }),
       ],
-      // minDate: new Date('2007/09/13'),
-      minDate: dayjs().subtract(1, 'year').toDate(),
+      minDate: new Date('2007/09/13'),
       maxDate: new Date(),
       searchParams: {
         mode: 'partial_match_for_tags',
@@ -221,12 +242,25 @@ export default {
         end_date: '',
         search_ai_type: '',
         searchR18Type: '',
-        ratioFilter: '',
+        content_type: '',
+        searchResolution: '',
+        ratio_pattern: '',
+        tool: '',
+        lang: '',
+        include_potential_violation_works: 'false',
       },
+      searchContents: [
+        { text: `${this.$t('common.illust')} / ${this.$t('common.manga')} / ${this.$t('common.ugoira')}`, value: 'illust_and_manga_and_ugoira' },
+        { text: `${this.$t('common.illust')} / ${this.$t('common.ugoira')}`, value: 'illust_and_ugoira' },
+        { text: this.$t('common.illust'), value: 'illust' },
+        { text: this.$t('common.ugoira'), value: 'ugoira' },
+        { text: this.$t('common.manga'), value: 'manga' },
+      ],
       searchModes: [
         { text: this.$t('search.mode.partial'), value: 'partial_match_for_tags' },
         { text: this.$t('search.mode.exact'), value: 'exact_match_for_tags' },
         { text: this.$t('search.mode.title'), value: 'title_and_caption' },
+        { text: this.$t('dMmUqu2l6ysykwKgWNf2g'), value: 'keyword' },
       ],
       searchOrders: [
         { text: this.$t('search.date.desc'), value: 'date_desc' },
@@ -251,17 +285,36 @@ export default {
         { text: this.$t('D3kINSMv_LLXKunaXRBkY'), value: '' },
         { text: this.$t('VTewlLtKnSV8muyw35y8P'), value: '1' },
       ],
-      ratioOptions: [
+      searchRatioOptions: [
         { text: this.$t('60rHZkbSVyvMXR5mxfOUS'), value: '' },
-        { text: this.$t('4qZPW5NFW8YYDwkKtrKjz'), value: 'w>h' },
-        { text: this.$t('lveNeJo4VKOxFL7t6wvN_'), value: 'w=h' },
-        { text: this.$t('Fe6ZIApJoqbXO5UU5S001'), value: 'w<h' },
+        { text: this.$t('4qZPW5NFW8YYDwkKtrKjz'), value: 'landscape' },
+        { text: this.$t('Fe6ZIApJoqbXO5UU5S001'), value: 'portrait' },
+        { text: this.$t('lveNeJo4VKOxFL7t6wvN_'), value: 'square' },
       ],
+      searchResolutions: [
+        { text: this.$t('_clhVQdTeyFhQK1rRq69b'), value: '' },
+        { text: this.$t('PTzMTBx4taixMClb9G5jJ'), value: '{"width_min":3000,"height_min":3000}' },
+        { text: '1000px×1000px - 2999px×2999px', value: '{"width_min":1000,"height_min":1000,"width_max":2999,"height_max":2999}' },
+        { text: this.$t('yd8Cnr3o_aHBOMsOwTTjS'), value: '{"width_max":999,"height_max":999}' },
+      ],
+      searchPotentialViolations: [
+        { text: this.$t('bsUkOJL1hGMF910TAuAs7'), value: 'true' },
+        { text: this.$t('B6_a-r-LnCBiHNTtnmv_-'), value: 'false' },
+      ],
+      searchLangOptions: searchOtherOptions.illust.lang,
+      searchToolOptions: searchOtherOptions.illust.tool,
       showPopPreview: false,
-      isSelfHibi: !notSelfHibiApi,
       totalPages: 166,
       pageBtnNum: document.documentElement.clientWidth / 80,
       actSearchQuickTab: 0,
+      showNumberDialog: false,
+      pendingNumber: '',
+      numberDialogActions: [
+        { name: this.$t('search.jump.artwork'), value: 'artwork' },
+        { name: this.$t('search.jump.novel'), value: 'novel' },
+        { name: this.$t('search.jump.user'), value: 'user' },
+        { name: this.$t('search.jump.keyword'), value: 'keyword' },
+      ],
     }
   },
   head() {
@@ -294,6 +347,14 @@ export default {
     isPagination() {
       const { isVirtualList, searchListPagination } = store.state.appSetting
       return !isVirtualList && searchListPagination
+    },
+    searchLangLabel() {
+      const text = this.searchLangOptions.find(e => e.value == this.searchParams.lang)?.text
+      return text && text != 'All' ? text : this.$t('w_o-jyGfUrVwuq-c1ktF_')
+    },
+    searchToolLabel() {
+      const text = this.searchToolOptions.find(e => e.value == this.searchParams.tool)?.text
+      return text && text != 'All' ? text : this.$t('38voBbE8fUIdxgli3n14t')
     },
   },
   watch: {
@@ -519,7 +580,13 @@ export default {
       if (this.usersIriTag) val += ' ' + this.usersIriTag
       const params = _.pickBy(this.searchParams, Boolean)
       delete params.searchR18Type
-      delete params.ratioFilter
+      if (params.searchResolution) {
+        Object.assign(params, JSON.parse(params.searchResolution))
+        delete params.searchResolution
+      }
+      if (params.content_type != 'manga') {
+        delete params.lang
+      }
       if (!this.isAIOn || val.includes(' -AI')) {
         params.search_ai_type = 1 // 不显示AI作品
       }
@@ -545,16 +612,6 @@ export default {
 
           if (this.searchParams.search_ai_type == '1' || this.keywords__.includes(' -AI')) {
             artList = artList.filter(e => !isAiIllust(e))
-          }
-
-          const { ratioFilter } = this.searchParams
-          if (ratioFilter) {
-            artList = artList.filter(e => {
-              if (ratioFilter == 'w>h') return e.width > e.height
-              if (ratioFilter == 'w=h') return e.width == e.height
-              if (ratioFilter == 'w<h') return e.width < e.height
-              return true
-            })
           }
 
           artList = artList.filter(e => {
@@ -602,7 +659,6 @@ export default {
       })
     },
     onSearchInput: _.debounce(async function () {
-      if (notSelfHibiApi) return
       if (!this.lastWord || !this.keywords.trim()) {
         this.autoCompleteTagList = []
         return
@@ -625,6 +681,21 @@ export default {
     },
     async onSearch(searchType) {
       console.log('onSearch: ', this.keywords)
+      const trimmed = this.keywords.trim()
+
+      // Pure number detection
+      if (/^\d+$/.test(trimmed)) {
+        const defaultType = store.state.appSetting.searchDefaultIdType
+        if (defaultType) {
+          const routeMap = { artwork: '/artworks/', novel: '/novel/', user: '/users/' }
+          this.$router.push(routeMap[defaultType] + trimmed)
+          return
+        }
+        this.pendingNumber = trimmed
+        this.showNumberDialog = true
+        return
+      }
+
       this.focus = false
       let words = this.keywords
       if (searchType == 'R18') words = words.trim() + ' R-18'
@@ -671,6 +742,17 @@ export default {
     },
     clearHistory() {
       this.setSearchHistory(null)
+    },
+    onNumberChoice(value) {
+      this.showNumberDialog = false
+      if (value === 'keyword') {
+        this.$router.push(`/search/${encodeURIComponent(this.pendingNumber)}`)
+        this.reset()
+        this.doSearch(this.pendingNumber)
+        return
+      }
+      const routeMap = { artwork: '/artworks/', novel: '/novel/', user: '/users/' }
+      this.$router.push(routeMap[value] + this.pendingNumber)
     },
     ...mapActions(['setSearchHistory']),
   },
@@ -734,6 +816,18 @@ export default {
         input {
           display: inline-block;
           opacity: 0;
+        }
+      }
+    }
+
+    // Edit mode: show input with cursor
+    &.dropdown {
+      ::v-deep .van-cell input {
+        opacity: 1
+        color: #333
+        caret-color: #000
+        &::placeholder {
+          color: transparent
         }
       }
     }
@@ -926,57 +1020,43 @@ export default {
 .search_params
   position relative
   top -24px
-  @media screen and (max-width: 1280px)
-    overflow-x: auto;
-    &::-webkit-scrollbar
-      display none
+  @media screen and (max-width: 1120PX)
+    &::after
+      content: "→"
+      position: absolute;
+      right: 0.25rem;
+      bottom: 0;
+      font-size 0.6rem
+      line-height 1
+      color var(--accent-color, #f2c358)
+      transform: translateX(0);
+      opacity: 0.6;
+      animation: fade 1.5s infinite;
+      pointer-events none
+    .search_param_sel
+      width 100%
     ::v-deep .van-dropdown-menu
       padding-bottom 0.3rem
-  @media screen and (min-width: 1281px)
-    ::v-deep .van-dropdown-menu:not(.showPopPreview)
-      >div:nth-child(2) .van-dropdown-item__content
-        width: 15vw
-        border-bottom-right-radius: 8PX
-      >div:nth-child(3) .van-dropdown-item__content
-        width: 11.9vw
-        left: 11.9vw
-        border-bottom-left-radius: 8PX
-        border-bottom-right-radius: 8PX
-      >div:nth-child(4) .van-dropdown-item__content
-        width: 11.9vw
-        left: 11.9vw*2
-        border-bottom-left-radius: 8PX
-        border-bottom-right-radius: 8PX
-      >div:nth-child(6) .van-dropdown-item__content
-        width: 11.9vw
-        left: 11.9vw*4
-        border-bottom-left-radius: 8PX
-        border-bottom-right-radius: 8PX
-      >div:nth-child(7) .van-dropdown-item__content
-        width: 11.9vw
-        left: 11.9vw*5
-        border-bottom-left-radius: 8PX
-        border-bottom-right-radius: 8PX
-      >div:nth-child(8) .van-dropdown-item__content
-        width: 11.9vw
-        left: 11.9vw*6
-        border-bottom-left-radius: 8PX
-        border-bottom-right-radius: 8PX
-      >div:nth-child(9) .van-dropdown-item__content
-        width: 11.9vw
-        left: unset
-        right 0
-        border-bottom-left-radius: 8PX
+    ::v-deep .van-dropdown-menu__bar
+      width 100%
+      overflow-x auto
+      &::-webkit-scrollbar
+        display none
+
+@keyframes fade {
+  0% { opacity: 0.2; transform: translateX(0); }
+  50% { opacity: 0.8; transform: translateX(5px); }
+  100% { opacity: 0.2; transform: translateX(0); }
+}
 
 .search_param_sel
   height 70px
-
   ::v-deep .van-dropdown-menu__title
     font-size 0.26rem
   ::v-deep .van-dropdown-menu__bar
     background none
     height 100% !important
-    @media screen and (max-width: 1280px)
+    @media screen and (max-width: 1120PX)
       .van-dropdown-menu__item
         min-width: max-content;
         padding: 0 0.2rem;
@@ -997,7 +1077,6 @@ export default {
   z-index: 4;
   width 100%
   background: #fff
-
   .pid-n-uid
     display flex
     flex-wrap wrap

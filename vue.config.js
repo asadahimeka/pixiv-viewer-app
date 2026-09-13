@@ -11,7 +11,12 @@ module.exports = {
   lintOnSave: false,
   runtimeCompiler: false,
   productionSourceMap: false,
-  transpileDependencies: ['mint-filter'],
+  devServer: {
+    client: {
+      overlay: false, // 关闭错误/警告浮层
+    },
+  },
+  transpileDependencies: ['@material/material-color-utilities'],
   configureWebpack: config => {
     if (isProduction) {
       config.optimization.minimizer[0].options.minimizer.options.compress.drop_console = true
@@ -40,6 +45,20 @@ module.exports = {
       .loader('xml-loader')
       .end()
 
+    // Handle .wasm files for ONNX Runtime Web
+    config.module
+      .rule('wasm')
+      .test(/\.wasm$/)
+      .type('javascript/auto')
+      .exclude
+      .add(/node_modules/)
+      .end()
+
+    // Prevent webpack from auto-extracting ONNX Runtime WASM files (loaded from CDN at runtime)
+    config.module
+      .rule('ort-js')
+      .test(/onnxruntime-web/)
+      .parser({ url: false })
     if (isProduction) {
       config.plugins.delete('preload')
       config.plugins.delete('prefetch')
@@ -47,7 +66,29 @@ module.exports = {
       config.optimization
         .splitChunks({
           chunks: 'all',
+          cacheGroups: {
+            ort: {
+              test: /[\\/]node_modules[\\/]onnxruntime-web[\\/]/,
+              name: 'ort',
+              chunks: 'all',
+              priority: 20,
+            },
+          },
         })
+      // 模型不自托管：构建时排除 public/models/*.onnx（运行时从 CDN 加载）
+      config.plugin('copy').tap(args => {
+        // copy-webpack-plugin@9 构造器接收 { patterns: [...] }；旧版接收 patterns 数组，两种都兼容
+        const patterns = Array.isArray(args[0]) ? args[0] : args[0] && args[0].patterns
+        if (Array.isArray(patterns)) {
+          for (const pattern of patterns) {
+            if (!pattern.globOptions) pattern.globOptions = {}
+            const ignores = pattern.globOptions.ignore || []
+            ignores.push('**/models/*.onnx')
+            pattern.globOptions.ignore = ignores
+          }
+        }
+        return args
+      })
     }
   },
   css: {

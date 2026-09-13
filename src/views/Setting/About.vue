@@ -50,20 +50,6 @@
       />
       <van-cell
         center
-        title="@Blueberryy"
-        is-link
-        :label="$t('PtZhgMV8k86Gmg96kKTCA')"
-        @click="openLink('https://github.com/Blueberryy')"
-      />
-      <van-cell
-        center
-        title="@olivertzeng"
-        is-link
-        :label="$t('FyTTJetQW2e3wVs2sOjif')"
-        @click="openLink('https://github.com/olivertzeng')"
-      />
-      <van-cell
-        center
         title="pxder"
         is-link
         :label="$t('tQaYxaOwYjOgf1OAnQm4J')"
@@ -85,10 +71,38 @@
       />
       <van-cell
         center
+        title="ShinobuTranslator"
+        is-link
+        label="漫画翻译引擎"
+        @click="openLink('https://github.com/DonutShinobu/ShinobuTranslator')"
+      />
+      <van-cell
+        center
         title="ZeoSeven Fonts (ZSFT)"
         is-link
         label="释放字体自由！"
         @click="openLink('https://fonts.zeoseven.com')"
+      />
+      <van-cell
+        center
+        title="THIRD PARTY NOTICES"
+        is-link
+        label="Third-party open-source components"
+        @click="openLink('https://github.com/asadahimeka/pixiv-viewer/blob/master/THIRD_PARTY_NOTICES')"
+      />
+      <van-cell
+        center
+        title="@Blueberryy"
+        is-link
+        :label="$t('PtZhgMV8k86Gmg96kKTCA')"
+        @click="openLink('https://github.com/Blueberryy')"
+      />
+      <van-cell
+        center
+        title="@olivertzeng"
+        is-link
+        :label="$t('FyTTJetQW2e3wVs2sOjif')"
+        @click="openLink('https://github.com/olivertzeng')"
       />
     </van-cell-group>
     <van-cell-group :title="$t('about.feedback')">
@@ -101,31 +115,31 @@
       />
       <van-cell
         center
-        title="E-mail"
-        is-link
-        label="i@nanoka.top"
-        @click="openLink('mailto:i@nanoka.top')"
-      />
-      <!-- <van-cell
-        center
         :title="$t('cIyLKP7_S_Wo0Y0908dnm')"
         is-link
         label="Github:asadahimeka/pixiv-viewer"
         @click="openLink('https://github.com/asadahimeka/pixiv-viewer/discussions')"
-      /> -->
-      <!-- <van-cell
+      />
+      <van-cell
         center
         :title="$t('VhMNSWrg03-_ryN7nRBJ3')"
         is-link
         :label="$t('9H-9VJU67Fuabl8OgbhOr')"
         @click="openLink('https://www.nanoka.top/say/pxve_comments.html')"
-      /> -->
+      />
+      <van-cell
+        center
+        title="聊天室"
+        is-link
+        label="点击前往 Pixiv Viewer 讨论频道"
+        to="/chat-room"
+      />
     </van-cell-group>
   </div>
 </template>
 
 <script>
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import { CURRENT_APP_VERSION } from '@/consts'
 import platform from '@/platform'
 

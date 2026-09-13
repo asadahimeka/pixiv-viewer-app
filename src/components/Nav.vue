@@ -58,6 +58,8 @@
 import { localApi } from '@/api'
 import { existsSessionId } from '@/api/user'
 
+const isShowBackTop = () => document.documentElement.clientWidth > 1110
+
 export default {
   props: {
     isNavAppear: {
@@ -68,11 +70,20 @@ export default {
   data() {
     return {
       isLogin: localApi.APP_CONFIG.useLocalAppApi || existsSessionId(),
-      isShowBackTop: document.documentElement.clientWidth > 1110,
+      isShowBackTop: isShowBackTop(),
       isDark: !!localStorage.PXV_DARK,
     }
   },
+  mounted() {
+    window.addEventListener('resize', this.updateShowBackTop)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.updateShowBackTop)
+  },
   methods: {
+    updateShowBackTop() {
+      this.isShowBackTop = isShowBackTop()
+    },
     isActive(name) {
       return this.$route.name.startsWith(name)
     },
@@ -103,6 +114,11 @@ export default {
   // height: calc(100px + env(safe-area-inset-bottom));
   z-index: 10;
 
+  @media screen and (min-width: 1120px) {
+    height 100%
+    height 100vh
+  }
+
   opacity: 0;
   transform: translateY(100%);
   transition: 0.2s;
@@ -124,6 +140,7 @@ export default {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
     backdrop-filter: saturate(200%) blur(10PX);
+    -webkit-backdrop-filter: saturate(200%) blur(10PX);
     background: rgba(255, 255, 255, 0.8);
 
     li {

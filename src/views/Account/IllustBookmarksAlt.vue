@@ -62,6 +62,7 @@ export default {
 .my-bookmark-illusts
   width 100%
   height 99vh
+  height 99dvh
 </style>
 <style lang="stylus">
 .app-main:has(.my-bookmark-illusts)

@@ -9,6 +9,28 @@
     />
     <van-cell
       center
+      is-link
+      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
+    >
+      <template #title> Pixiv-Shaft (Android) </template>
+      <template #label> Pixiv 第三方 Android 客户端。 </template>
+    </van-cell>
+    <van-cell
+      center
+      title="Sakuria (iOS)"
+      is-link
+      label="温柔创作的插画社区 ✿"
+      @click="openLink('https://apps.apple.com/app/sakuria/id6788580779')"
+    />
+    <van-cell
+      center
+      title="IllustFerry (Android)"
+      is-link
+      label="IllustFerry是一个非官方的第三方Pixiv客户端"
+      @click="openLink('https://github.com/ZZCYUN/IllustFerry')"
+    />
+    <van-cell
+      center
       title="Pixiv Artvier (Android)"
       is-link
       label="A third-party app for pixiv. 一个第三方pixiv App。"
@@ -56,14 +78,6 @@
       label="Pixiv app with Material Design."
       @click="openLink('https://github.com/onlymash/materixiv')"
     />
-    <van-cell
-      center
-      is-link
-      @click="openLink('https://github.com/CeuiLiSA/Pixiv-Shaft')"
-    >
-      <template #title> Pixiv-Shaft (Android) </template>
-      <template #label> Pixiv 第三方 Android 客户端。 </template>
-    </van-cell>
     <van-cell
       center
       is-link
@@ -312,13 +326,6 @@
 <script>
 export default {
   name: 'SettingRecommendApps',
-  components: {
-  },
-  data() {
-    return {
-
-    }
-  },
   methods: {
     openLink(link) {
       window.umami?.track('open_link', { link: link.replace('https://', '') })

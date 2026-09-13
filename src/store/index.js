@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from '@/lib/lodash'
-import platform from '@/platform'
 import { getSettingDef, LocalStorage, SessionStorage } from '@/utils/storage'
 import { isSafari } from '@/utils'
 import { isArtworkNotCensored } from '@/utils/filter'
+import { DEF_LLM_API_BASE, SILICON_CLOUD_BASR_URL, SERVER_TRANSLATE_URL, SERVER_TRANSLATE_TOKEN } from '@/consts'
+import platform from '@/platform'
 
 Vue.use(Vuex)
 
@@ -28,32 +29,76 @@ export default new Vuex.Store({
     }),
     /** @type {object|null} */
     user: null,
-    blockTags: getSettingDef('PXV_B_TAGS', '').split(',').filter(Boolean),
-    blockUids: getSettingDef('PXV_B_UIDS', '').split(',').filter(Boolean),
+    blockTags: getSettingDef('PXV_B_TAGS', '').split(',').map(t => t.trim()).filter(Boolean),
+    blockUids: getSettingDef('PXV_B_UIDS', '').split(',').map(u => u.trim()).filter(Boolean),
     isNovelViewShrink: true,
     isMobile,
     isSafari: isSafari(),
     /** @type {any[]|null} */
     appNotice: null,
+    /** @type {string[][]} */
+    scPromo: [],
+    translateConfig: {
+      /** @type {'shinobu'|'vl-api'|'server'} */
+      engine: 'vl-api',
+      /** @type {boolean} 用户是否已同意首次下载 Shinobu 模型 */
+      shinobuModelConsent: false,
+      /** @type {boolean} 用户是否已知晓 HTTP Helper 用户脚本提示 */
+      helperConsent: false,
+      /** @type {'translate'|'erase'|'original'} */
+      processMode: 'translate',
+      bubble: true,
+      sourceLang: 'ja',
+      targetLang: 'zh-CN',
+      /** @type {'google_web'|'microsoft'|'llm'} */
+      translator: 'microsoft',
+      provider: DEF_LLM_API_BASE,
+      /** @type {Record<string, {apiKey?: string, baseUrl?: string, model?: string, modelSelMode?: 'list'|'manual'}>} */
+      providers: {
+        [DEF_LLM_API_BASE]: {
+          apiKey: '****************',
+          baseUrl: DEF_LLM_API_BASE,
+          model: 'THUDM/GLM-4-9B-0414',
+          modelSelMode: 'list',
+        },
+        [SILICON_CLOUD_BASR_URL]: {
+          apiKey: '',
+          baseUrl: SILICON_CLOUD_BASR_URL,
+          model: 'tencent/Hunyuan-MT-7B',
+          modelSelMode: 'list',
+        },
+      },
+      // VL API 引擎独立配置
+      vlProvider: DEF_LLM_API_BASE,
+      vlModel: 'Qwen/Qwen3.5-4B',
+      // 小说翻译独立配置
+      novelProvider: DEF_LLM_API_BASE,
+      /** @type {string} 小说翻译完整模型 id */
+      novelModel: 'tencent/Hunyuan-MT-7B',
+      serverUrl: SERVER_TRANSLATE_URL,
+      serverToken: SERVER_TRANSLATE_TOKEN,
+      ...getSettingDef('PXV_TRANSLATE_CONFIG', {}),
+    },
     /** @type {any[]|null} */
     seasonEffects: null,
     routeHistory: SessionStorage.get('PXV_ROUTE_HISTORY', []),
     appSetting: {
-      wfType: getSettingDef('PXV_WF_TYPE', isMobile ? 'Masonry(CSSGrid)' : 'Masonry'),
-      imgReso: getSettingDef('PXV_DTL_IMG_RES', isMobile ? 'Medium' : 'Large'),
-      isLongpressBlock: getSettingDef('PXV_LONGPRESS_BLOCK', false),
-      isLongpressDL: getSettingDef('PXV_LONGPRESS_DL', false),
-      isEnableSwipe: getSettingDef('PXV_IMG_DTL_SWIPE', false),
-      isHideRankManga: getSettingDef('PXV_HIDE_RANK_MANGA', false),
-      isUseFancybox: getSettingDef('PXV_USE_FANCYBOX', false),
+      wfType: isMobile ? 'Masonry(CSSGrid)' : 'Justified',
+      imgReso: isMobile ? 'Medium' : 'Large',
+      isLongpressBlock: false,
+      isLongpressDL: false,
+      isEnableSwipe: false,
+      isHideRankManga: false,
+      isUseFancybox: false,
       isImageFitScreen: getSettingDef('PXV_IMG_FIT_SCREEN', true),
-      isImageCardOuterMeta: getSettingDef('PXV_IMG_META_OUTER', true),
-      isDirectPximg: getSettingDef('PXV_PXIMG_DIRECT', false),
+      isImageCardOuterMeta: true,
+      isDirectPximg: false,
       isAutoLoadImt: getSettingDef('PXV_AUTO_LOAD_IMT', false),
       preferDownloadManager: false,
       preferMediaStore: platform.isAndroid,
       dlSubDirByAuthor: false,
       dlFileNameTpl: '{author}_{title}_{pid}_p{index}',
+      dlFileNameNoSingleP0: false,
       isImgLazy: isMobile,
       searchListMinFavNum: '5',
       isImageCardBorderRadius: true,
@@ -80,7 +125,7 @@ export default new Vuex.Store({
       novelFilterTagLenMax: 30,
       novelFilterTagSplitMax: 5,
       searchListPagination: false,
-      navBarAltStyle: isSafari(),
+      navBarAltStyle: navigator.userAgent.toLowerCase().includes('ios'),
       appStartPage: '',
       isDefBookmarkPrivate: false,
       isDefFollowPrivate: false,
@@ -92,9 +137,12 @@ export default new Vuex.Store({
       isLongpressPrivateFollow: false,
       imgViewHorizonScroll: false,
       imgViewHorizonSwiper: false,
+      ctrlClickNewTab: !isMobile,
       openArtDetailAsPopup: false,
       isExpandMultiPArtwork: false,
-      showPIDMask: true,
+      showPIDMask: !localStorage.PXV_ACT_COLOR,
+      useNovelWebview: false,
+      searchDefaultIdType: '',
       ...getSettingDef('PXV_APP_SETTING', {}),
     },
   },
@@ -109,7 +157,7 @@ export default new Vuex.Store({
     blockUidsSet: state => new Set(state.blockUids),
     isCensored: state => artwork => !isArtworkNotCensored(artwork, state),
     isNoOuterMeta(state) {
-      return state.appSetting.isVirtualList || ['VirtualSlide', 'Justified(Transform)'].includes(state.appSetting.wfType)
+      return state.appSetting.isVirtualList || ['VirtualSlide', 'Justified(Transform)', 'Masonry2'].includes(state.appSetting.wfType)
     },
     wfProps: () => ({
       gutter: '8px',
@@ -175,11 +223,24 @@ export default new Vuex.Store({
         state.blockUids = _.uniq([...state.blockUids, ...arr])
       }
     },
+    removeBlockTag(state, tag) {
+      state.blockTags = state.blockTags.filter(t => t !== tag)
+      LocalStorage.set('PXV_B_TAGS', state.blockTags.join(','))
+    },
+    removeBlockUid(state, uid) {
+      state.blockUids = state.blockUids.filter(u => u !== uid)
+      LocalStorage.set('PXV_B_UIDS', state.blockUids.join(','))
+    },
     setIsNovelViewShrink(state, val) {
       state.isNovelViewShrink = val
     },
     setAppNotice(state, val) {
       state.appNotice = val
+    },
+    setScPromo(state, val) {
+      if (Array.isArray(val) && val.length) {
+        state.scPromo = val
+      }
     },
     setSeasonEffects(state, val) {
       state.seasonEffects = val
@@ -192,6 +253,20 @@ export default new Vuex.Store({
       state.routeHistory = val
       SessionStorage.set('PXV_ROUTE_HISTORY', val)
     },
+    SET_TRANSLATE_CONFIG(state, patch) {
+      window.umami?.track('SET_TRANSLATE_CONFIG', {
+        patch: JSON.stringify(patch, (k, v) => (k == 'apiKey' || k == 'serverToken') ? '[REDACTED]' : v),
+      })
+      state.translateConfig = {
+        ...state.translateConfig,
+        ...patch,
+        providers: {
+          ...state.translateConfig.providers,
+          ...(patch.providers || {}),
+        },
+      }
+      LocalStorage.set('PXV_TRANSLATE_CONFIG', state.translateConfig)
+    },
   },
   actions: {
     setGalleryList({ commit }, list) {
@@ -203,8 +278,14 @@ export default new Vuex.Store({
     appendBlockTags({ commit }, value) {
       commit('setBlockTags', value)
     },
+    removeBlockTag({ commit }, tag) {
+      commit('removeBlockTag', tag)
+    },
     appendBlockUids({ commit }, value) {
       commit('setBlockUids', value)
+    },
+    removeBlockUid({ commit }, uid) {
+      commit('removeBlockUid', uid)
     },
   },
 })

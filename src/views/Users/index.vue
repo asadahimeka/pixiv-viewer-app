@@ -44,7 +44,7 @@
             <div class="share_btn" @click="share">
               <Icon class="icon" name="share" />
             </div>
-            <div>
+            <div class="user_id_sns">
               <ul class="site-list">
                 <li class="site user_account">
                   <a target="_blank" rel="noreferrer" :href="'https://pixiv.me/' + userInfo.account">
@@ -72,7 +72,7 @@
                 </li>
               </ul>
             </div>
-            <div>
+            <div class="user_follow_region">
               <span v-if="isCurrentUser" class="follow" style="cursor: pointer;" @click="toFollowedUsers">
                 {{ $t('user.following') }}
                 <span class="num">
@@ -256,7 +256,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import _ from '@/lib/lodash'
 import api, { localApi } from '@/api'
 import platform from '@/platform'
@@ -561,13 +561,13 @@ export default {
 .android .users
   .top-bar-wrap
     padding-top 1rem !important
-  .share_btn
-    top: 1.15rem !important
+    &+.share_btn
+      top: 1rem !important
   &:has(.van-sticky--fixed)
     .top-bar-wrap
       top 1rem !important
-    .share_btn
-      top 2.2rem !important
+      &+.share_btn
+        top 2rem !important
 </style>
 <style lang="stylus" scoped>
 // .user-container {
@@ -694,7 +694,7 @@ export default {
         &.social-links {
           transform: translateY(2PX) !important
         }
-        @media screen and (max-width: 1280px) {
+        @media screen and (max-width: 1120PX) {
           &.social-links {
             transform: translateY(-2PX) !important
           }

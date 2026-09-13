@@ -12,20 +12,46 @@
     @click="showFull"
     @wheel="handleWheel"
   >
-    <swiper v-if="isImgViewSwiper" ref="mySwiper" :options="swiperOption">
-      <swiper-slide v-for="(url, index) in artwork.images" :key="index" class="image-box">
-        <Pximg
-          :src="getImgUrl(url)"
-          :alt="`${artwork.title} - Page ${index + 1}`"
-          :style="isLargeWebp && index==0 ? 'view-transition-name: artwork-cover' : ''"
-          class="image"
-          @click.native.stop="view(index)"
-        />
-      </swiper-slide>
-      <div slot="pagination" class="swiper-pagination"></div>
-      <div slot="button-prev" class="swiper-button-prev"></div>
-      <div slot="button-next" class="swiper-button-next"></div>
-    </swiper>
+    <template v-if="isImgViewSwiper">
+      <swiper v-if="showImgViewSwiper" ref="mySwiper" :options="swiperOption">
+        <swiper-slide v-for="(url, index) in artwork.images" :key="index" class="image-box">
+          <Pximg
+            :src="getImgUrl(url)"
+            :alt="`${artwork.title} - Page ${index + 1}`"
+            :style="isLargeWebp && index==0 ? 'view-transition-name: artwork-cover' : ''"
+            class="image"
+            @click.native.stop="view(index)"
+          />
+          <template v-if="showPicTranslateBtn">
+            <van-button
+              class="translate-btn"
+              size="small"
+              round
+              plain
+              style="border-radius: 12px !important"
+              :loading="translatingIndex === index"
+              :disabled="translatingIndex === index"
+              @click.stop="$emit('translate', index)"
+            >
+              🌐{{ translatingIndex === index ? '' : '译' }}
+            </van-button>
+            <MangaTranslateOverlay
+              v-if="showOverlay"
+              :page-index="index"
+              :translated-canvas="translatedCanvases[index]"
+              :show-translated="showTranslated"
+              :loading="!!pipelineProgress[index] && pipelineProgress[index].stage !== '' && pipelineProgress[index].stage !== 'complete'"
+              :progress="pipelineProgress[index] || { stage: '', detail: '', percent: 0 }"
+              :stage-timings="pipelineStageTimings[index] || []"
+              @toggle="$emit('toggle-translate')"
+            />
+          </template>
+        </swiper-slide>
+        <div slot="pagination" class="swiper-pagination"></div>
+        <div slot="button-prev" class="swiper-button-prev"></div>
+        <div slot="button-next" class="swiper-button-next"></div>
+      </swiper>
+    </template>
     <template v-else>
       <div
         v-for="(url, index) in artwork.images"
@@ -52,6 +78,30 @@
           @click.native.stop="view(index)"
           @contextmenu.native="preventContext"
         />
+        <template v-if="showPicTranslateBtn">
+          <van-button
+            class="translate-btn"
+            size="small"
+            round
+            plain
+            style="border-radius: 12px !important"
+            :loading="translatingIndex === index"
+            :disabled="translatingIndex === index"
+            @click.stop="$emit('translate', index)"
+          >
+            🌐{{ translatingIndex === index ? '' : '译' }}
+          </van-button>
+          <MangaTranslateOverlay
+            v-if="showOverlay"
+            :page-index="index"
+            :translated-canvas="translatedCanvases[index]"
+            :show-translated="showTranslated"
+            :loading="!!pipelineProgress[index] && pipelineProgress[index].stage !== '' && pipelineProgress[index].stage !== 'complete'"
+            :progress="pipelineProgress[index] || { stage: '', detail: '', percent: 0 }"
+            :stage-timings="pipelineStageTimings[index] || []"
+            @toggle="$emit('toggle-translate')"
+          />
+        </template>
         <div v-if="seasonEffectSrc" class="season-effect" :style="`--bg:url(${seasonEffectSrc})`"></div>
         <canvas
           v-if="showUgoiraControl"
@@ -64,6 +114,14 @@
         ></canvas>
       </div>
     </template>
+    <MangaTranslateDebug
+      v-if="showOverlay && debugVisible"
+      :visible="debugVisible"
+      :artifacts="currentArtifacts"
+      :stage-timings="pipelineStageTimings[currentDebugPage] || []"
+      :model-info="debugModelInfo"
+      @close="debugVisible = false"
+    />
     <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4" />
     <div v-if="showUgoiraControl" class="ugoira-controls">
       <div v-if="ugoiraPlaying" class="btn-pause" @click="drawCanvas('pause')">
@@ -82,20 +140,55 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Dialog, ImagePreview } from 'vant'
+import { Dialog, ImagePreview } from '@/lib/vant-apis'
 import store from '@/store'
 import { COMMON_IMAGE_PROXY, ugoiraAvifSrc } from '@/consts'
 import { fancyboxShow, downloadFile } from '@/utils'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { downloadUgoira, loadUgoira } from '@/utils/ugoira'
+import MangaTranslateOverlay from './MangaTranslateOverlay.vue'
+import MangaTranslateDebug from './MangaTranslateDebug.vue'
 
 const { isLongpressDL, imgReso, autoPlayUgoira, isUgoiraAvifSrc } = store.state.appSetting
 
 export default {
+  name: 'ImageView',
+  components: {
+    MangaTranslateOverlay,
+    MangaTranslateDebug,
+  },
   props: {
     artwork: {
       type: Object,
       required: true,
+    },
+    showPicTranslateBtn: {
+      type: Boolean,
+      default: false,
+    },
+    translatingIndex: {
+      type: Number,
+      default: -1,
+    },
+    translatedCanvases: {
+      type: Object,
+      default: () => ({}),
+    },
+    showTranslated: {
+      type: Boolean,
+      default: false,
+    },
+    pipelineProgress: {
+      type: Object,
+      default: () => ({}),
+    },
+    pipelineStageTimings: {
+      type: Object,
+      default: () => ({}),
+    },
+    currentArtifacts: {
+      type: Object,
+      default: null,
     },
   },
   data() {
@@ -106,9 +199,12 @@ export default {
       curIndex: 0,
       progressShow: false,
       progress: 0,
+      debugVisible: false,
+      currentDebugPage: 0,
       isLongpressDL,
       isLargeWebp: imgReso == 'Large(WebP)',
       isUgoiraAvifSrc,
+      showImgViewSwiper: false,
       swiperOption: {
         mousewheel: true,
         keyboard: true,
@@ -161,6 +257,23 @@ export default {
         store.state.appSetting.imgViewHorizonSwiper &&
         !store.state.appSetting.imgViewHorizonScroll
     },
+    translationEngine() {
+      return store.state.translateConfig.engine
+    },
+    showOverlay() {
+      if (!this.showPicTranslateBtn) return false
+      // 画布 overlay 的消费引擎：shinobu（本地管线）与 server（服务端管线）都输出
+      // translatedCanvases[index] 画布，由 MangaTranslateOverlay 统一渲染；vl-api 走文本面板
+      return this.translationEngine === 'shinobu' || this.translationEngine === 'server'
+    },
+    debugModelInfo() {
+      const stages = this.currentArtifacts?.runtimeStages || []
+      const info = {}
+      stages.forEach(s => {
+        if (s && s.model) info[s.model] = s.provider || s.engine || s.status || 'ok'
+      })
+      return Object.keys(info).length ? info : {}
+    },
   },
   watch: {
     artwork(val) {
@@ -168,9 +281,13 @@ export default {
         this.init()
       }
     },
+    translatingIndex(val) {
+      if (val >= 0) this.currentDebugPage = val
+    },
   },
   mounted() {
     this.init()
+    if (this.$route.query.debug === '1') this.debugVisible = true
   },
   deactivated() {
     this.resetUgoira()
@@ -182,8 +299,8 @@ export default {
       }
       const urlMap = {
         'Medium': urls.l,
-        'Large(WebP)': urls.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/c/1200x1200_90_webp/'),
-        'Large': urls.l.replace(/\/c\/\d+x\d+(_\d+)?\//g, '/'),
+        'Large(WebP)': urls.l.replace(/\/c\/\d+x\d+\w*\//g, '/c/1200x1200_90_webp/'),
+        'Large': urls.l.replace(/\/c\/\d+x\d+\w*\//g, '/'),
         'Original': urls.o,
       }
       return urlMap[imgReso] || urls.l
@@ -373,7 +490,10 @@ export default {
         this.$refs.view.scrollLeft = 0
       }
       if (this.isImgViewSwiper) {
-        this.$refs.mySwiper?.$swiper?.slideTo(0)
+        this.showImgViewSwiper = false
+        this.$nextTick(() => {
+          this.showImgViewSwiper = true
+        })
       }
       this.resetUgoira()
       this.$nextTick(() => {
@@ -499,6 +619,20 @@ export default {
       bottom 0.1rem
       right 0.1rem
       font-weight bold
+    }
+
+    .translate-btn {
+      position absolute
+      bottom 0.2rem
+      right 0.2rem
+      z-index 10
+      font-size 0.24rem
+      padding 0 0.15rem
+      opacity 0.7
+      transition opacity 0.2s
+      &:hover {
+        opacity 1
+      }
     }
   }
 

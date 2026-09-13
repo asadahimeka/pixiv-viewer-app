@@ -39,8 +39,8 @@
 </template>
 
 <script>
-import { Dialog } from 'vant'
 import _ from '@/lib/lodash'
+import { Dialog } from '@/lib/vant-apis'
 import store from '@/store'
 import platform from '@/platform'
 import { COMMON_PROXY, PIXIV_NEXT_URL, UA_Header } from '@/consts'

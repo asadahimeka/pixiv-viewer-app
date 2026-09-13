@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import { Dialog } from 'vant'
+import { Dialog } from '@/lib/vant-apis'
 import TopBar from '@/components/TopBar'
 import LazyImage from '@/components/LazyImage.vue'
 import { downloadFile } from '@/utils'

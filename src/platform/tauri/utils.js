@@ -5,7 +5,6 @@ import { open } from '@tauri-apps/plugin-shell'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import { sep as sepFn, pictureDir } from '@tauri-apps/api/path'
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
-import { Toast } from 'vant'
 import { i18n } from '@/i18n'
 import { LocalStorage } from '@/utils/storage'
 import {
@@ -75,13 +74,8 @@ export async function downloadFile(url, fileName, subDir = '') {
       isRetryableDlError
     )
 
-    Toast.clear(true)
-    Toast({
-      message: i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(resPath),
-      duration: 3000,
-    })
-
-    return { res: resPath }
+    const successMsg = i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(resPath)
+    return { res: resPath, successMsg }
   } catch (error) {
     return { error: markDlError(error, 'tauriDl', url) }
   }
@@ -100,13 +94,8 @@ export async function downloadBlob(blob, fileName, subDir = '') {
     const res = `${await baseDlDir()}${subDir}${sep}${fileName}`
     await fs.writeFile(res, await blob.arrayBuffer())
 
-    Toast.clear(true)
-    Toast({
-      message: i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(res),
-      duration: 3000,
-    })
-
-    return { res }
+    const successMsg = i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(res)
+    return { res, successMsg }
   } catch (error) {
     return { error: markDlError(error, 'tauriBlob') }
   }
