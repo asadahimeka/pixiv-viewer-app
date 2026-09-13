@@ -8,6 +8,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
 
+import androidx.activity.result.ActivityResult;
+
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -35,10 +37,11 @@ public class SafPlugin extends Plugin {
     }
 
     @ActivityCallback
-    private void pickFolderResult(PluginCall call, Intent data) {
+    private void pickFolderResult(PluginCall call, ActivityResult result) {
         if (call == null) {
             return;
         }
+        Intent data = result != null ? result.getData() : null;
         if (data == null || data.getData() == null) {
             call.reject("cancelled");
             return;

@@ -1062,14 +1062,14 @@ html:has(.novel_text) #immersive-translate-popup
       display list-item
     .nav-bar .nav_to_top
       position absolute
-      bottom 1.3rem
+      bottom calc(1.3rem + var(--nav-bar-height))
     .nav-bar .nav_setting
       position absolute
-      bottom 0.4rem
+      bottom calc(0.4rem + var(--nav-bar-height))
       margin-bottom 0 !important
     .nav-bar .nav_back
       position absolute
-      top  0.4rem
+      top  calc(0.4rem + var(--status-bar-height))
     .top-bar-wrap
       display none
   #app .users

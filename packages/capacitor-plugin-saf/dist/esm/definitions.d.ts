@@ -11,6 +11,7 @@ export interface SafPlugin extends Plugin {
     relativeDir: string
     fileName: string
     srcPath: string
-    mime: string
+    /** 缺省为 application/octet-stream */
+    mime?: string
   }): Promise<{ uri: string; name: string | null }>
 }

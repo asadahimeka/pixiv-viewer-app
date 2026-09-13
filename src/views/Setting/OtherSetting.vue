@@ -214,40 +214,36 @@
           <van-switch :value="appSetting.isUgoiraApngSaveAsPng" size="24" @change="v => saveAppSetting('isUgoiraApngSaveAsPng', v)" />
         </template>
       </van-cell>
-      <van-cell v-if="platform.isAndroid" center :title="$t('8uktANA7hP_We9wM_o8lN')" :label="$t('9zbbiHNnDhb2eebwLd3HR')">
-        <template #right-icon>
-          <van-switch
-            :value="appSetting.preferDownloadManager"
-            size="24"
-            @change="v => {
-              v && saveAppSetting('preferMediaStore', false);
-              saveAppSetting('preferDownloadManager', v, true);
-            }"
-          />
-        </template>
-      </van-cell>
-      <van-cell v-if="platform.isAndroid" center :title="$t('OcF9ZWmu2_E8bvGSIiAdJ')" :label="$t('oaNdIowRN9TQxKA0EECI4')">
-        <template #right-icon>
-          <van-switch
-            :value="appSetting.preferMediaStore"
-            size="24"
-            @change="v => {
-              v && saveAppSetting('preferDownloadManager', false);
-              saveAppSetting('preferMediaStore', v, true);
-            }"
-          />
-        </template>
-      </van-cell>
-      <van-cell
-        v-if="platform.isAndroid && !appSetting.preferDownloadManager"
-        center
-        :title="$t('setting.dl_saf.title')"
-        :label="$t('setting.dl_saf.desc')"
-      >
-        <template #right-icon>
-          <van-switch :value="safEnabled" size="24" @change="toggleSaf" />
-        </template>
-      </van-cell>
+      <template v-if="platform.isAndroid">
+        <van-cell v-if="!appSetting.preferMediaStore && !appSetting.preferDownloadManager&& !safEnabled" center :title="$t('OxDudBbelw-lsaDulb0nc')" />
+        <van-cell center :title="$t('OcF9ZWmu2_E8bvGSIiAdJ')" :label="$t('oaNdIowRN9TQxKA0EECI4')">
+          <template #right-icon>
+            <van-switch :value="appSetting.preferMediaStore" size="24" @change="toggleMediaStore" />
+          </template>
+        </van-cell>
+        <van-cell center :title="$t('8uktANA7hP_We9wM_o8lN')" :label="$t('9zbbiHNnDhb2eebwLd3HR')">
+          <template #right-icon>
+            <van-switch :value="appSetting.preferDownloadManager" size="24" @change="toggleDlManager" />
+          </template>
+        </van-cell>
+        <van-cell
+          center
+          :title="$t('setting.dl_saf.title')"
+          :label="$t('setting.dl_saf.desc')"
+        >
+          <template #right-icon>
+            <van-switch :value="safEnabled" size="24" @change="toggleSaf" />
+          </template>
+        </van-cell>
+        <van-cell
+          v-if="safEnabled"
+          center
+          :title="$t('setting.dl_saf.cur_dir')"
+          :label="formatSafDir(safDir)"
+          is-link
+          @click="pickSafFolder(false)"
+        />
+      </template>
     </van-cell-group>
 
     <van-cell-group :title="$t('7-drBPGRIz_BsYuc9ybCm')">
@@ -596,7 +592,7 @@
 </template>
 
 <script>
-import { Dialog, Toast } from '@/lib/vant-apis'
+import { Dialog } from '@/lib/vant-apis'
 import PixivAuth from '@/api/client/pixiv-auth'
 import store from '@/store'
 import platform from '@/platform'
@@ -798,6 +794,7 @@ export default {
       novelFilterTagSplitMax: store.state.appSetting.novelFilterTagSplitMax,
       dlEnvLegacy: false,
       safEnabled: LocalStorage.get('PXV_DL_USE_SAF', false) && !!LocalStorage.get('PXV_DL_SAF_URI'),
+      safDir: LocalStorage.get('PXV_DL_SAF_URI', ''),
       syncDialogShow: false,
       showDefaultTypeSheet: false,
       defaultTypeActions: [
@@ -875,26 +872,6 @@ export default {
     }
   },
   methods: {
-    async toggleSaf(v) {
-      if (!v) {
-        this.safEnabled = false
-        LocalStorage.set('PXV_DL_USE_SAF', false)
-        return
-      }
-      try {
-        const { Saf } = await import('capacitor-plugin-saf')
-        const { uri } = await Saf.pickFolder()
-        LocalStorage.set('PXV_DL_SAF_URI', uri)
-        LocalStorage.set('PXV_DL_USE_SAF', true)
-        this.safEnabled = true
-        Toast.success(uri)
-      } catch (err) {
-        console.log('saf pick err: ', err)
-        this.safEnabled = false
-        LocalStorage.set('PXV_DL_USE_SAF', false)
-        Toast.fail(String(err))
-      }
-    },
     reloadPage() {
       sessionStorage.setItem('PXV_SETTING_PAGE_SCROLL_TOP', document.documentElement.scrollTop)
       setTimeout(() => {
@@ -923,6 +900,64 @@ export default {
       window.umami?.track(`set:${key}`, { val })
       store.commit('setAppSetting', { [key]: val })
       if (needReload) this.reloadPage()
+    },
+    toggleDlManager(v) {
+      if (v) {
+        this.saveAppSetting('preferMediaStore', false)
+        this.toggleSaf(false)
+      }
+      this.saveAppSetting('preferDownloadManager', v, true)
+    },
+    toggleMediaStore(v) {
+      if (v) {
+        this.saveAppSetting('preferDownloadManager', false)
+        this.toggleSaf(false)
+      }
+      this.saveAppSetting('preferMediaStore', v, true)
+    },
+    async toggleSaf(v) {
+      if (!v) {
+        this.safEnabled = false
+        LocalStorage.set('PXV_DL_USE_SAF', false)
+        return
+      }
+      await this.pickSafFolder(true)
+    },
+    async pickSafFolder(fromToggle) {
+      try {
+        const { Saf } = await import('capacitor-plugin-saf')
+        const { uri } = await Saf.pickFolder()
+        LocalStorage.set('PXV_DL_SAF_URI', uri)
+        LocalStorage.set('PXV_DL_USE_SAF', true)
+        this.safEnabled = true
+        this.safDir = uri
+        this.$toast(this.$t('setting.dl_saf.pick_ok', { dir: this.formatSafDir(uri) }))
+        this.saveAppSetting('preferDownloadManager', false)
+        this.saveAppSetting('preferMediaStore', false)
+      } catch (err) {
+        console.log('saf pick err: ', err)
+        const msg = (err && err.message) || String(err || '')
+        // 用户在系统选择器里取消属于正常操作，静默恢复原状态
+        if (msg === 'cancelled') return
+        if (fromToggle) {
+          this.safEnabled = false
+          LocalStorage.set('PXV_DL_USE_SAF', false)
+        }
+        this.$toast.fail(msg)
+      }
+    },
+    // 把 tree uri 解码成可读路径：primary:DCIM/Pixiv -> /storage/emulated/0/DCIM/Pixiv
+    formatSafDir(uri) {
+      const seg = (uri || '').split('/tree/').pop() || ''
+      let dir = seg
+      try {
+        dir = decodeURIComponent(seg)
+      } catch (e) {
+        // 解码失败时退回原始片段
+      }
+      dir = dir.replace(':', '/')
+      if (dir.startsWith('primary/')) dir = '/storage/emulated/0/' + dir.slice(8)
+      return dir
     },
     async setDirectPximg(val) {
       if (val) {
