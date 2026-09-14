@@ -388,11 +388,11 @@ async function _downloadFile(source, fileName, options = {}) {
     }
 
     if (platform.isCapacitor) {
-      if (store.state.appSetting.preferDownloadManager) {
-        setTimeout(() => {
-          loading?.clear?.()
-        }, 2000)
-      }
+      // if (store.state.appSetting.preferDownloadManager) {
+      //   setTimeout(() => {
+      //     loading?.clear?.()
+      //   }, 2000)
+      // }
       const util = await import('@/platform/capacitor/utils')
       const result = source instanceof Blob
         ? await util.downloadBlob(source, fileName, options.subDir)

@@ -903,20 +903,21 @@ export default {
     },
     toggleDlManager(v) {
       if (v) {
-        this.saveAppSetting('preferMediaStore', false)
+        store.commit('setAppSetting', { preferMediaStore: false })
         this.toggleSaf(false)
       }
       this.saveAppSetting('preferDownloadManager', v, true)
     },
     toggleMediaStore(v) {
       if (v) {
-        this.saveAppSetting('preferDownloadManager', false)
+        store.commit('setAppSetting', { preferDownloadManager: false })
         this.toggleSaf(false)
       }
       this.saveAppSetting('preferMediaStore', v, true)
     },
     async toggleSaf(v) {
       if (!v) {
+        window.umami?.track('toggleSaf', { val: 'false' })
         this.safEnabled = false
         LocalStorage.set('PXV_DL_USE_SAF', false)
         return
@@ -931,9 +932,12 @@ export default {
         LocalStorage.set('PXV_DL_USE_SAF', true)
         this.safEnabled = true
         this.safDir = uri
+        window.umami?.track('toggleSaf', { val: uri })
         this.$toast(this.$t('setting.dl_saf.pick_ok', { dir: this.formatSafDir(uri) }))
-        this.saveAppSetting('preferDownloadManager', false)
-        this.saveAppSetting('preferMediaStore', false)
+        store.commit('setAppSetting', {
+          preferDownloadManager: false,
+          preferMediaStore: false,
+        })
       } catch (err) {
         console.log('saf pick err: ', err)
         const msg = (err && err.message) || String(err || '')

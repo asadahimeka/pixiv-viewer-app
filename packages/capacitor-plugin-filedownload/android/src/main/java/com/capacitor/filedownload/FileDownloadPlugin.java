@@ -22,7 +22,8 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
-import java.util.Objects;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @CapacitorPlugin(name = "FileDownload", permissions = {
         @Permission(
@@ -41,19 +42,31 @@ public class FileDownloadPlugin extends Plugin {
     //下载器
     private DownloadManager downloadManager;
     private Context mContext;
-    //下载的ID
-    private long downloadId;
-    // 存储最终返回给前端的路径或Uri
-    private String pathstr;
 
-    PluginCall savedCall;
+    /**
+     * 每个下载任务独立持有 call 和预期路径，按 downloadId 索引。
+     * 不能用单个实例字段保存，否则并发下载时后一个任务会覆盖前一个，
+     * 导致先入队任务的完成回调丢失（对应的前端 Promise 永远挂起）。
+     */
+    private final Map<Long, PendingDownload> pendingDownloads = new ConcurrentHashMap<>();
+    private boolean receiverRegistered = false;
+
+    /** 单个下载任务的状态 */
+    private static class PendingDownload {
+        final PluginCall call;
+        final String path;
+
+        PendingDownload(PluginCall call, String path) {
+            this.call = call;
+            this.path = path;
+        }
+    }
 
     @PluginMethod
     public void download(PluginCall call) {
         try {
             // 在 Android 10 及以下，需要该权限
             if (isStoragePermissionGranted()) {
-                savedCall = call;
                 mContext = getContext();
                 downloadFile(call);
             } else {
@@ -84,9 +97,7 @@ public class FileDownloadPlugin extends Plugin {
         String url = call.getString("uri", "");
         String fileName = call.getString("fileName", "");
 
-        assert url != null;
-        assert fileName != null;
-        if (url.isEmpty() || fileName.isEmpty()) {
+        if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty()) {
             call.reject("URL and fileName must be provided.");
             return;
         }
@@ -102,72 +113,129 @@ public class FileDownloadPlugin extends Plugin {
         request.setVisibleInDownloadsUi(true);
         request.allowScanningByMediaScanner();
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-        pathstr = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fileName;
+        String targetPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fileName;
 
         //获取DownloadManager
         if (downloadManager == null) {
             downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         }
-        //将下载请求加入下载队列，加入下载队列后会给该任务返回一个long型的id，通过该id可以取消任务，重启任务、获取下载的文件等等
-        if (downloadManager != null) {
-            downloadId = downloadManager.enqueue(request);
-        } else {
+        if (downloadManager == null) {
             call.reject("DownloadManager service not available.");
             return;
         }
 
-        //注册广播接收者，监听下载状态
-        mContext.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        //将下载请求加入下载队列，加入下载队列后会给该任务返回一个long型的id，通过该id可以取消任务，重启任务、获取下载的文件等等
+        long downloadId = downloadManager.enqueue(request);
+        pendingDownloads.put(downloadId, new PendingDownload(call, targetPath));
+
+        //注册广播接收者，监听下载状态（只注册一次，任务全部结束后注销）
+        if (!receiverRegistered) {
+            receiverRegistered = true;
+            mContext.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        }
     }
 
     //广播监听下载的各个状态
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            checkStatus();
+            //广播里携带已完成任务的 id，只处理自己登记过的下载，多任务互不影响
+            long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if (downloadId == -1) {
+                return;
+            }
+            PendingDownload pending = pendingDownloads.get(downloadId);
+            if (pending != null) {
+                checkStatus(downloadId, pending);
+            }
         }
     };
 
     //检查下载状态
-    private void checkStatus() {
+    private void checkStatus(long downloadId, PendingDownload pending) {
         DownloadManager.Query query = new DownloadManager.Query();
         //通过下载的id查找
         query.setFilterById(downloadId);
         try (Cursor cursor = downloadManager.query(query)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                @SuppressLint("Range") int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                switch (status) {
-                    //下载完成
-                    case DownloadManager.STATUS_SUCCESSFUL:
-                        mContext.unregisterReceiver(this.receiver);
-                        JSObject ret = new JSObject();
-                        ret.put("path", "file://" + pathstr);
-                        if (savedCall != null) {
-                            savedCall.resolve(ret);
-                        }
-                        break;
-                    //下载失败
-                    case DownloadManager.STATUS_FAILED:
-                        mContext.unregisterReceiver(this.receiver);
-                        @SuppressLint("Range") int reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
-                        String errorMessage = getErrorMessage(reason);
-                        if (savedCall != null) {
-                            savedCall.reject("下载失败: " + errorMessage);
-                        }
-                        break;
-                    case DownloadManager.STATUS_PAUSED:
-                    case DownloadManager.STATUS_PENDING:
-                    case DownloadManager.STATUS_RUNNING:
-                        // 可以在这里处理进度更新，但本插件未实现
-                        break;
-                }
+            if (cursor == null || !cursor.moveToFirst()) {
+                //有完成广播但查不到记录：任务可能被用户取消或清除，直接结束回调避免挂起
+                settle(downloadId, pending.call, null, "下载记录不存在（可能已被取消或清除）");
+                return;
+            }
+            @SuppressLint("Range") int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            switch (status) {
+                //下载完成
+                case DownloadManager.STATUS_SUCCESSFUL:
+                    settle(downloadId, pending.call, buildSuccessResult(cursor, pending.path), null);
+                    break;
+                //下载失败
+                case DownloadManager.STATUS_FAILED:
+                    @SuppressLint("Range") int reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
+                    String errorMessage = getErrorMessage(reason);
+                    settle(downloadId, pending.call, null, "下载失败: " + errorMessage);
+                    break;
+                case DownloadManager.STATUS_PAUSED:
+                case DownloadManager.STATUS_PENDING:
+                case DownloadManager.STATUS_RUNNING:
+                    // 可以在这里处理进度更新，但本插件未实现
+                    break;
             }
         } catch (Exception e) {
             Logger.error(getLogTag(), "Error checking download status", e);
-            if (savedCall != null) {
-                savedCall.reject("查询下载状态时出错: " + e.getMessage());
-            }
+            settle(downloadId, pending.call, null, "查询下载状态时出错: " + e.getMessage());
         }
+    }
+
+    /**
+     * 结束一个下载任务：移除登记、必要时注销广播，然后只回调属于该任务的 call。
+     */
+    private void settle(long downloadId, PluginCall call, JSObject result, String errorMessage) {
+        pendingDownloads.remove(downloadId);
+        maybeUnregisterReceiver();
+        if (call == null) {
+            return;
+        }
+        if (result != null) {
+            call.resolve(result);
+        } else {
+            call.reject(errorMessage);
+        }
+    }
+
+    private void maybeUnregisterReceiver() {
+        if (receiverRegistered && pendingDownloads.isEmpty() && mContext != null) {
+            try {
+                mContext.unregisterReceiver(receiver);
+            } catch (IllegalArgumentException ignored) {
+                // 未注册时注销会抛异常，忽略即可
+            }
+            receiverRegistered = false;
+        }
+    }
+
+    /**
+     * 构建成功结果。优先取 DownloadManager 记录的实际落盘地址
+     * （目标文件重名时系统会自动改名，预估路径可能不准），取不到再回退到预估路径。
+     */
+    private JSObject buildSuccessResult(Cursor cursor, String fallbackPath) {
+        String path = fallbackPath;
+        try {
+            @SuppressLint("Range") String localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+            if (localUri != null) {
+                Uri uri = Uri.parse(localUri);
+                if ("file".equals(uri.getScheme())) {
+                    String decoded = uri.getPath();
+                    if (decoded != null && !decoded.isEmpty()) {
+                        path = decoded;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // 列缺失或解析失败时沿用预估路径
+        }
+        JSObject ret = new JSObject();
+        ret.put("path", "file://" + path);
+        return ret;
     }
 
     /**

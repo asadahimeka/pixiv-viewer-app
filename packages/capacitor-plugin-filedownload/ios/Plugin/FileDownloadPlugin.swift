@@ -9,59 +9,82 @@ import CoreTelephony
  */
 @objc(FileDownloadPlugin)
 public class FileDownloadPlugin: CAPPlugin {
-    // private let implementation = FileDownload()
+    /**
+     * 单个下载任务的状态。不能用插件实例字段保存 call/重试次数等，
+     * 否则并发下载时后一个任务会覆盖前一个，导致先发起任务的回调丢失（Promise 永远挂起）。
+     */
+    final class DownloadTask {
+        let call: CAPPluginCall
+        let url: String
+        let fileName: String
+        var fileUrl: URL?
+        var reTryCount = 0
+        var settled = false
 
-    var downloadRequest:DownloadRequest!//下载请求对象
-    var _call:CAPPluginCall!
-    var fileUrl:URL!
-    
-    var url: String!
-    var fileName: String!
-    
-    // 重试次数
-    var reTryCount = 0
-    var maxRetryCount = 3
-
-    @objc func download(_ call:CAPPluginCall) {
-        self._call = call;
-        self.url = call.getString("uri") ?? ""
-        self.fileName = call.getString("fileName") ?? ""
-        
-        handlerDownload()
-    }
-    
-    func handlerDownload(){
-        let destination: DownloadRequest.Destination = { _, response in
-            let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: FileManager.SearchPathDomainMask.userDomainMask).first
-            self.fileUrl = documentsUrl?.appendingPathComponent(self.fileName)
-            
-            return (self.fileUrl, [.removePreviousFile, .createIntermediateDirectories])
+        init(call: CAPPluginCall, url: String, fileName: String) {
+            self.call = call
+            self.url = url
+            self.fileName = fileName
         }
-        self.downloadRequest =  AF.download(self.url, to: destination)
-        self.downloadRequest.downloadProgress(closure: self.downloadProgress)
-        self.downloadRequest.responseData(completionHandler: self.downloadResponse)
     }
-    
-    // 下载进度
-    func downloadProgress(progress: Progress) {
-        self.notifyListeners("downloadProgress", data: ["progress": progress.fractionCompleted])
+
+    // 保持任务存活直到下载结束
+    var activeTasks: [DownloadTask] = []
+
+    @objc func download(_ call: CAPPluginCall) {
+        let url = call.getString("uri") ?? ""
+        let fileName = call.getString("fileName") ?? ""
+        let task = DownloadTask(call: call, url: url, fileName: fileName)
+        activeTasks.append(task)
+        handlerDownload(task)
     }
-     //根据下载状态处理
-    func downloadResponse(response: AFDownloadResponse<Data>){
+
+    func handlerDownload(_ task: DownloadTask) {
+        let destination: DownloadRequest.Destination = { _, _ in
+            let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: FileManager.SearchPathDomainMask.userDomainMask).first
+            let fileUrl = documentsUrl?.appendingPathComponent(task.fileName)
+                ?? URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(task.fileName)
+            task.fileUrl = fileUrl
+
+            return (fileUrl, [.removePreviousFile, .createIntermediateDirectories])
+        }
+        AF.download(task.url, to: destination)
+            .downloadProgress { [weak self] progress in
+                self?.notifyListeners("downloadProgress", data: ["progress": progress.fractionCompleted])
+            }
+            .responseData { [weak self] response in
+                self?.downloadResponse(task, response: response)
+            }
+    }
+
+    //根据下载状态处理
+    func downloadResponse(_ task: DownloadTask, response: AFDownloadResponse<Data>) {
         switch response.result {
         case .success:
             var data = JSObject()
-            data["path"] = self.fileUrl.absoluteString;
-            self._call.resolve(data)
-            self.reTryCount = 0;
-            break;
-        case .failure:
-            if(self.reTryCount < 3) {
-                self.reTryCount += 1;
-                handlerDownload()
+            data["path"] = task.fileUrl?.absoluteString ?? ""
+            task.reTryCount = 0
+            finish(task) { call in
+                call.resolve(data)
             }
-            self._call.reject("下载失败！")
-            break
+        case .failure:
+            //重试期间不结束回调，重试次数用尽才 reject，避免对同一个 call 先 reject 再 resolve 的 double-settle
+            if task.reTryCount < 3 {
+                task.reTryCount += 1
+                handlerDownload(task)
+                return
+            }
+            finish(task) { call in
+                call.reject("下载失败！")
+            }
         }
+    }
+
+    //结束任务：保证 call 只被 settle 一次，并从存活列表移除
+    func finish(_ task: DownloadTask, settle: (CAPPluginCall) -> Void) {
+        guard !task.settled else { return }
+        task.settled = true
+        activeTasks.removeAll { $0 === task }
+        settle(task.call)
     }
 }
