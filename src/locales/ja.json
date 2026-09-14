@@ -858,5 +858,13 @@
   "vant_cal_weekdays_split_by_space": "",
   "OxDudBbelw-lsaDulb0nc": "⚠️ダウンロード方法が選択されていない場合、ファイルは従来の方法を使用して直接書き込まれます。",
   "QZOw48iT5SKQidzpwW8W3": "チャットルーム",
-  "LW9GF5ptpR-d48im0oiMT": "クリックすると Pixiv Viewer ディスカッション チャンネルに移動します"
+  "LW9GF5ptpR-d48im0oiMT": "クリックすると Pixiv Viewer ディスカッション チャンネルに移動します",
+  "ugoira": {
+    "direct_ip_missing": "直接 pximg IP が設定されていないため、ウゴイラをロードできません。",
+    "settings_group": "ウゴイラの設定",
+    "zip_reso_desc": "600x600 では読み込みが速くなり、メモリが節約されます。 1920x1080 はより鮮明ですが、サイズが大きいため、GIF/WebM/APNG/MP4 のダウンロードと変換の品質にも影響します。",
+    "zip_reso_fast": "滑らかな 600x600",
+    "zip_reso_hd": "HD 1920x1080",
+    "zip_reso_title": "ウゴイラの読み込みの明瞭さ"
+  }
 }

@@ -111,6 +111,7 @@ export default new Vuex.Store({
       hideNavBarOnScroll: true,
       manualLoadRelated: true,
       autoPlayUgoira: false,
+      ugoiraZipReso: '600',
       ugoiraMp4Bitrate: '4 Mbps',
       showFpsDemo: false,
       isAutoLoadKissT: false,

@@ -858,5 +858,13 @@
   "zuVom-C8Ss8JTEDZIhzBj": "ffmpeg를 사용하여 서버 측에서 변환",
   "OxDudBbelw-lsaDulb0nc": "⚠️다운로드 방법을 선택하지 않으면 기존 방법을 사용하여 파일이 직접 작성됩니다.",
   "QZOw48iT5SKQidzpwW8W3": "채팅방",
-  "LW9GF5ptpR-d48im0oiMT": "클릭하시면 Pixiv Viewer 토론 채널로 이동합니다"
+  "LW9GF5ptpR-d48im0oiMT": "클릭하시면 Pixiv Viewer 토론 채널로 이동합니다",
+  "ugoira": {
+    "direct_ip_missing": "직접 pximg IP가 구성되지 않아 ugoira를 로드할 수 없습니다.",
+    "settings_group": "우고이라 설정",
+    "zip_reso_desc": "600x600은 더 빠르게 로드되고 메모리가 절약됩니다. 1920x1080은 더 선명하지만 크기가 더 크므로 GIF/WebM/APNG/MP4 다운로드 및 변환 품질에도 영향을 미칩니다.",
+    "zip_reso_fast": "부드러운 600x600",
+    "zip_reso_hd": "HD 1920x1080",
+    "zip_reso_title": "우고이라 로딩 선명도"
+  }
 }

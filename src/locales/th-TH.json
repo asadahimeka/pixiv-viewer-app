@@ -858,5 +858,13 @@
   "zuVom-C8Ss8JTEDZIhzBj": "ใช้ ffmpeg เพื่อแปลงทางฝั่งเซิร์ฟเวอร์",
   "OxDudBbelw-lsaDulb0nc": "⚠️หากไม่ได้เลือกวิธีการดาวน์โหลด ไฟล์จะถูกเขียนโดยตรงโดยใช้วิธีดั้งเดิม",
   "QZOw48iT5SKQidzpwW8W3": "ห้องสนทนา",
-  "LW9GF5ptpR-d48im0oiMT": "คลิกเพื่อไปที่ช่องสนทนาของ Pixiv Viewer"
+  "LW9GF5ptpR-d48im0oiMT": "คลิกเพื่อไปที่ช่องสนทนาของ Pixiv Viewer",
+  "ugoira": {
+    "direct_ip_missing": "ไม่ได้กำหนดค่า IP pximg โดยตรง และไม่สามารถโหลด ugoira ได้",
+    "settings_group": "การตั้งค่า Ugoira",
+    "zip_reso_desc": "โหลดขนาด 600x600 เร็วขึ้นและประหยัดหน่วยความจำ 1920x1080 มีความชัดเจนกว่าแต่มีขนาดใหญ่กว่า ซึ่งจะส่งผลต่อคุณภาพของการดาวน์โหลดและการแปลง GIF/WebM/APNG/MP4 ด้วย",
+    "zip_reso_fast": "สมูท 600x600",
+    "zip_reso_hd": "เอชดี 1920x1080",
+    "zip_reso_title": "Ugoira กำลังโหลดความชัดเจน"
+  }
 }

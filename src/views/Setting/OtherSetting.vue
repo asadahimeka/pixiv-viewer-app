@@ -207,13 +207,6 @@
         </template>
       </van-cell>
       <van-cell center :title="$t('m9rhO-859d7Br05Hm5b54')" is-link :label="appSetting.dlFileNameTpl" @click="showDlFileNameTplDialog = true" />
-      <van-cell center :title="$t('Rq0GHiUs_LyUxDu-IhfBb')" is-link :label="appSetting.ugoiraDefDLFormat || $t('ks96nwuAms0B8wSWBWhil')" @click="ugoiraDL.show = true" />
-      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'MP4(Browser)'" center :title="$t('C7QksnJamis3gnOQYahco')" is-link :label="appSetting.ugoiraMp4Bitrate" @click="ugoiraBitrates.show = true" />
-      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'APNG'" center :title="$t('1c9AB2NdmH-9CpwIEK2jg')" :label="$t('X6XWoxxKCWK5k7s8oOiGi')">
-        <template #right-icon>
-          <van-switch :value="appSetting.isUgoiraApngSaveAsPng" size="24" @change="v => saveAppSetting('isUgoiraApngSaveAsPng', v)" />
-        </template>
-      </van-cell>
       <template v-if="platform.isAndroid">
         <van-cell v-if="!appSetting.preferMediaStore && !appSetting.preferDownloadManager&& !safEnabled" center :title="$t('OxDudBbelw-lsaDulb0nc')" />
         <van-cell center :title="$t('OcF9ZWmu2_E8bvGSIiAdJ')" :label="$t('oaNdIowRN9TQxKA0EECI4')">
@@ -244,6 +237,27 @@
           @click="pickSafFolder(false)"
         />
       </template>
+    </van-cell-group>
+
+    <van-cell-group :title="$t('ugoira.settings_group')">
+      <van-cell center :title="$t('60RSxzAvXAF1Lfp_oqv7h')">
+        <template #right-icon>
+          <van-switch :value="appSetting.autoPlayUgoira" size="24" @change="v => saveAppSetting('autoPlayUgoira', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell v-if="clientConfig.useLocalAppApi" center :title="$t('OHSPV09hSKNSbdJgbYJfV')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isUgoiraAvifSrc" size="24" @change="v => saveAppSetting('isUgoiraAvifSrc', v, true)" />
+        </template>
+      </van-cell>
+      <van-cell center :title="$t('ugoira.zip_reso_title')" is-link :label="ugoiraResoLabel" @click="ugoiraReso.show = true" />
+      <van-cell center :title="$t('Rq0GHiUs_LyUxDu-IhfBb')" is-link :label="appSetting.ugoiraDefDLFormat || $t('ks96nwuAms0B8wSWBWhil')" @click="ugoiraDL.show = true" />
+      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'MP4(Browser)'" center :title="$t('C7QksnJamis3gnOQYahco')" is-link :label="appSetting.ugoiraMp4Bitrate" @click="ugoiraBitrates.show = true" />
+      <van-cell v-if="appSetting.ugoiraDefDLFormat == 'APNG'" center :title="$t('1c9AB2NdmH-9CpwIEK2jg')" :label="$t('X6XWoxxKCWK5k7s8oOiGi')">
+        <template #right-icon>
+          <van-switch :value="appSetting.isUgoiraApngSaveAsPng" size="24" @change="v => saveAppSetting('isUgoiraApngSaveAsPng', v)" />
+        </template>
+      </van-cell>
     </van-cell-group>
 
     <van-cell-group :title="$t('7-drBPGRIz_BsYuc9ybCm')">
@@ -296,16 +310,6 @@
       <van-cell center :title="$t('ZwLxHHLEfTwPAC6E2g6Pv')">
         <template #right-icon>
           <van-switch :value="appSetting.manualLoadRelated" size="24" @change="v => saveAppSetting('manualLoadRelated', v, true)" />
-        </template>
-      </van-cell>
-      <van-cell center :title="$t('60RSxzAvXAF1Lfp_oqv7h')">
-        <template #right-icon>
-          <van-switch :value="appSetting.autoPlayUgoira" size="24" @change="v => saveAppSetting('autoPlayUgoira', v, true)" />
-        </template>
-      </van-cell>
-      <van-cell v-if="clientConfig.useLocalAppApi" center :title="$t('OHSPV09hSKNSbdJgbYJfV')">
-        <template #right-icon>
-          <van-switch :value="appSetting.isUgoiraAvifSrc" size="24" @change="v => saveAppSetting('isUgoiraAvifSrc', v, true)" />
         </template>
       </van-cell>
       <van-cell v-if="isNavSHSetShow" center :title="$t('Gry1iNTJ2wm_9FMG_JpBT')">
@@ -432,6 +436,14 @@
       :description="$t('C7QksnJamis3gnOQYahco')"
       close-on-click-action
       @select="v => saveAppSetting('ugoiraMp4Bitrate', v.name)"
+    />
+    <van-action-sheet
+      v-model="ugoiraReso.show"
+      :actions="ugoiraReso.actions"
+      :cancel-text="$t('common.cancel')"
+      :description="$t('ugoira.zip_reso_desc')"
+      close-on-click-action
+      @select="v => saveAppSetting('ugoiraZipReso', v._value)"
     />
     <van-action-sheet
       v-model="pageTransition.show"
@@ -707,6 +719,13 @@ export default {
         show: false,
         actions: [2, 4, 6, 8, 10, 12].map(i => ({ name: `${i} Mbps` })),
       },
+      ugoiraReso: {
+        show: false,
+        actions: [
+          { name: i18n.t('ugoira.zip_reso_fast'), _value: '600' },
+          { name: i18n.t('ugoira.zip_reso_hd'), _value: '1920' },
+        ],
+      },
       pageTransition: {
         show: false,
         actions: [
@@ -826,6 +845,9 @@ export default {
     },
     pximgBedLabel() {
       return this.pximgBed_.actions.find(e => e._value == this.pximgBed_.value)?.name || ''
+    },
+    ugoiraResoLabel() {
+      return this.appSetting.ugoiraZipReso == '1920' ? this.$t('ugoira.zip_reso_hd') : this.$t('ugoira.zip_reso_fast')
     },
     apiProxyLabel() {
       return this.apiProxySel.actions.find(e => e._value == this.clientConfig.apiProxy)?.name || ''

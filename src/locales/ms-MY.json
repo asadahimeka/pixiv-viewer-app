@@ -858,5 +858,13 @@
   "zuVom-C8Ss8JTEDZIhzBj": "Gunakan FFMPEG untuk menukar di sebelah pelayan",
   "OxDudBbelw-lsaDulb0nc": "⚠️Jika kaedah muat turun tidak dipilih, fail akan ditulis terus menggunakan kaedah tradisional",
   "QZOw48iT5SKQidzpwW8W3": "Bilik sembang",
-  "LW9GF5ptpR-d48im0oiMT": "Klik untuk pergi ke saluran perbincangan Pixiv Viewer"
+  "LW9GF5ptpR-d48im0oiMT": "Klik untuk pergi ke saluran perbincangan Pixiv Viewer",
+  "ugoira": {
+    "direct_ip_missing": "IP pximg langsung tidak dikonfigurasikan dan ugoira tidak boleh dimuatkan.",
+    "settings_group": "Tetapan Ugoira",
+    "zip_reso_desc": "600x600 memuat lebih cepat dan menjimatkan memori; 1920x1080 lebih jelas tetapi saiznya lebih besar, yang juga akan menjejaskan kualiti muat turun dan penukaran GIF/WebM/APNG/MP4.",
+    "zip_reso_fast": "Licin 600x600",
+    "zip_reso_hd": "HD 1920x1080",
+    "zip_reso_title": "Ugoira memuatkan kejelasan"
+  }
 }

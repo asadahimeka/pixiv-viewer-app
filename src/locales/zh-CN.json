@@ -857,5 +857,13 @@
   "zuVom-C8Ss8JTEDZIhzBj": "使用 ffmpeg 在服务端转换",
   "OxDudBbelw-lsaDulb0nc": "⚠️未选择下载方式，将使用传统方式直接写入文件",
   "QZOw48iT5SKQidzpwW8W3": "聊天室",
-  "LW9GF5ptpR-d48im0oiMT": "点击前往 Pixiv Viewer 讨论频道"
+  "LW9GF5ptpR-d48im0oiMT": "点击前往 Pixiv Viewer 讨论频道",
+  "ugoira": {
+    "settings_group": "动图设置",
+    "direct_ip_missing": "直连服务 IP 未配置，无法加载动图",
+    "zip_reso_title": "动图加载清晰度",
+    "zip_reso_desc": "600x600 加载更快、更省内存；1920x1080 更清晰但体积更大，也会影响 GIF/WebM/APNG/MP4 下载转换的画质",
+    "zip_reso_fast": "流畅 600x600",
+    "zip_reso_hd": "高清 1920x1080"
+  }
 }

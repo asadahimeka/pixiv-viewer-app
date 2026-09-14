@@ -858,5 +858,13 @@
   "lGla4o1MNG0QBOBr2K2DK": "La pagina dei dettagli dell'immagine visualizza la filigrana PID",
   "OxDudBbelw-lsaDulb0nc": "⚠️Se non viene selezionato il metodo di download, il file verrà scritto direttamente utilizzando il metodo tradizionale",
   "QZOw48iT5SKQidzpwW8W3": "Chat room",
-  "LW9GF5ptpR-d48im0oiMT": "Fare clic per accedere al canale di discussione di Pixiv Viewer"
+  "LW9GF5ptpR-d48im0oiMT": "Fare clic per accedere al canale di discussione di Pixiv Viewer",
+  "ugoira": {
+    "direct_ip_missing": "L'IP diretto di pximg non è configurato e non è possibile caricare ugoira.",
+    "settings_group": "Impostazioni di Ugoira",
+    "zip_reso_desc": "600x600 carica più velocemente e risparmia memoria; 1920x1080 è più chiaro ma di dimensioni maggiori, il che influirà anche sulla qualità del download e della conversione di GIF/WebM/APNG/MP4.",
+    "zip_reso_fast": "Liscio 600x600",
+    "zip_reso_hd": "HD1920x1080",
+    "zip_reso_title": "Ugoira carica chiarezza"
+  }
 }

@@ -858,5 +858,13 @@
   "vant_cal_weekdays_split_by_space": "",
   "OxDudBbelw-lsaDulb0nc": "⚠️Wenn die Download-Methode nicht ausgewählt ist, wird die Datei direkt mit der herkömmlichen Methode geschrieben",
   "QZOw48iT5SKQidzpwW8W3": "Chatraum",
-  "LW9GF5ptpR-d48im0oiMT": "Klicken Sie hier, um zum Pixiv Viewer-Diskussionskanal zu gelangen"
+  "LW9GF5ptpR-d48im0oiMT": "Klicken Sie hier, um zum Pixiv Viewer-Diskussionskanal zu gelangen",
+  "ugoira": {
+    "direct_ip_missing": "Die direkte pximg-IP ist nicht konfiguriert und die Ugoira kann nicht geladen werden.",
+    "settings_group": "Ugoira-Einstellungen",
+    "zip_reso_desc": "600x600 lädt schneller und spart Speicher; 1920 x 1080 ist klarer, aber größer, was sich auch auf die Qualität des GIF/WebM/APNG/MP4-Downloads und der Konvertierung auswirkt.",
+    "zip_reso_fast": "Glatt 600x600",
+    "zip_reso_hd": "HD 1920x1080",
+    "zip_reso_title": "Ugoira lädt Klarheit"
+  }
 }

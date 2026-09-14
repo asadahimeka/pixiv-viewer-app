@@ -858,5 +858,13 @@
   "vant_cal_weekdays_split_by_space": "",
   "OxDudBbelw-lsaDulb0nc": "⚠️未選擇下載方式，將使用傳統方式直接寫入文件",
   "QZOw48iT5SKQidzpwW8W3": "聊天室",
-  "LW9GF5ptpR-d48im0oiMT": "點擊前往 Pixiv Viewer 討論頻道"
+  "LW9GF5ptpR-d48im0oiMT": "點擊前往 Pixiv Viewer 討論頻道",
+  "ugoira": {
+    "direct_ip_missing": "直連服務 IP 未配置，無法載入動圖",
+    "settings_group": "動圖設定",
+    "zip_reso_desc": "600x600 載入更快、更省記憶體；1920x1080 更清晰但體積更大，也會影響 GIF/WebM/APNG/MP4 下載轉換的畫質",
+    "zip_reso_fast": "流暢 600x600",
+    "zip_reso_hd": "高清 1920x1080",
+    "zip_reso_title": "動圖載入清晰度"
+  }
 }

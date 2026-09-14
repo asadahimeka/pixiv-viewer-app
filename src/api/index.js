@@ -1683,8 +1683,8 @@ const api = {
         }
       } else {
         ugoira = {
-          // zip: imgProxy(res.ugoira_metadata.zip_urls.medium),
-          zip: imgProxy(res.ugoira_metadata.zip_urls.medium.replace('_ugoira600x600', '_ugoira1920x1080')),
+          // 存 API 原始 pximg URL；尺寸替换与图床替换延迟到 loadUgoira 播放时按当前设置进行（兼容旧缓存）
+          zip: res.ugoira_metadata.zip_urls.medium,
           frames: res.ugoira_metadata.frames,
         }
       }

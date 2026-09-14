@@ -858,5 +858,13 @@
   "zuVom-C8Ss8JTEDZIhzBj": "Use ffmpeg para converter no lado do servidor",
   "OxDudBbelw-lsaDulb0nc": "⚠️Se o método de download não for selecionado, o arquivo será gravado diretamente usando o método tradicional",
   "QZOw48iT5SKQidzpwW8W3": "Sala de bate-papo",
-  "LW9GF5ptpR-d48im0oiMT": "Clique para ir para o canal de discussão do Pixiv Viewer"
+  "LW9GF5ptpR-d48im0oiMT": "Clique para ir para o canal de discussão do Pixiv Viewer",
+  "ugoira": {
+    "direct_ip_missing": "O IP pximg direto não está configurado e o ugoira não pode ser carregado.",
+    "settings_group": "Configurações de Ugoira",
+    "zip_reso_desc": "600x600 carrega mais rápido e economiza memória; 1920x1080 é mais nítido, mas maior em tamanho, o que também afetará a qualidade do download e conversão de GIF/WebM/APNG/MP4.",
+    "zip_reso_fast": "Suave 600x600",
+    "zip_reso_hd": "HD 1920x1080",
+    "zip_reso_title": "Clareza de carregamento do Ugoira"
+  }
 }
