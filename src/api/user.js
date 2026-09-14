@@ -20,6 +20,7 @@ const doGet = (url, params, config = {}) => {
     referrerPolicy: 'origin',
     ...config,
     headers: {
+      'Origin': 'https://pixiv.pictures',
       'x-auth': LocalStorage.get('PXV_NOW_COOKIE') || '',
       'x-csrf-token': sessionStorage.getItem('PXV_NOW_CSRFTOKEN') || '',
       ...UA_Header,

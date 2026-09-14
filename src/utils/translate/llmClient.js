@@ -140,7 +140,8 @@ export async function chatCompletionStream({ baseUrl, apiKey, body, onRead, sign
   }
   let response
   try {
-    response = await fetch(endpoint, {
+    const fetchFn = window.CapacitorWebFetch || window.fetch
+    response = await fetchFn(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),

@@ -875,7 +875,8 @@ export default {
         // ---- 1. 提交异步 job → 202 {id, status:'queued'} ----
         let res
         try {
-          res = await fetch(`${serverUrl}/translate`, {
+          const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
+          res = await fetchFn(`${serverUrl}/translate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -933,7 +934,8 @@ export default {
 
           let jobRes
           try {
-            jobRes = await fetch(`${serverUrl}/translate/jobs/${jobId}`, {
+            const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
+            jobRes = await fetchFn(`${serverUrl}/translate/jobs/${jobId}`, {
               headers: authHeader,
               signal: abortController.signal,
             })
@@ -1018,7 +1020,8 @@ export default {
           if (abortController.signal.aborted) throw abortError()
           let resultRes
           try {
-            resultRes = await fetch(`${serverUrl}/translate/jobs/${jobId}/result`, {
+            const fetchFn = platform.isCapacitor ? window.CapacitorWebFetch : window.fetch
+            resultRes = await fetchFn(`${serverUrl}/translate/jobs/${jobId}/result`, {
               headers: authHeader,
               signal: abortController.signal,
             })

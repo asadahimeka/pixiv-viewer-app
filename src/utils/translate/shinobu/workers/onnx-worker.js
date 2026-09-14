@@ -209,8 +209,9 @@ function notifyCacheQuotaWarning() {
  * @returns {Promise<Response>}
  */
 async function fetchModelWithFallback(modelUrl) {
+  const fetchFn = window.CapacitorWebFetch || window.fetch
   try {
-    const direct = await fetch(modelUrl)
+    const direct = await fetchFn(modelUrl)
     if (direct.ok) return direct
   } catch (e) {
     // direct fetch failed (network/CORS) — fall through to proxy
@@ -218,7 +219,7 @@ async function fetchModelWithFallback(modelUrl) {
   const COMMON_PROXY = process.env.VUE_APP_COMMON_PROXY
   const proxyUrl = COMMON_PROXY ? COMMON_PROXY + modelUrl : null
   if (proxyUrl) {
-    const proxied = await fetch(proxyUrl)
+    const proxied = await fetchFn(proxyUrl)
     if (proxied.ok) return proxied
   }
   throw new Error(`模型下载失败: ${modelUrl}`)
