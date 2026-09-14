@@ -3,6 +3,8 @@ package org.eu.cocomi.pxvek;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+//import android.os.Bundle;
+//import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 
 import javax.net.ssl.HostnameVerifier;
@@ -36,6 +38,20 @@ public class MainActivity extends BridgeActivity {
             disableSslVerification();
         }
     }
+
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        WebView webView = (WebView) getBridge().getWebView();
+//        if (webView != null) {
+//            try {
+//                webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     /**
      * ⚠️ 警告：此方法会禁用所有SSL证书和主机名验证，非常不安全，仅用于开发或特定环境！

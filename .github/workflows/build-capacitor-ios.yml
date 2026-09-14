@@ -32,16 +32,16 @@ jobs:
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
           VUE_APP_PXIMG_PROXYS: ${{ secrets.VUE_APP_PXIMG_PROXYS }}
           VUE_APP_DEF_PXIMG_MAIN: ${{ secrets.VUE_APP_DEF_PXIMG_MAIN }}
-          VUE_APP_HIBIAPI_ALTS: ${{ secrets.VUE_APP_HIBIAPI_ALTS }}
           VUE_APP_DEF_APP_API_PROXY: ${{ secrets.VUE_APP_DEF_APP_API_PROXY }}
           VUE_APP_APP_API_PROXYS: ${{ secrets.VUE_APP_APP_API_PROXYS }}
           VUE_APP_COMMON_PROXY: ${{ secrets.VUE_APP_COMMON_PROXY }}
           VUE_APP_UMAMI_ID: ${{ secrets.VUE_APP_UMAMI_ID }}
           VUE_APP_UMAMI_SRC: ${{ secrets.VUE_APP_UMAMI_SRC }}
           VUE_APP_COMMON_IMAGE_PROXY: ${{ secrets.VUE_APP_COMMON_IMAGE_PROXY }}
-          VUE_APP_SILICON_CLOUD_API_KEY: ${{ secrets.VUE_APP_SILICON_CLOUD_API_KEY }}
           VUE_APP_ORT_WASM_PATH: ${{ secrets.VUE_APP_ORT_WASM_PATH }}
           VUE_APP_MODEL_URL_TEMPLATE: ${{ secrets.VUE_APP_MODEL_URL_TEMPLATE }}
+          VUE_APP_SERVER_TRANSLATE_URL: ${{ secrets.VUE_APP_SERVER_TRANSLATE_URL }}
+          VUE_APP_SERVER_TRANSLATE_TOKEN: ${{ secrets.VUE_APP_SERVER_TRANSLATE_TOKEN }}
           BROWSERSLIST_ENV: 'capacitor'
           VUE_APP_PLATFORM: 'ios'
 
