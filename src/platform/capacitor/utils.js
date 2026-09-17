@@ -374,8 +374,20 @@ export async function shareSettingsFile(blob) {
   })
 }
 
-export async function getPximgUri(url) {
-  return platform.isAndroid ? getPximgUriAndroid(url) : getPximgUriIOS(url)
+// in-flight 去重：同一图片 URL 的并发加载共享同一个下载任务。
+// 原生下载已改为异步并行，若无去重，两个组件同时加载同一张图会对同一路径
+// 并发写入（FileOutputStream 截断）导致文件损坏；顺带避免重复下载
+const pximgUriTasks = new Map()
+
+export function getPximgUri(url) {
+  const key = url.href
+  let task = pximgUriTasks.get(key)
+  if (!task) {
+    task = (platform.isAndroid ? getPximgUriAndroid(url) : getPximgUriIOS(url))
+      .finally(() => pximgUriTasks.delete(key))
+    pximgUriTasks.set(key, task)
+  }
+  return task
 }
 
 export async function getPximgUriIOS(url) {

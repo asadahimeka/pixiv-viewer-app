@@ -449,30 +449,41 @@ public class FilesystemPlugin extends Plugin {
 
             if (isPublicDirectory(directory) && !isStoragePermissionGranted()) {
                 requestAllPermissions(call, "permissionCallback");
-            } else {
-                HttpRequestHandler.ProgressEmitter emitter = (bytes, contentLength) -> {
-                    JSObject ret = new JSObject();
-                    ret.put("url", call.getString("url"));
-                    ret.put("bytes", bytes);
-                    ret.put("contentLength", contentLength);
-
-                    notifyListeners("progress", ret);
-                };
-
-                JSObject response = implementation.downloadFile(call, bridge, emitter);
-
-                String error = response.getString("error");
-                if (error != null) {
-                    call.reject(error);
-                    return;
-                }
-
-                // update mediaStore index only if file was written to external storage
-                if (isPublicDirectory(directory)) {
-                    MediaScannerConnection.scanFile(getContext(), new String[] { response.getString("path") }, null, null);
-                }
-                call.resolve(response);
+                return;
             }
+
+            HttpRequestHandler.ProgressEmitter emitter = (bytes, contentLength) -> {
+                JSObject ret = new JSObject();
+                ret.put("url", call.getString("url"));
+                ret.put("bytes", bytes);
+                ret.put("contentLength", contentLength);
+
+                notifyListeners("progress", ret);
+            };
+
+            // 下载在插件实现内部的后台线程执行（同官方 3e64606 修复），
+            // 插件方法本身立即返回，不再阻塞 CapacitorPlugins 桥线程
+            implementation.downloadFile(call, bridge, emitter, new Filesystem.FilesystemDownloadCallback() {
+                @Override
+                public void onSuccess(JSObject response) {
+                    String error = response.getString("error");
+                    if (error != null) {
+                        call.reject(error);
+                        return;
+                    }
+
+                    // update mediaStore index only if file was written to external storage
+                    if (isPublicDirectory(directory)) {
+                        MediaScannerConnection.scanFile(getContext(), new String[] { response.getString("path") }, null, null);
+                    }
+                    call.resolve(response);
+                }
+
+                @Override
+                public void onError(Exception error) {
+                    call.reject("Error downloading file: " + error.getLocalizedMessage(), error);
+                }
+            });
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             call.reject("Error downloading file: [" + ex.getClass().getSimpleName() + "] " + (msg != null ? msg : "no message"), ex);

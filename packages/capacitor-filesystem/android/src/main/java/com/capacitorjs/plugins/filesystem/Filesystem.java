@@ -3,6 +3,8 @@ package com.capacitorjs.plugins.filesystem;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import com.capacitorjs.plugins.filesystem.exceptions.CopyFailedException;
 import com.capacitorjs.plugins.filesystem.exceptions.DirectoryExistsException;
@@ -27,11 +29,22 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.json.JSONException;
 
 public class Filesystem {
 
     private Context context;
+
+    /**
+     * 下载线程池（有界）：桥接插件调用本身跑在单线程的 CapacitorPlugins 队列上，
+     * 下载若在插件方法体内同步执行会独占该队列，阻塞所有其他插件调用（官方 #6861）。
+     * 修复方式同官方 capacitor-plugins@3e64606：方法体只做调度，下载在后台线程完成后回调。
+     * 相比官方"每次调用新建单线程池"的写法，这里用共享有界池为直连模式的图片墙场景提供背压。
+     */
+    private static final int DOWNLOAD_POOL_SIZE = 5;
+    private final ExecutorService downloadExecutor = Executors.newFixedThreadPool(DOWNLOAD_POOL_SIZE);
 
     Filesystem(Context context) {
         this.context = context;
@@ -307,9 +320,24 @@ public class Filesystem {
         }
     }
 
-    public JSObject downloadFile(PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter)
-        throws IOException, URISyntaxException, JSONException {
+    public void downloadFile(PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter, FilesystemDownloadCallback callback) {
         String urlString = call.getString("url", "");
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        downloadExecutor.execute(
+            () -> {
+                try {
+                    JSObject result = doDownloadInBackground(urlString, call, bridge, emitter);
+                    handler.post(() -> callback.onSuccess(result));
+                } catch (Exception error) {
+                    handler.post(() -> callback.onError(error));
+                }
+            }
+        );
+    }
+
+    private JSObject doDownloadInBackground(String urlString, PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter)
+        throws IOException, URISyntaxException, JSONException {
         JSObject headers = call.getObject("headers", new JSObject());
         JSObject params = call.getObject("params", new JSObject());
         Integer connectTimeout = call.getInt("connectTimeout", 15000);
@@ -418,10 +446,14 @@ public class Filesystem {
         connectionInputStream.close();
         fileOutputStream.close();
 
-        return new JSObject() {
-            {
-                put("path", file.getAbsolutePath());
-            }
-        };
+        JSObject ret = new JSObject();
+        ret.put("path", file.getAbsolutePath());
+        return ret;
+    }
+
+    public interface FilesystemDownloadCallback {
+        void onSuccess(JSObject result);
+
+        void onError(Exception error);
     }
 }
