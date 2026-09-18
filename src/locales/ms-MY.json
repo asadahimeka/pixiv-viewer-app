@@ -606,6 +606,10 @@
       "ph": "Sila pilih Kualiti Butiran Imej",
       "title": "Butiran Imej Kualiti Pilih"
     },
+    "preview_res": {
+      "ph": "Sila pilih kualiti pratonton",
+      "title": "Kualiti imej apabila melihat imej besar pada halaman butiran"
+    },
     "input": "Masukkan:",
     "lab": {
       "title": "Eksperimen"

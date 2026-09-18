@@ -605,6 +605,10 @@
       "ph": "Seleziona la qualità dei dettagli dell'immagine",
       "title": "Dettagli dell'immagine e selezione della qualità"
     },
+    "preview_res": {
+      "ph": "Seleziona la qualità dell'anteprima",
+      "title": "Qualità dell'immagine quando si visualizza un'immagine di grandi dimensioni nella pagina dei dettagli"
+    },
     "input": "Accedere:",
     "lab": {
       "title": "Sperimentale"

@@ -67,7 +67,7 @@ import store from '@/store'
 import { getBookmarkRestrictTags, localApi } from '@/api'
 import { getCache, setCache, toggleBookmarkCache } from '@/utils/storage/siteCache'
 import { isAiIllust } from '@/utils/filter'
-import { fancyboxShow, downloadFile } from '@/utils'
+import { fancyboxShow, downloadFile, directPreviewShow, isDirectPreviewEnabled } from '@/utils'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { ugoiraAvifSrc } from '@/consts'
 
@@ -267,6 +267,10 @@ export default {
       const getSrc = isLargeWebp
         ? e => getLargeWebpSrc(e.l)
         : e => e.l.replace(/\/c\/\d+x\d+\w*\//g, '/')
+      if (isDirectPreviewEnabled()) {
+        directPreviewShow(this.artwork, this.artwork.images.map(getSrc), 0)
+        return
+      }
       if (store.state.appSetting.isUseFancybox) {
         fancyboxShow(this.artwork, 0, getSrc)
       } else {

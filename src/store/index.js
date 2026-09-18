@@ -83,6 +83,7 @@ export default new Vuex.Store({
     appSetting: {
       wfType: isMobile ? 'Masonry(CSSGrid)' : 'Justified',
       imgReso: isMobile ? 'Medium' : 'Large',
+      previewReso: 'Original',
       isLongpressBlock: false,
       isLongpressDL: false,
       isEnableSwipe: false,

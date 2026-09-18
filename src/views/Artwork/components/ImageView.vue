@@ -143,7 +143,7 @@ import { mapGetters } from 'vuex'
 import { Dialog, ImagePreview } from '@/lib/vant-apis'
 import store from '@/store'
 import { COMMON_IMAGE_PROXY, ugoiraAvifSrc } from '@/consts'
-import { fancyboxShow, downloadFile } from '@/utils'
+import { fancyboxShow, downloadFile, directPreviewShow, isDirectPreviewEnabled } from '@/utils'
 import { getArtworkFileName } from '@/store/actions/filename'
 import { downloadUgoira, loadUgoira } from '@/utils/ugoira'
 import MangaTranslateOverlay from './MangaTranslateOverlay.vue'
@@ -225,9 +225,6 @@ export default {
     ...mapGetters(['isCensored']),
     censored() {
       return this.isCensored(this.artwork)
-    },
-    original() {
-      return this.artwork.images.map(url => url.o)
     },
     artworkRatio() {
       return this.artwork.width / this.artwork.height
@@ -323,16 +320,32 @@ export default {
         })
         return
       }
+      const srcs = this.artwork.images.map(e => this.getPreviewSrc(e))
+      if (isDirectPreviewEnabled()) {
+        directPreviewShow(this.artwork, srcs, index)
+        return
+      }
       if (store.state.appSetting.isUseFancybox) {
-        fancyboxShow(this.artwork, index)
+        fancyboxShow(this.artwork, index, e => this.getPreviewSrc(e))
       } else {
         ImagePreview({
           className: 'image-preview',
-          images: this.original,
+          images: srcs,
           startPosition: index,
           closeOnPopstate: true,
           closeable: true,
         })
+      }
+    },
+    /** 按预览画质设置取图：Large(WebP)/Large 为 1200px 大图，Original 为原图（默认，保持原行为） */
+    getPreviewSrc(e) {
+      switch (store.state.appSetting.previewReso) {
+        case 'Large(WebP)':
+          return e.l.replace(/\/c\/\d+x\d+\w*\//g, '/c/1200x1200_90_webp/')
+        case 'Large':
+          return e.l.replace(/\/c\/\d+x\d+\w*\//g, '/')
+        default:
+          return e.o
       }
     },
     preventContext(/** @type {Event} */ event) {

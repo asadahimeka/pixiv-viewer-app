@@ -606,6 +606,10 @@
       "ph": "Please select image details quality",
       "title": "Image Details Quality Select"
     },
+    "preview_res": {
+      "ph": "Please select preview quality",
+      "title": "Image quality when viewing large image on details page"
+    },
     "input": "Enter:",
     "lab": {
       "title": "Experimental"

@@ -564,18 +564,27 @@ export function isSafari() {
   return false
 }
 
-export async function fancyboxShow(artwork, index = 0, getSrc = e => e.o) {
+/**
+ * @param {object} artwork
+ * @param {number} index
+ * @param {(e: object) => string} getSrc
+ * @param {{placeholder: (page: number) => string, resolve: (page: number) => Promise<string>, onClose?: () => void}|null} lazy
+ *   可选懒加载：传入时 slides 先用 placeholder(page) 占位，切页/预加载时由 resolve 解析真实地址
+ *   （直连模式下先把图片下载到本地缓存再显示，避免一次性拉取全部原图）
+ */
+export async function fancyboxShow(artwork, index = 0, getSrc = e => e.o, lazy = null) {
   if (!window.Fancybox) {
     document.head.insertAdjacentHTML('beforeend', `<link href="${BASE_URL}static/css/fancybox.min.css" rel="stylesheet">`)
     await loadScript(`${BASE_URL}static/js/fancybox.umd.min.js`)
   }
-  window.Fancybox.show(artwork.images.map(e => ({
-    src: getSrc(e),
+  const slides = artwork.images.map((e, i) => ({
+    src: lazy ? lazy.placeholder(i) : getSrc(e),
     thumb: e.m,
     thumbSrc: e.m,
     caption: `${artwork.title} by ${artwork.author.name}`,
     _artwork: artwork,
-  })), {
+  }))
+  const instance = window.Fancybox.show(slides, {
     compact: false,
     startIndex: index,
     backdropClick: 'close',
@@ -607,6 +616,138 @@ export async function fancyboxShow(artwork, index = 0, getSrc = e => e.o) {
       },
     },
   })
+  if (lazy) {
+    if (lazy.onClose && typeof instance?.on == 'function') {
+      instance.on('destroy', lazy.onClose)
+    }
+    attachFancyboxLazy(instance, slides, lazy, index)
+  }
+  return instance
+}
+
+/**
+ * 是否启用直连查看大图（直连模式开启的原生端：Capacitor / Tauri）
+ */
+export function isDirectPreviewEnabled() {
+  return store.state.appSetting.isDirectPximg && (platform.isCapacitor || platform.isTauri)
+}
+
+// 直连预览的"待加载"占位：内置旋转动画的 SVG data URI。
+// 不产生任何网络请求，但视觉上有明确的加载中反馈（替代纯黑占位/缩略图）
+const PREVIEW_PENDING = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
+  '<circle cx="256" cy="256" r="56" fill="none" stroke="#8a8a8a" stroke-opacity=".25" stroke-width="14"/>' +
+  '<path d="M256 200a56 56 0 0 1 56 56" fill="none" stroke="#9c9c9c" stroke-width="14" stroke-linecap="round">' +
+  '<animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="0.9s" repeatCount="indefinite"/>' +
+  '</path></svg>'
+)
+
+// 直连解析失败时的显性占位：.invalid 域名必解析失败，触发加载错误态，让问题可见
+const DIRECT_ERROR_SRC = 'https://pximg-direct-error.invalid/'
+
+// 直连预览调试浮层：localStorage.PXV_DEBUG_DIRECT === '1' 时开启，
+// 实时显示每页解析结果（file=直连生效 / ERROR=失败 / swapped=已换入）
+let directDbgEl = null
+function dbgDirect(msg) {
+  if (localStorage.PXV_DEBUG_DIRECT !== '1') return
+  if (!directDbgEl) {
+    directDbgEl = document.createElement('div')
+    directDbgEl.style.cssText = 'position:fixed;right:4px;bottom:4px;z-index:99999;max-width:80vw;max-height:50vh;overflow:hidden;background:rgba(0,0,0,.72);color:#4ade80;font:10px/1.5 monospace;padding:4px 6px;border-radius:4px;pointer-events:none;white-space:pre-wrap'
+    document.body.appendChild(directDbgEl)
+  }
+  directDbgEl.textContent = (`${new Date().toTimeString().slice(0, 8)} ${msg}\n` + directDbgEl.textContent).split('\n').slice(0, 15).join('\n')
+}
+
+/**
+ * 直连模式查看大图（仅 Fancybox）：
+ * 弹层立即打开，未就绪页显示内置 spinner 占位（无网络请求），
+ * 解析完成后原位换入直连文件地址。
+ * 图片经各平台 getPximgUri 获取（capacitor 落盘缓存后回 file://，带在途去重；
+ * tauri 经原生下载后回 blob:）。
+ * 不做代理回退：解析失败显性展示错误态，便于发现问题。
+ * 关闭预览时回收 tauri 的 blob URL
+ * @param {object} artwork
+ * @param {string[]} srcs 各页代理地址（已按画质映射）
+ * @param {number} index 起始页
+ */
+export function directPreviewShow(artwork, srcs, index) {
+  const cache = new Array(srcs.length).fill(null)
+  const proms = {}
+  const resolveSrc = i => {
+    if (cache[i]) return Promise.resolve(cache[i])
+    if (!proms[i]) {
+      const started = Date.now()
+      proms[i] = (async () => {
+        const u = new URL(srcs[i])
+        if (u.host == 's.pximg.net') return srcs[i]
+        // 注意：import() 必须用字面量路径——表达式 + @别名 在 webpack 运行时会
+        // 报 Cannot find module（上下文模块按相对路径查表，别名键查不到）
+        let mod
+        if (platform.isTauri) {
+          mod = await import('@/platform/tauri/utils')
+        } else {
+          mod = await import('@/platform/capacitor/utils')
+        }
+        const uri = await mod.getPximgUri(u)
+        dbgDirect(`#${i} file ${Date.now() - started}ms`)
+        return uri
+      })()
+      proms[i].catch(err => dbgDirect(`#${i} ERROR ${err && err.message}`))
+    }
+    return proms[i]
+  }
+  // 只回收 tauri 动态创建的 blob URL；capacitor 的 file:// 指向持久缓存，不可回收
+  const cleanup = () => cache.forEach(u => {
+    if (u && u.startsWith('blob:')) URL.revokeObjectURL(u)
+  })
+
+  dbgDirect(`open pages=${srcs.length} start=#${index}`)
+  return fancyboxShow(artwork, index, e => e.o, { placeholder: () => PREVIEW_PENDING, resolve: resolveSrc, onClose: cleanup })
+}
+
+/**
+ * 给 Fancybox 实例挂懒加载：解析当前页与相邻页，解析完成后回填 <img> 的 src。
+ * 仅直连预览场景使用；解析失败展示显性错误态。
+ * 注意：必须无条件回填——Carousel 内部持有 slide 数据的副本，回滑重建内容时
+ * 会用创建时的占位 src，若以"已赋值过"为由跳过，页面会永远停在转圈占位
+ */
+function attachFancyboxLazy(instance, slides, lazy, index) {
+  const fill = async (page, tries = 0) => {
+    if (!Number.isInteger(page) || page < 0 || page >= slides.length) return
+    let src
+    try {
+      src = await lazy.resolve(page)
+    } catch (err) {
+      // 显性失败：换入必加载失败的地址，触发 fancybox 的错误展示（不静默回退）
+      src = DIRECT_ERROR_SRC
+    }
+    if (!src || page >= slides.length) return
+    slides[page].src = src
+    // Carousel 内部持有 slide 数据副本，一并同步供其重建内容时使用
+    const slide = instance?.carousel?.getSlide?.(page) || instance?.carousel?.slides?.[page]
+    if (slide) slide.src = src
+    const img = slide?.el?.querySelector?.('img')
+    if (img) {
+      if (img.getAttribute('src') !== src) {
+        img.setAttribute('src', src)
+        dbgDirect(`#${page} swapped`)
+      }
+    } else if (tries < 10) {
+      setTimeout(() => fill(page, tries + 1), 150)
+    }
+  }
+  const prewarm = page => {
+    fill(page)
+    fill(page + 1)
+    fill(page - 1)
+  }
+  if (typeof instance?.on == 'function') {
+    instance.on('Carousel.change', () => prewarm(instance?.carousel?.page))
+  } else {
+    // 事件不可用时退化为全量后台解析（原生有界下载队列自行限流）
+    slides.forEach((s, i) => fill(i))
+  }
+  prewarm(index)
 }
 
 export function formatIntlNumber(num) {

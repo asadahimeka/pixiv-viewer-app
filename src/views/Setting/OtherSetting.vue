@@ -17,6 +17,7 @@
     <van-cell-group :title="$t('9X179hdP1zzapzk5Rvqx2')">
       <van-cell center :title="$t('setting.layout.title')" is-link :label="appSetting.wfType" @click="wfType.show = true" />
       <van-cell center :title="$t('setting.img_res.title')" is-link :label="appSetting.imgReso" @click="imgRes.show = true" />
+      <van-cell center :title="$t('setting.preview_res.title')" is-link :label="appSetting.previewReso" @click="previewRes.show = true" />
       <van-cell v-if="!appSetting.isEnableSwipe && !appSetting.imgViewHorizonSwiper" center :title="$t('GVpGJVKGl9ZCmIecor4fa')" :label="$t('Pb7RAgYfySagsZJPhO2kC')">
         <template #right-icon>
           <van-switch :value="appSetting.imgViewHorizonScroll" size="24" @change="v => saveAppSetting('imgViewHorizonScroll', v)" />
@@ -422,6 +423,14 @@
       @select="v => saveAppSetting('imgReso', v.name, true)"
     />
     <van-action-sheet
+      v-model="previewRes.show"
+      :actions="previewRes.actions"
+      :cancel-text="$t('common.cancel')"
+      :description="$t('setting.preview_res.ph')"
+      close-on-click-action
+      @select="v => saveAppSetting('previewReso', v.name, true)"
+    />
+    <van-action-sheet
       v-model="ugoiraDL.show"
       :actions="ugoiraDL.actions"
       :cancel-text="$t('common.cancel')"
@@ -686,6 +695,14 @@ export default {
           { name: 'Large(WebP)', subname: this.$t('setting.img_res.m') },
           { name: 'Large', subname: this.$t('setting.img_res.l') },
           { name: 'Original', subname: this.$t('setting.img_res.o'), disabled: LocalStorage.get('PXIMG_PROXY') != 'i.pixiv.re' },
+        ],
+      },
+      previewRes: {
+        show: false,
+        actions: [
+          { name: 'Large(WebP)', subname: this.$t('setting.img_res.m') },
+          { name: 'Large', subname: this.$t('setting.img_res.l') },
+          { name: 'Original', subname: this.$t('setting.img_res.o') },
         ],
       },
       lang: {

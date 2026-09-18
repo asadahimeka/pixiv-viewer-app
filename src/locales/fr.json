@@ -606,6 +606,10 @@
       "ph": "Veuillez sélectionner la qualité des détails de l'image",
       "title": "Détails de l'image et sélection de la qualité"
     },
+    "preview_res": {
+      "ph": "Veuillez choisir la qualité de l'aperçu",
+      "title": "Qualité d'image lors de l'affichage d'une grande image sur la page de détails"
+    },
     "input": "Entrer:",
     "lab": {
       "title": "Expérimental"

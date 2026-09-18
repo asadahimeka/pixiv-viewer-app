@@ -78,7 +78,7 @@
   "devDependencies": {
     "@capacitor/assets": "3.0.4",
     "@capacitor/cli": "5.6.0",
-    "@tauri-apps/cli": "^2",
+    "@tauri-apps/cli": "2.10.0",
     "@rushstack/eslint-patch": "1.7.2",
     "@types/crypto-js": "4.2.2",
     "@types/gif.js": "0.2.5",
