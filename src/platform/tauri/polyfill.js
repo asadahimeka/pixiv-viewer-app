@@ -1,5 +1,5 @@
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
-import { openUrl } from './utils'
+import { open } from '@tauri-apps/plugin-shell'
 
 /* Safari and Edge polyfill for createImageBitmap
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap
@@ -20,8 +20,11 @@ if (!('createImageBitmap' in window)) {
   }
 }
 
+if (!window._open) window._open = window.open
 window.open = function (url) {
-  openUrl(url)
+  open(url).catch(() => {
+    window._open(url, '_blank', 'noopener noreferrer')
+  })
 }
 
 /**

@@ -26,7 +26,8 @@ export async function openUrl(url) {
   try {
     await open(url)
   } catch (error) {
-    window.open(url, '_blank', 'noopener noreferrer')
+    const _open = window._open || window.open
+    _open(url, '_blank', 'noopener noreferrer')
   }
 }
 
