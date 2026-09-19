@@ -370,13 +370,36 @@ async function _downloadFile(source, fileName, options = {}) {
     if (options.subDir) options.subDir = replaceValidFileName(options.subDir, true)
 
     Toast.allowMultiple()
+    const baseMsg = options.message ? `${options.message}: ${fileName}` : `${i18n.t('tip.downloading')}: ${fileName}`
     loading = Toast({
       duration: 0,
       // forbidClick: true,
       className: 'download-toast',
-      message: options.message ? `${options.message}: ${fileName}` : `${i18n.t('tip.downloading')}: ${fileName}`,
+      message: baseMsg,
       getContainer: '#app .app-base',
     })
+
+    // 下载进度改写 toast 文本（仅 Capacitor 的 Filesystem 下载路径生效）：
+    // 原生端已按 100ms 节流，此处再做一次时间节流兜底（web 实现按 chunk 回报不节流）；
+    // 总长未知时回退显示已下载大小。
+    // 百分比前置：download-toast 为单行省略样式，长文件名会把尾部的进度挤到不可见
+    let lastProgressMsg = baseMsg
+    let lastProgressAt = 0
+    const onDlProgress = (bytes, contentLength) => {
+      try {
+        const now = Date.now()
+        if (now - lastProgressAt < 100) return
+        lastProgressAt = now
+        const progress = contentLength > 0
+          ? Math.min(99, Math.round(bytes / contentLength * 100)) + '%'
+          : formatBytes(bytes)
+        const msg = `${progress} ${baseMsg}`
+        if (msg != lastProgressMsg) {
+          lastProgressMsg = msg
+          loading.message = msg
+        }
+      } catch (err) {}
+    }
 
     const doneToast = msg => {
       try {
@@ -396,7 +419,7 @@ async function _downloadFile(source, fileName, options = {}) {
       const util = await import('@/platform/capacitor/utils')
       const result = source instanceof Blob
         ? await util.downloadBlob(source, fileName, options.subDir)
-        : await util.downloadFile(source, fileName, options.subDir)
+        : await util.downloadFile(source, fileName, options.subDir, onDlProgress)
       if (result.error) {
         throw result.error instanceof Error ? result.error : new Error(result.error)
       }

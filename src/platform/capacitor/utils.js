@@ -55,12 +55,27 @@ function getDLDir(isCache = false) {
     : Directory.Documents
 }
 
-async function fsDirectDownload(url, fileName, isCache = false) {
+// 发起 Filesystem 下载；传入 onProgress 时开启原生 progress 回报并监听事件。
+// progress 事件负载为 { url, bytes, contentLength }（Android/iOS/web 一致），
+// 每个监听会收到所有并发任务的事件，需按发起下载的 URL 过滤后转发给当前任务
+export async function fsDownloadFile(options, onProgress) {
+  if (typeof onProgress != 'function') return Filesystem.downloadFile(options)
+  const listener = await Filesystem.addListener('progress', evt => {
+    if (evt.url === options.url) onProgress(evt.bytes || 0, evt.contentLength || 0)
+  })
+  try {
+    return await Filesystem.downloadFile({ ...options, progress: true })
+  } finally {
+    listener.remove()
+  }
+}
+
+async function fsDirectDownload(url, fileName, isCache = false, onProgress) {
   const newUrl = new URL(url)
   if (platform.isIOS) newUrl.protocol = 'http:'
   newUrl.host = window.p_pximg_ip
   const downloadUrl = newUrl.href
-  const res = await Filesystem.downloadFile({
+  const res = await fsDownloadFile({
     url: downloadUrl,
     path: `${dlBaseDir}/${fileName}`,
     directory: getDLDir(isCache),
@@ -68,17 +83,17 @@ async function fsDirectDownload(url, fileName, isCache = false) {
     headers: platform.isIOS
       ? ({ Referer: 'https://www.pixiv.net' })
       : ({ Host: 'i.pximg.net', Referer: 'https://www.pixiv.net' }),
-  })
+  }, onProgress)
   return { res, downloadUrl }
 }
 
-async function fsDownload(url, fileName, isCache = false) {
-  const res = await Filesystem.downloadFile({
+async function fsDownload(url, fileName, isCache = false, onProgress) {
+  const res = await fsDownloadFile({
     url,
     path: `${dlBaseDir}/${fileName}`,
     directory: getDLDir(isCache),
     recursive: true,
-  })
+  }, onProgress)
   return { res, downloadUrl: url }
 }
 
@@ -189,7 +204,8 @@ async function safSave(tempPath, fileName) {
   }
 }
 
-export async function downloadFile(url, fileName, subpath) {
+// onProgress: (bytes, contentLength) => void，仅 Filesystem 下载路径支持进度回报
+export async function downloadFile(url, fileName, subpath, onProgress) {
   let step = 'fsDownload'
   try {
     fileName = replaceValidFilename(fileName)
@@ -202,7 +218,7 @@ export async function downloadFile(url, fileName, subpath) {
         fn: async () => {
           step = 'fsDirect'
           const result = await retryWhere(
-            () => fsDirectDownload(url, fileName, preferMediaStore),
+            () => fsDirectDownload(url, fileName, preferMediaStore, onProgress),
             isRetryableDlError
           )
           if (preferMediaStore) {
@@ -235,7 +251,7 @@ export async function downloadFile(url, fileName, subpath) {
         test: () => isSafEnabled(),
         fn: async () => {
           step = 'fsDownload'
-          const result = await retryWhere(() => fsDownload(url, fileName, true), isRetryableDlError)
+          const result = await retryWhere(() => fsDownload(url, fileName, true, onProgress), isRetryableDlError)
           step = 'safWrite'
           try {
             const { uri, tipPath } = await safSave(result.res.path, fileName)
@@ -255,12 +271,12 @@ export async function downloadFile(url, fileName, subpath) {
           step = 'fsDownload'
           let result
           try {
-            result = await retryWhere(() => fsDownload(url, fileName, preferMediaStore), isRetryableDlError)
+            result = await retryWhere(() => fsDownload(url, fileName, preferMediaStore, onProgress), isRetryableDlError)
           } catch (err) {
             // 直接写公共目录失败且文件还没落地时，询问后改为私有目录下载 + 系统分享保存
             if (preferMediaStore || !(await confirmShareFallback())) throw err
             step = 'fsDownload'
-            result = await fsDownload(url, fileName, true)
+            result = await fsDownload(url, fileName, true, onProgress)
             step = 'share'
             await shareFile(result.res.path, fileName)
             result.res.tipPath = i18n.t('tip.dl_share_done')

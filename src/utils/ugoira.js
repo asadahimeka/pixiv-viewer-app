@@ -72,14 +72,17 @@ async function writeZipCache(path, blob) {
 }
 
 /** 直连模式：p_pximg_ip + Host 头原生下载（与直连图片同链路），失败直接抛错不回退 */
-async function directDownloadZip(rawZip, path) {
-  const { Filesystem } = await import('@capacitor/filesystem')
-  const { directory } = await getZipCacheDir()
+async function directDownloadZip(rawZip, path, onProgress) {
+  const [{ directory }, { fsDownloadFile }] = await Promise.all([
+    getZipCacheDir(),
+    // 动态导入避免把 Capacitor 依赖带进 Tauri 构建（此函数仅 Capacitor 直连模式可达）
+    import('@/platform/capacitor/utils'),
+  ])
   const url = new URL(rawZip)
   const isIOS = platform.isIOS
   if (isIOS) url.protocol = 'http:'
   url.host = window.p_pximg_ip
-  await Filesystem.downloadFile({
+  await fsDownloadFile({
     url: url.href,
     path,
     directory,
@@ -87,7 +90,7 @@ async function directDownloadZip(rawZip, path) {
     headers: isIOS
       ? { Referer: 'https://www.pixiv.net' }
       : { Host: 'i.pximg.net', Referer: 'https://www.pixiv.net' },
-  })
+  }, onProgress)
   return readZipCache(path)
 }
 
@@ -146,7 +149,7 @@ async function requestZipAsBlob(url) {
 /**
  * 加载动图 zip 并解出全部帧的 ImageBitmap
  * @param {Number} id 作品 ID
- * @param {Function} [onProgress] 下载进度回调 ({ loaded, total })，仅部分加载级别支持
+ * @param {Function} [onProgress] 下载进度回调 ({ loaded, total })，fetch 流式与直连原生下载支持
  */
 export async function loadUgoira(id, onProgress) {
   const res = await api.ugoiraMetadata(id)
@@ -189,7 +192,9 @@ export async function loadUgoira(id, onProgress) {
       nprogress.done()
       throw new Error(i18n.t('ugoira.direct_ip_missing'))
     }
-    blob = await directDownloadZip(fetchZip, cachePath)
+    blob = await directDownloadZip(fetchZip, cachePath, (bytes, contentLength) => {
+      reportProgress({ loaded: bytes, total: contentLength })
+    })
     if (!blob) {
       nprogress.done()
       throw new Error(i18n.t('D8R2062pjASZe9mgvpeLr'))
