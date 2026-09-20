@@ -99,7 +99,7 @@ export function ensureInit() {
 // 实时显示入队/完成/对账/缩略图解析等关键链路信息
 let dbgEl = null
 export function dbgDl(msg) {
-  // if (localStorage.PXV_DEBUG_DL !== '1') return
+  if (localStorage.PXV_DEBUG_DL !== '1') return
   if (!dbgEl) {
     dbgEl = document.createElement('div')
     dbgEl.style.cssText = 'position:fixed;right:4px;bottom:4px;z-index:99999;max-width:80vw;max-height:50vh;overflow:hidden;background:rgba(0,0,0,.72);color:#4ade80;font:10px/1.5 monospace;padding:4px 6px;border-radius:4px;pointer-events:none;white-space:pre-wrap'
