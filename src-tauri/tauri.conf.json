@@ -75,7 +75,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$PICTURE/pixiv-viewer/**/*", "$PICTURE/pixiv-viewer/*"]
+      }
     }
   }
 }

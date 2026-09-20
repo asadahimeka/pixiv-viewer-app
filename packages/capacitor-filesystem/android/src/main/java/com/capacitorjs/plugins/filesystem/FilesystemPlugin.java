@@ -1,10 +1,14 @@
 package com.capacitorjs.plugins.filesystem;
 
 import android.Manifest;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import com.capacitorjs.plugins.filesystem.exceptions.CopyFailedException;
 import com.capacitorjs.plugins.filesystem.exceptions.DirectoryExistsException;
 import com.capacitorjs.plugins.filesystem.exceptions.DirectoryNotFoundException;
@@ -21,10 +25,15 @@ import com.getcapacitor.annotation.PermissionCallback;
 import com.getcapacitor.plugin.util.HttpRequestHandler;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.net.URLDecoder;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.json.JSONException;
 
@@ -481,12 +490,156 @@ public class FilesystemPlugin extends Plugin {
 
                 @Override
                 public void onError(Exception error) {
-                    call.reject("Error downloading file: " + error.getLocalizedMessage(), error);
+                    String msg = error.getLocalizedMessage() != null ? error.getLocalizedMessage() : "";
+                    // 用户取消:透传干净的 DOWNLOAD_CANCELLED 标记,JS 侧按取消处理,不留失败记录
+                    if (msg.contains("DOWNLOAD_CANCELLED")) {
+                        call.reject("DOWNLOAD_CANCELLED");
+                        return;
+                    }
+                    call.reject("Error downloading file: " + msg, error);
                 }
             });
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             call.reject("Error downloading file: [" + ex.getClass().getSimpleName() + "] " + (msg != null ? msg : "no message"), ex);
+        }
+    }
+
+    @PluginMethod
+    public void cancelDownload(PluginCall call) {
+        String taskId = call.getString("taskId");
+        if (taskId == null || taskId.isEmpty()) {
+            call.reject("taskId is required");
+            return;
+        }
+        AtomicBoolean flag = Filesystem.CANCELLED_TASKS.get(taskId);
+        // 任务尚未注册(排队中)时 JS 侧会在启动前检查取消标志,这里只处理已注册的任务
+        if (flag != null) {
+            flag.set(true);
+        }
+        call.resolve();
+    }
+
+    /**
+     * 生成下载缩略图:图片按 maxSize 采样解码,视频取中间帧;
+     * 产物写入 cacheDir/download_thumbs/<md5(path+mtime)>.jpg,同名命中直接复用。
+     * 返回 { uri, mtime },供 JS 侧按 mtime 做缓存失效。
+     */
+    @PluginMethod
+    public void generateThumbnail(PluginCall call) {
+        String path = call.getString("path");
+        Integer maxSize = call.getInt("maxSize", 320);
+        if (path == null || path.isEmpty()) {
+            call.reject("path is required");
+            return;
+        }
+        String clean = path.startsWith("file://") ? path.substring("file://".length()) : path;
+        File src = new File(clean);
+        if (!src.exists() && clean.contains("%")) {
+            // 记录里的路径可能被 URI 编码过(如 DownloadManager 的 COLUMN_LOCAL_URI
+            // 对非 ASCII 文件名会编码),直接 File 匹配不到时先尝试解码
+            try {
+                File decoded = new File(URLDecoder.decode(clean, "UTF-8"));
+                if (decoded.exists()) {
+                    src = decoded;
+                    clean = decoded.getAbsolutePath();
+                }
+            } catch (Exception ignored) {}
+        }
+        if (!src.exists()) {
+            // 带上具体路径,便于在 logcat 中定位是哪条记录/哪个来源的路径解析问题
+            Logger.debug(getLogTag(), "generateThumbnail FILE_NOT_FOUND: " + clean);
+            call.reject("FILE_NOT_FOUND");
+            return;
+        }
+        try {
+            File outDir = new File(getContext().getCacheDir(), "download_thumbs");
+            if (!outDir.exists()) {
+                outDir.mkdirs();
+            }
+            long mtime = src.lastModified();
+            File out = new File(outDir, md5(clean + "_" + mtime) + ".jpg");
+            if (out.exists() && out.length() > 0) {
+                resolveThumb(call, out, mtime);
+                return;
+            }
+
+            Bitmap bitmap = null;
+            String lower = clean.toLowerCase(Locale.ROOT);
+            if (lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".3gp")) {
+                // String 重载在全部 API 级别可用;File 重载 API 29+ 才有
+                bitmap = ThumbnailUtils.createVideoThumbnail(src.getAbsolutePath(), MediaStore.Images.Thumbnails.MINI_KIND);
+            } else {
+                bitmap = decodeSampledBitmap(src, maxSize == null ? 320 : maxSize);
+            }
+            if (bitmap == null) {
+                call.reject("THUMB_UNSUPPORTED");
+                return;
+            }
+
+            FileOutputStream fos = new FileOutputStream(out);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 82, fos);
+            fos.close();
+            resolveThumb(call, out, mtime);
+        } catch (Exception ex) {
+            call.reject("THUMB_ERROR: " + ex.getLocalizedMessage());
+        }
+    }
+
+    private void resolveThumb(PluginCall call, File out, long mtime) {
+        JSObject ret = new JSObject();
+        ret.put("uri", Uri.fromFile(out).toString());
+        ret.put("mtime", mtime);
+        call.resolve(ret);
+    }
+
+    /** 两段式采样解码:先读边界算 inSampleSize,再解码;超出目标尺寸时二次缩放 */
+    private Bitmap decodeSampledBitmap(File src, int maxSize) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(src.getAbsolutePath(), bounds);
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            return null;
+        }
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        int sample = 1;
+        while (bounds.outWidth / (sample * 2) >= maxSize && bounds.outHeight / (sample * 2) >= maxSize) {
+            sample *= 2;
+        }
+        opts.inSampleSize = sample;
+        Bitmap decoded = BitmapFactory.decodeFile(src.getAbsolutePath(), opts);
+        if (decoded == null) {
+            return null;
+        }
+        int maxDim = Math.max(decoded.getWidth(), decoded.getHeight());
+        if (maxDim > maxSize * 1.5f) {
+            float scale = maxSize / (float) maxDim;
+            Bitmap scaled = Bitmap.createScaledBitmap(
+                decoded,
+                Math.max(1, Math.round(decoded.getWidth() * scale)),
+                Math.max(1, Math.round(decoded.getHeight() * scale)),
+                true
+            );
+            if (scaled != decoded) {
+                decoded.recycle();
+            }
+            return scaled;
+        }
+        return decoded;
+    }
+
+    private static String md5(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] bytes = digest.digest(input.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+            // MD5 在所有 Android 平台必然可用,这里仅兜底
+            return Integer.toHexString(input.hashCode());
         }
     }
 

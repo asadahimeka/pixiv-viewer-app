@@ -29,13 +29,23 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.JSONException;
 
 public class Filesystem {
 
     private Context context;
+
+    /**
+     * 下载取消登记表:taskId → 取消标志位。
+     * JS 侧发起下载时携带 taskId 注册,downloadFile 读循环按块检查;
+     * cancelDownload 插件方法置位后,下载在下一个数据块边界中止并删除半成品。
+     */
+    public static final Map<String, AtomicBoolean> CANCELLED_TASKS = new ConcurrentHashMap<>();
 
     /**
      * 下载线程池（有界）：桥接插件调用本身跑在单线程的 CapacitorPlugins 队列上，
@@ -322,21 +332,38 @@ public class Filesystem {
 
     public void downloadFile(PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter, FilesystemDownloadCallback callback) {
         String urlString = call.getString("url", "");
+        String taskId = call.getString("taskId");
+        final AtomicBoolean cancelledFlag = registerCancelFlag(taskId);
         Handler handler = new Handler(Looper.getMainLooper());
 
         downloadExecutor.execute(
             () -> {
                 try {
-                    JSObject result = doDownloadInBackground(urlString, call, bridge, emitter);
+                    JSObject result = doDownloadInBackground(urlString, call, bridge, emitter, cancelledFlag);
                     handler.post(() -> callback.onSuccess(result));
                 } catch (Exception error) {
                     handler.post(() -> callback.onError(error));
+                } finally {
+                    unregisterCancelFlag(taskId);
                 }
             }
         );
     }
 
-    private JSObject doDownloadInBackground(String urlString, PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter)
+    private AtomicBoolean registerCancelFlag(String taskId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return null;
+        }
+        return CANCELLED_TASKS.computeIfAbsent(taskId, k -> new AtomicBoolean(false));
+    }
+
+    private void unregisterCancelFlag(String taskId) {
+        if (taskId != null && !taskId.isEmpty()) {
+            CANCELLED_TASKS.remove(taskId);
+        }
+    }
+
+    private JSObject doDownloadInBackground(String urlString, PluginCall call, Bridge bridge, HttpRequestHandler.ProgressEmitter emitter, AtomicBoolean cancelledFlag)
         throws IOException, URISyntaxException, JSONException {
         JSObject headers = call.getObject("headers", new JSObject());
         JSObject params = call.getObject("params", new JSObject());
@@ -426,6 +453,14 @@ public class Filesystem {
         long minEmitIntervalMillis = 100;
 
         while ((len = connectionInputStream.read(buffer)) > 0) {
+            if (cancelledFlag != null && cancelledFlag.get()) {
+                // 用户取消:关闭流、删除半成品,以 DOWNLOAD_CANCELLED 异常中止
+                connectionInputStream.close();
+                fileOutputStream.close();
+                file.delete();
+                throw new IOException("DOWNLOAD_CANCELLED");
+            }
+
             fileOutputStream.write(buffer, 0, len);
 
             bytes += len;

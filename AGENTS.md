@@ -58,7 +58,7 @@ npm run build:and         # Android APK (Capacitor)
 npm run build:ios         # iOS IPA (Capacitor, unsigned)
 npm run build:win         # Windows (Tauri, x86_64-msvc)
 npm run build:mac         # macOS (Tauri, universal)
-npm run lint              # ESLint check + auto-fix
+npm run lint              # ESLint check + auto-fix（尽量不跑全量 lint，而是只对改动文件做 lint 检查）
 ```
 
 **CI**: GitHub Actions workflows in `.github/workflows/` — manual dispatch only.
@@ -179,8 +179,22 @@ src/
 
 ### Image Handling
 - All pximg URLs proxied through `imgProxy()` in `src/api/index.js` — replaces `i.pximg.net` with `PXIMG_PROXY_BASE`.
+
+### CSS
 - PostCSS `postcss-pxtorem` with `rootValue: 75` — 75px = 1rem. Selector blacklist: `van`, `fancybox`, `ispx`.
-- Vant CSS imported via babel `babel-plugin-import` (tree-shaken).
+- Dark mode: `localStorage.PXV_DARK` flag adds `.dark` class to body
+- Theme color: CSS variable `--accent-color` from `localStorage.PXV_ACT_COLOR`
+
+### Vant UI (v2) — IMPORTANT import conventions
+- **DO NOT** `import { X } from 'vant'` — this triggers babel-plugin-import and pulls in the `vant/es/*` ESM build, duplicating the `vant/lib/*` CJS build already registered globally. All vant code must use ONE build (`vant/lib/*`).
+- **Template components**: already globally registered via `Vue.use()` in `src/lib/vant.js` (39 components: Button/Toast/Search/Tabs/List/Popup/Dialog/Icon/Loading/Progress etc. — use `<van-xxx>` directly, NO import needed.
+- **Imperative APIs** (Dialog.confirm, Toast.success, ImagePreview, Notify, Locale): import from the central facade `@/lib/vant-apis` (re-exports `vant/lib/*` + needed styles):
+  ```js
+  import { Dialog, Toast, ImagePreview, Notify, Locale } from '@/lib/vant-apis'
+  ```
+  NOT `from 'vant'`. `this.$toast`/`$dialog`/`$notify` prototypes exist (from lib registration) but prefer explicit imports for clarity.
+- **New components**: if a component is NOT in the `vant.js` global registration list (e.g. Progress), either register it there or import it directly via `vant/lib/xxx` (component) + ensure its style is in `src/lib/vant-style.js`.
+- **Styles**: component styles live in `src/lib/vant-style.js` (lib path, one per component) — add new components' styles there, not via babel-plugin-import.
 
 ---
 
@@ -195,6 +209,8 @@ src/
 1. Add to `src/locales/zh-CN.json` first (default locale)
 2. Add translations to other locale files as needed
 3. Use `$t('key')` in templates, `i18n.t('key')` in JS
+4. 使用语义化的`key`，不要使用 hash
+5. 避免直接写入大量 i18n 文件，考虑使用脚本
 
 ### Adding Dependencies
 ```bash

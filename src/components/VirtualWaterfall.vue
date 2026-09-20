@@ -30,7 +30,7 @@
 // https://github.com/lhlyu/vue-virtual-waterfall
 
 import { computed, onMounted, onBeforeUnmount, readonly, ref, shallowRef, watchEffect } from 'vue'
-import { useElementBounding, useElementSize } from '@vueuse/core'
+import { useElementSize, useEventListener } from '@vueuse/core'
 
 const props = defineProps({
   virtual: { type: Boolean, default: true },
@@ -49,13 +49,31 @@ const props = defineProps({
 const content = ref()
 
 const { width: contentWidth } = useElementSize(content)
-const { top: contentTop } = useElementBounding(content)
+
+// contentTop 旧实现用 useElementBounding:每个 window scroll 事件都会
+// 更新并触发窗口重算,长列表滚动时主线程被渲染占满(移动端尤其明显)。
+// 改为 rAF 合并 + 位置量化:每帧最多读一次位置,且位置按 QUANTUM 取整,
+// 小幅滚动不触发重渲染,窗口边界由 preload 屏数吸收
+const QUANTUM = 120
+const contentTop = ref(0)
+let topRafId = 0
+const updateContentTop = () => {
+  if (topRafId) return
+  topRafId = requestAnimationFrame(() => {
+    topRafId = 0
+    if (!content.value) return
+    const top = content.value.getBoundingClientRect().top
+    const quantized = Math.round(top / QUANTUM) * QUANTUM
+    if (contentTop.value !== quantized) contentTop.value = quantized
+  })
+}
+useEventListener(window, 'scroll', updateContentTop, { passive: true })
+useEventListener(window, 'resize', updateContentTop)
 
 const indicator = ref()
 const observer = ref()
 const setObserver = () => {
   observer.value = new IntersectionObserver(entries => {
-    console.log('entries: ', entries)
     if (entries[0].isIntersecting && props.items.length) {
       props.onLoadMore()
     }
@@ -73,11 +91,13 @@ onMounted(() => {
   if (contentWidth.value === 0) {
     contentWidth.value = Number.parseInt(window.getComputedStyle(content.value).width)
   }
+  updateContentTop()
   setObserver()
 })
 
 onBeforeUnmount(() => {
   observer.value?.disconnect()
+  if (topRafId) cancelAnimationFrame(topRafId)
 })
 
 // 计算列数
@@ -156,10 +176,17 @@ watchEffect(() => {
   const spaces = new Array(length)
 
   let start = 0
-  // 是否启用缓存：只有当新增元素时，需要计算新增元素的信息
-  const cache = itemSpaces.value.length && length > itemSpaces.value.length
+  // 是否启用缓存：只有当新增元素时，需要计算新增元素的信息。
+  // 缓存前提是 items 只在尾部追加；若共享前缀的 item 引用已变
+  // （列表整体重建、新元素插在头部等），必须全量重算，否则会复用
+  // 旧 item 导致内容错乱与 v-for key 重复
+  const prevSpaces = itemSpaces.value
+  const cache =
+    prevSpaces.length &&
+    length > prevSpaces.length &&
+    prevSpaces.every((s, i) => props.items[i] === s.item)
   if (cache) {
-    start = itemSpaces.value.length
+    start = prevSpaces.length
   } else {
     columnsTop.value = new Array(columnCount.value).fill(0)
   }
@@ -167,7 +194,7 @@ watchEffect(() => {
   // 为了高性能采用for-i
   for (let i = 0; i < length; i++) {
     if (cache && i < start) {
-      spaces[i] = itemSpaces.value[i]
+      spaces[i] = prevSpaces[i]
       continue
     }
 
@@ -210,8 +237,11 @@ const itemRenderList = computed(() => {
   const tp = -contentTop.value + parentTop
 
   const [topPreloadScreenCount, bottomPreloadScreenCount] = props.preloadScreenCount
-  // 避免多次访问
-  const innerHeight = content.value.parentElement.clientHeight
+  // 窗口尺寸用视口高度而非 wrapper 的 clientHeight:
+  // wrapper 高度可能被外部设为 auto(由内容撑开,用于列表后还有其他区块的页面),
+  // 此时 clientHeight 是全列表高度,窗口化会完全失效
+  const innerHeight = Math.max(1, window.innerHeight)
+  // const innerHeight = content.value.parentElement.clientHeight
 
   // 顶部的范围: 向上预加载preloadScreenCount个屏幕，Y轴上部
   const minLimit = tp - topPreloadScreenCount * innerHeight

@@ -152,6 +152,8 @@ If you find this project helpful, feel free to [buy me a coffee](https://sponsor
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sakurayumine)
 
+Sponsors list: https://sponsors-yumine.netlify.app/account
+
 ## FAQ
 
 https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-faq

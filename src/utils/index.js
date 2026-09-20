@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { Dialog, Toast } from '@/lib/vant-apis'
+import { Toast } from '@/lib/vant-apis'
 import store from '@/store'
 import platform from '@/platform'
 import { i18n, isCNLocale } from '@/i18n'
@@ -339,28 +339,28 @@ export function checkDlEnvCompat() {
   return dlEnvChecking
 }
 
-const inflightDlTasks = new Map()
-
 /**
- * 对外入口：同一目标文件的并发下载共享同一个任务，避免临时文件互相覆盖/删除
+ * 对外入口：同一目标文件的并发下载共享同一个任务，避免临时文件互相覆盖/删除。
+ * Capacitor / Tauri 平台统一改走下载中心(队列/取消/进度/记录,见 @/store/downloads),
+ * 返回值与旧实现保持兼容:成功含 { res, successMsg },失败不 reject。
  * @param {string|Blob} source
  * @param {string} fileName
  * @param {object} options
  * @param {string} options.message
  * @param {string} options.subDir
- * @returns {ReturnType<typeof _downloadFile>}
+ * @param {number|string} [options.artworkId] 下载中心记录用
+ * @param {string} [options.kind] 下载中心记录用
+ * @returns {Promise<{res?: object, successMsg?: string, error?: Error}|object>}
  */
 export function downloadFile(source, fileName, options = {}) {
-  const key = `${options.subDir || ''}/${fileName}`
-  if (inflightDlTasks.has(key)) return inflightDlTasks.get(key)
-  const task = _downloadFile(source, fileName, options)
-  const cleanup = () => inflightDlTasks.delete(key)
-  task.then(cleanup, cleanup)
-  inflightDlTasks.set(key, task)
-  return task
+  if (platform.isCapacitor || platform.isTauri) {
+    return import('@/store/downloads').then(mod => mod.enqueueDownload({ source, fileName, options }))
+  }
+  return webDownloadFile(source, fileName, options)
 }
 
-async function _downloadFile(source, fileName, options = {}) {
+// 纯 web 环境(浏览器调试)的下载兜底:保持旧实现的直接 downloadLink 行为
+async function webDownloadFile(source, fileName, options = {}) {
   let loading
   try {
     if (typeof source == 'string' && !/\.\w+$/.test(fileName)) {
@@ -370,96 +370,25 @@ async function _downloadFile(source, fileName, options = {}) {
     if (options.subDir) options.subDir = replaceValidFileName(options.subDir, true)
 
     Toast.allowMultiple()
-    const baseMsg = options.message ? `${options.message}: ${fileName}` : `${i18n.t('tip.downloading')}: ${fileName}`
     loading = Toast({
       duration: 0,
-      // forbidClick: true,
       className: 'download-toast',
-      message: baseMsg,
+      message: options.message ? `${options.message}: ${fileName}` : `${i18n.t('tip.downloading')}: ${fileName}`,
       getContainer: '#app .app-base',
     })
-
-    // 下载进度改写 toast 文本（仅 Capacitor 的 Filesystem 下载路径生效）：
-    // 原生端已按 100ms 节流，此处再做一次时间节流兜底（web 实现按 chunk 回报不节流）；
-    // 总长未知时回退显示已下载大小。
-    // 百分比前置：download-toast 为单行省略样式，长文件名会把尾部的进度挤到不可见
-    let lastProgressMsg = baseMsg
-    let lastProgressAt = 0
-    const onDlProgress = (bytes, contentLength) => {
-      try {
-        const now = Date.now()
-        if (now - lastProgressAt < 100) return
-        lastProgressAt = now
-        const progress = contentLength > 0
-          ? Math.min(99, Math.round(bytes / contentLength * 100)) + '%'
-          : formatBytes(bytes)
-        const msg = `${progress} ${baseMsg}`
-        if (msg != lastProgressMsg) {
-          lastProgressMsg = msg
-          loading.message = msg
-        }
-      } catch (err) {}
-    }
-
-    const doneToast = msg => {
-      try {
-        loading.message = msg || `${i18n.t('tip.downloaded')}: ${fileName}`
-        setTimeout(() => {
-          loading.clear()
-        }, 2000)
-      } catch (err) {}
-    }
-
-    if (platform.isCapacitor) {
-      // if (store.state.appSetting.preferDownloadManager) {
-      //   setTimeout(() => {
-      //     loading?.clear?.()
-      //   }, 2000)
-      // }
-      const util = await import('@/platform/capacitor/utils')
-      const result = source instanceof Blob
-        ? await util.downloadBlob(source, fileName, options.subDir)
-        : await util.downloadFile(source, fileName, options.subDir, onDlProgress)
-      if (result.error) {
-        throw result.error instanceof Error ? result.error : new Error(result.error)
-      }
-      doneToast(result.successMsg)
-      return result
-    }
-
-    if (platform.isTauri) {
-      const util = await import('@/platform/tauri/utils')
-      const result = source instanceof Blob
-        ? await util.downloadBlob(source, fileName, options.subDir)
-        : await util.downloadFile(source, fileName, options.subDir)
-      if (result.error) {
-        throw result.error instanceof Error ? result.error : new Error(result.error)
-      }
-      doneToast(result.successMsg)
-      return result
-    }
-
     downloadLink(source, fileName)
-    doneToast()
+    try {
+      loading.message = `${i18n.t('tip.downloaded')}: ${fileName}`
+      setTimeout(() => {
+        loading.clear()
+      }, 2000)
+    } catch (err) {}
   } catch (err) {
     console.log('err: ', err)
-    window.umami?.track('download_file_err', { err: formatDlError(err) })
     loading?.clear()
-    const friendly = dlErrorText(err)
     if (typeof source != 'string') {
-      Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + friendly)
-      return
+      Toast(i18n.t('D8R2062pjASZe9mgvpeLr') + ': ' + dlErrorText(err))
     }
-    const action = await Dialog.confirm({
-      title: i18n.t('D8R2062pjASZe9mgvpeLr'),
-      message: `${friendly}<br>${err}<br>${i18n.t('rTIZ1T04iT1thVsaytEQF')}`,
-      lockScroll: false,
-      closeOnPopstate: true,
-      cancelButtonText: i18n.t('common.cancel'),
-      confirmButtonText: i18n.t('common.confirm'),
-    }).catch(() => 'cancel')
-    if (action != 'confirm') return
-    downloadLink(source, fileName)
   }
 }
 

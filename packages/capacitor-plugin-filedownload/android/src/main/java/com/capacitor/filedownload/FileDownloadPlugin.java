@@ -55,10 +55,12 @@ public class FileDownloadPlugin extends Plugin {
     private static class PendingDownload {
         final PluginCall call;
         final String path;
+        final String taskId;
 
-        PendingDownload(PluginCall call, String path) {
+        PendingDownload(PluginCall call, String path, String taskId) {
             this.call = call;
             this.path = path;
+            this.taskId = taskId;
         }
     }
 
@@ -126,7 +128,7 @@ public class FileDownloadPlugin extends Plugin {
 
         //将下载请求加入下载队列，加入下载队列后会给该任务返回一个long型的id，通过该id可以取消任务，重启任务、获取下载的文件等等
         long downloadId = downloadManager.enqueue(request);
-        pendingDownloads.put(downloadId, new PendingDownload(call, targetPath));
+        pendingDownloads.put(downloadId, new PendingDownload(call, targetPath, call.getString("taskId")));
 
         //注册广播接收者，监听下载状态（只注册一次，任务全部结束后注销）
         if (!receiverRegistered) {
@@ -184,6 +186,39 @@ public class FileDownloadPlugin extends Plugin {
             Logger.error(getLogTag(), "Error checking download status", e);
             settle(downloadId, pending.call, null, "查询下载状态时出错: " + e.getMessage());
         }
+    }
+
+    /**
+     * 取消系统下载管理器中的任务:移除登记、从系统队列移除,
+     * 并以 DOWNLOAD_CANCELLED reject 对应的 call,避免 JS 侧 Promise 挂起。
+     */
+    @PluginMethod
+    public void cancelDownload(PluginCall call) {
+        String taskId = call.getString("taskId");
+        if (taskId == null || taskId.isEmpty()) {
+            call.reject("taskId is required.");
+            return;
+        }
+        boolean removed = false;
+        for (Map.Entry<Long, PendingDownload> entry : pendingDownloads.entrySet()) {
+            if (taskId.equals(entry.getValue().taskId)) {
+                long downloadId = entry.getKey();
+                pendingDownloads.remove(downloadId);
+                if (downloadManager != null) {
+                    try {
+                        downloadManager.remove(downloadId);
+                    } catch (Exception ignored) {
+                    }
+                }
+                entry.getValue().call.reject("DOWNLOAD_CANCELLED");
+                removed = true;
+                break;
+            }
+        }
+        maybeUnregisterReceiver();
+        JSObject ret = new JSObject();
+        ret.put("canceled", removed);
+        call.resolve(ret);
     }
 
     /**

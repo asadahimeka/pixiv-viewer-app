@@ -40,7 +40,14 @@ export async function getSelectedSaveDir() {
   }
 }
 
-const baseDlDir = async () => LocalStorage.get('PXV_DL_DIR', `${await pictureDir()}${sep}pixiv-viewer`)
+let _baseDir
+export const baseDlDir = async () => {
+  if (!_baseDir) {
+    _baseDir = LocalStorage.get('PXV_DL_DIR', `${await pictureDir()}${sep}pixiv-viewer`)
+  }
+  return _baseDir
+}
+
 export async function ensureDownloadDir(sub = '') {
   const dir = (await baseDlDir()) + (sub || '')
   const isExist = await fs.exists(dir)
@@ -50,7 +57,8 @@ export async function ensureDownloadDir(sub = '') {
 }
 
 const isDirect = LocalStorage.get('PXV_PXIMG_DIRECT', false)
-export async function downloadFile(url, fileName, subDir = '') {
+// opts.taskId 作为取消/进度事件的关联 id(下载中心用),缺省沿用 fileName
+export async function downloadFile(url, fileName, subDir = '', opts = {}) {
   try {
     if (subDir) subDir = sep + subDir
     await ensureDownloadDir(subDir)
@@ -69,7 +77,7 @@ export async function downloadFile(url, fileName, subDir = '') {
         url: directUrl,
         writePath: `${await baseDlDir()}${subDir || ''}`,
         fileName,
-        id: fileName,
+        id: opts.taskId || fileName,
         headers: isDirectImg ? { Host: 'i.pximg.net', Referer: 'https://www.pixiv.net/' } : undefined,
       }),
       isRetryableDlError
@@ -78,6 +86,11 @@ export async function downloadFile(url, fileName, subDir = '') {
     const successMsg = i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(resPath)
     return { res: resPath, successMsg }
   } catch (error) {
+    if (error == 'DOWNLOAD_CANCELLED') {
+      const err = new Error('DOWNLOAD_CANCELLED')
+      err.canceled = true
+      throw err
+    }
     return { error: markDlError(error, 'tauriDl', url) }
   }
 }
@@ -87,17 +100,31 @@ export async function downloadFile(url, fileName, subDir = '') {
  * @param {string} fileName
  * @param {string} subDir
  */
-export async function downloadBlob(blob, fileName, subDir = '') {
+export async function downloadBlob(blob, fileName, subDir = '', opts = {}) {
   try {
+    if (opts.cancelToken && opts.cancelToken()) {
+      const err = new Error('DOWNLOAD_CANCELLED')
+      err.canceled = true
+      throw err
+    }
     if (subDir) subDir = sep + subDir
 
     await ensureDownloadDir(subDir)
     const res = `${await baseDlDir()}${subDir}${sep}${fileName}`
     await fs.writeFile(res, await blob.arrayBuffer())
 
+    if (opts.cancelToken && opts.cancelToken()) {
+      // 写入完成后才发现取消:删除成品按取消处理
+      await fs.remove(res).catch(() => {})
+      const err = new Error('DOWNLOAD_CANCELLED')
+      err.canceled = true
+      throw err
+    }
+
     const successMsg = i18n.t('tip.downloaded') + ': ' + safeDecodeURIComponent(res)
     return { res, successMsg }
   } catch (error) {
+    if (error && error.canceled) throw error
     return { error: markDlError(error, 'tauriBlob') }
   }
 }

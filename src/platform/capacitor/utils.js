@@ -12,7 +12,6 @@ import { PixivCronet } from 'capacitor-plugin-pixiv-cronet'
 import { Saf } from 'capacitor-plugin-saf'
 import writeBlob from 'capacitor-blob-writer'
 import { LocalStorage } from '@/utils/storage'
-import { getCache, setCache } from '@/utils/storage/siteCache'
 import { i18n } from '@/i18n'
 import {
   formatBytes,
@@ -40,14 +39,22 @@ function replaceValidFilename(str = '') {
   return replaceValidFileName(str).slice(-72)
 }
 
-async function addDownloadHistory(args) {
-  const historyList = await getCache('downloads.history') || []
-  historyList.unshift({ ...args, date: new Date().toLocaleString() })
-  setCache('downloads.history', historyList)
-}
-
 const isDirect = LocalStorage.get('PXV_PXIMG_DIRECT', false)
 const dlBaseDir = 'pixiv-viewer'
+
+// 用户主动取消:执行层据此短路,不留失败记录
+export function canceledError() {
+  const err = new Error('DOWNLOAD_CANCELLED')
+  err.canceled = true
+  return err
+}
+
+// 归一化识别取消:JS 抛出的 canceled 标记、原生 downloadFile 读循环与
+// DownloadManager 取消都会以 DOWNLOAD_CANCELLED 字样出现;
+// Android 插件 onError 会把消息包成 "Error downloading file: DOWNLOAD_CANCELLED",须用包含匹配
+export function isCancelError(error) {
+  return !!(error && String(error.message || error).includes('DOWNLOAD_CANCELLED'))
+}
 
 function getDLDir(isCache = false) {
   return platform.isAndroid
@@ -70,7 +77,7 @@ export async function fsDownloadFile(options, onProgress) {
   }
 }
 
-async function fsDirectDownload(url, fileName, isCache = false, onProgress) {
+async function fsDirectDownload(url, fileName, isCache = false, onProgress, taskId) {
   const newUrl = new URL(url)
   if (platform.isIOS) newUrl.protocol = 'http:'
   newUrl.host = window.p_pximg_ip
@@ -80,6 +87,7 @@ async function fsDirectDownload(url, fileName, isCache = false, onProgress) {
     path: `${dlBaseDir}/${fileName}`,
     directory: getDLDir(isCache),
     recursive: true,
+    taskId,
     headers: platform.isIOS
       ? ({ Referer: 'https://www.pixiv.net' })
       : ({ Host: 'i.pximg.net', Referer: 'https://www.pixiv.net' }),
@@ -87,20 +95,22 @@ async function fsDirectDownload(url, fileName, isCache = false, onProgress) {
   return { res, downloadUrl }
 }
 
-async function fsDownload(url, fileName, isCache = false, onProgress) {
+async function fsDownload(url, fileName, isCache = false, onProgress, taskId) {
   const res = await fsDownloadFile({
     url,
     path: `${dlBaseDir}/${fileName}`,
     directory: getDLDir(isCache),
     recursive: true,
+    taskId,
   }, onProgress)
   return { res, downloadUrl: url }
 }
 
-async function dmDownload(url, fileName) {
+async function dmDownload(url, fileName, taskId) {
   const res = await FileDownload.download({
     uri: url,
     fileName: `${dlBaseDir}/${fileName}`,
+    taskId,
   })
   return { res, downloadUrl: url }
 }
@@ -205,9 +215,19 @@ async function safSave(tempPath, fileName) {
 }
 
 // onProgress: (bytes, contentLength) => void，仅 Filesystem 下载路径支持进度回报
-export async function downloadFile(url, fileName, subpath, onProgress) {
+// opts.taskId 注册到原生取消登记表；opts.cancelToken() 为 true 表示用户已取消；
+// opts.onStep(step) 向下载中心回报当前阶段（下载 / 转存），驱动任务状态展示
+export async function downloadFile(url, fileName, subpath, onProgress, opts = {}) {
   let step = 'fsDownload'
+  let destType = 'pictures'
+  const { taskId, onStep } = opts
+  const isCanceled = () => !!(opts.cancelToken && opts.cancelToken())
+  const checkCanceled = () => {
+    onStep && onStep(step)
+    if (isCanceled()) throw canceledError()
+  }
   try {
+    checkCanceled()
     fileName = replaceValidFilename(fileName)
     if (subpath) fileName = subpath + '/' + fileName
 
@@ -218,19 +238,24 @@ export async function downloadFile(url, fileName, subpath, onProgress) {
         fn: async () => {
           step = 'fsDirect'
           const result = await retryWhere(
-            () => fsDirectDownload(url, fileName, preferMediaStore, onProgress),
+            () => fsDirectDownload(url, fileName, preferMediaStore, onProgress, taskId),
             isRetryableDlError
           )
+          checkCanceled()
           if (preferMediaStore) {
             step = 'mediaSave'
+            checkCanceled()
             try {
               const { uri, tipPath } = await mediaSave('savePicture', result.res.path, fileName)
               result.res.path = uri
               result.res.tipPath = tipPath
+              destType = 'mediastore'
             } catch (err) {
               step = 'share'
+              checkCanceled()
               if (!(await offerShare(result.res.path, fileName))) throw err
               result.res.tipPath = i18n.t('tip.dl_share_done')
+              destType = 'shared'
             }
           }
           return result
@@ -241,9 +266,11 @@ export async function downloadFile(url, fileName, subpath, onProgress) {
         fn: async () => {
           step = 'downloadManager'
           const result = await retryWhere(
-            () => dmDownload(url, fileName.split('/').pop()),
+            () => dmDownload(url, fileName.split('/').pop(), taskId),
             isRetryableDlError
           )
+          checkCanceled()
+          destType = 'download_manager'
           return result
         },
       },
@@ -251,16 +278,20 @@ export async function downloadFile(url, fileName, subpath, onProgress) {
         test: () => isSafEnabled(),
         fn: async () => {
           step = 'fsDownload'
-          const result = await retryWhere(() => fsDownload(url, fileName, true, onProgress), isRetryableDlError)
+          const result = await retryWhere(() => fsDownload(url, fileName, true, onProgress, taskId), isRetryableDlError)
+          checkCanceled()
           step = 'safWrite'
           try {
             const { uri, tipPath } = await safSave(result.res.path, fileName)
             result.res.path = uri
             result.res.tipPath = tipPath
+            destType = 'saf'
           } catch (err) {
             step = 'share'
+            checkCanceled()
             if (!(await offerShare(result.res.path, fileName))) throw err
             result.res.tipPath = i18n.t('tip.dl_share_done')
+            destType = 'shared'
           }
           return result
         },
@@ -271,19 +302,23 @@ export async function downloadFile(url, fileName, subpath, onProgress) {
           step = 'fsDownload'
           let result
           try {
-            result = await retryWhere(() => fsDownload(url, fileName, preferMediaStore, onProgress), isRetryableDlError)
+            result = await retryWhere(() => fsDownload(url, fileName, preferMediaStore, onProgress, taskId), isRetryableDlError)
           } catch (err) {
             // 直接写公共目录失败且文件还没落地时，询问后改为私有目录下载 + 系统分享保存
             if (preferMediaStore || !(await confirmShareFallback())) throw err
             step = 'fsDownload'
-            result = await fsDownload(url, fileName, true, onProgress)
+            result = await fsDownload(url, fileName, true, onProgress, taskId)
+            checkCanceled()
             step = 'share'
             await shareFile(result.res.path, fileName)
             result.res.tipPath = i18n.t('tip.dl_share_done')
+            destType = 'shared'
             return result
           }
+          checkCanceled()
           if (preferMediaStore) {
             step = 'mediaSave'
+            checkCanceled()
             try {
               const { uri, tipPath } = await mediaSave(
                 /\.(jpe?g|png|gif)$/.test(url) ? 'savePicture' : 'saveToDownloads',
@@ -292,31 +327,50 @@ export async function downloadFile(url, fileName, subpath, onProgress) {
               )
               result.res.path = uri
               result.res.tipPath = tipPath
+              destType = 'mediastore'
             } catch (err) {
               step = 'share'
+              checkCanceled()
               if (!(await offerShare(result.res.path, fileName))) throw err
               result.res.tipPath = i18n.t('tip.dl_share_done')
+              destType = 'shared'
             }
+          } else {
+            destType = 'pictures'
           }
           return result
         },
       },
     ]
     const { res, downloadUrl } = await actions.find(e => e.test()).fn()
-
-    addDownloadHistory({ status: 'ok', url: downloadUrl, fileName, path: res.path })
+    if (isCanceled()) {
+      // 下载已完成但期间收到取消(如任务排队期间取消):删除落盘成品后按取消处理
+      if (res.path && res.path.startsWith('file://')) {
+        await Filesystem.deleteFile({ path: res.path.replace('file://', '') }).catch(() => {})
+      }
+      throw canceledError()
+    }
 
     const successMsg = `${i18n.t('tip.downloaded')}: ${res.tipPath || safeDecodeURIComponent(res.path.replace('file://', ''))}`
-    return { res, successMsg }
+    return { res, downloadUrl, destType, fileName, successMsg }
   } catch (error) {
-    addDownloadHistory({ status: 'error', url, fileName, error: `${error}` })
+    if (isCancelError(error)) throw canceledError()
     return { error: markDlError(error, step, url) }
   }
 }
 
-export async function downloadBlob(blob, fileName, subpath) {
+// opts.taskId / opts.cancelToken / opts.onStep:见 downloadFile 注释;blob 写入不可中途打断,
+// 取消语义 = 写入完成后丢弃成品并删除落盘文件
+export async function downloadBlob(blob, fileName, subpath, opts = {}) {
   let step = 'blobWrite'
+  const { onStep } = opts
+  const isCanceled = () => !!(opts.cancelToken && opts.cancelToken())
+  const checkCanceled = () => {
+    onStep && onStep(step)
+    if (isCanceled()) throw canceledError()
+  }
   try {
+    checkCanceled()
     fileName = replaceValidFilename(fileName)
     if (subpath) fileName = subpath + '/' + fileName
 
@@ -336,18 +390,22 @@ export async function downloadBlob(blob, fileName, subpath) {
     })
     let { uri } = await Filesystem.getUri({ path, directory })
     let tipPath = ''
+    let destType = platform.isIOS ? 'pictures' : 'external'
     if (useSaf) {
       step = 'safWrite'
       try {
         const res = await safSave(uri, fileName)
         uri = res.uri
         tipPath = res.tipPath
+        destType = 'saf'
       } catch (err) {
         step = 'share'
         if (!(await offerShare(uri, fileName))) throw err
         tipPath = i18n.t('tip.dl_share_done')
+        destType = 'shared'
       }
     } else if (preferMediaStore) {
+      destType = 'mediastore'
       step = 'mediaSave'
       /** @type {[() => boolean, MediastoreFn][]} */
       const actions = [
@@ -365,15 +423,19 @@ export async function downloadBlob(blob, fileName, subpath) {
         // blob 成品已在私有目录，转存失败时可调起系统分享手动保存
         if (!(await offerShare(uri, fileName))) throw err
         tipPath = i18n.t('tip.dl_share_done')
+        destType = 'shared'
       }
     }
-
-    addDownloadHistory({ status: 'ok', fileName, path: uri })
+    if (isCanceled()) {
+      // 写入已完成但用户已取消:尽力清理私有目录成品后按取消处理
+      await Filesystem.deleteFile({ path, directory }).catch(() => {})
+      throw canceledError()
+    }
 
     const successMsg = `${i18n.t('tip.downloaded')}: ${tipPath || safeDecodeURIComponent(uri.replace('file://', ''))}`
-    return { res: { uri }, successMsg }
+    return { res: { uri }, destType, fileName, successMsg }
   } catch (error) {
-    addDownloadHistory({ status: 'error', fileName, error: error + '' })
+    if (isCancelError(error)) throw canceledError()
     return { error: markDlError(error, step) }
   }
 }

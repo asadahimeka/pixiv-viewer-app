@@ -3,6 +3,32 @@ import Capacitor
 
 @objc public class Filesystem: NSObject {
 
+    // taskId → 下载任务引用,cancelDownload 据此调用 task.cancel()
+    static private var downloadTasks: [String: URLSessionTask] = [:]
+    static private let tasksLock = NSLock()
+
+    static public func registerDownloadTask(taskId: String?, task: URLSessionTask?) {
+        guard let taskId = taskId, taskId.isEmpty == false, let task = task else { return }
+        tasksLock.lock()
+        downloadTasks[taskId] = task
+        tasksLock.unlock()
+    }
+
+    static public func cancelDownloadTask(taskId: String) {
+        var task: URLSessionTask?
+        tasksLock.lock()
+        task = downloadTasks.removeValue(forKey: taskId)
+        tasksLock.unlock()
+        task?.cancel()
+    }
+
+    static public func unregisterDownloadTask(taskId: String?) {
+        guard let taskId = taskId, taskId.isEmpty == false else { return }
+        tasksLock.lock()
+        downloadTasks.removeValue(forKey: taskId)
+        tasksLock.unlock()
+    }
+
     public enum FilesystemError: LocalizedError {
         case noParentFolder, noSave, failEncode, noAppend, notEmpty
 
@@ -191,8 +217,10 @@ import Capacitor
             return
         }
         guard var urlString = call.getString("url") else { throw URLError(.badURL) }
+        let taskId = call.getString("taskId")
 
         func handleDownload(downloadLocation: URL?, response: URLResponse?, error: Error?) {
+            Filesystem.unregisterDownloadTask(taskId: taskId)
             if let error = error {
                 CAPLog.print("Error on download file", String(describing: downloadLocation), String(describing: response), String(describing: error))
                 call.reject(error.localizedDescription, "DOWNLOAD", error, nil)
@@ -338,6 +366,7 @@ import Capacitor
             task = URLSession.shared.downloadTask(with: urlRequest, completionHandler: handleDownload)
         }
 
+        Filesystem.registerDownloadTask(taskId: taskId, task: task)
         task.resume()
     }
     // swiftlint:enable function_body_length

@@ -39,6 +39,7 @@ import NoticeBar from 'vant/lib/notice-bar'
 import Card from 'vant/lib/card'
 import Pagination from 'vant/lib/pagination'
 import Progress from 'vant/lib/progress'
+import PullRefresh from 'vant/lib/pull-refresh'
 
 export default function setupVant() {
   Vue.use(Button)
@@ -81,4 +82,5 @@ export default function setupVant() {
   Vue.use(Card)
   Vue.use(Pagination)
   Vue.use(Progress)
+  Vue.use(PullRefresh)
 }

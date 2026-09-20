@@ -595,6 +595,18 @@ export class FilesystemWeb extends WebPlugin {
             return false;
         }
     }
+    /**
+     * Web 端下载走 fetch,无跨调用登记表,取消由 JS 执行层在回调后短路,这里只做应答
+     */
+    async cancelDownload(_) {
+        return;
+    }
+    /**
+     * Web 端不做缩略图生成:直接返回原图路径,由调用方按需降级
+     */
+    async generateThumbnail(options) {
+        return { uri: options.path, mtime: 0 };
+    }
 }
 FilesystemWeb._debug = true;
 //# sourceMappingURL=web.js.map

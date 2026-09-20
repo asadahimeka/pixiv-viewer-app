@@ -131,12 +131,9 @@ function addTauriListener() {
     }
   })
 
-  listen('download_file_progress', evt => {
-    const { current, total } = evt.payload
-    Toast.clear()
-    const progress = total ? (current / total * 100).toFixed(0) + '%' : (current / 1024).toFixed(0) + 'KB'
-    Toast(`${i18n.t('tip.downloading')}: ${progress}`)
-  })
+  // download_file_progress 不再在全局监听:所有下载统一走下载中心队列,
+  // 由 @/platform/tauri/downloads.js 按 taskId 路由进度(旧的全局 Toast.clear 会
+  // 每个进度事件清掉执行层自己的下载 toast,造成闪烁)
 }
 
 function addErrorListener() {

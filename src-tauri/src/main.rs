@@ -30,7 +30,12 @@ fn main() {
                        .expect("no main window")
                        .set_focus();
         }))
-        .invoke_handler(tauri::generate_handler![command::download_file])
+        .invoke_handler(tauri::generate_handler![
+            command::download_file,
+            command::cancel_download,
+            command::open_path,
+            command::register_asset_dir
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

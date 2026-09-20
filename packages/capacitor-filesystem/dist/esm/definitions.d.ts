@@ -455,6 +455,11 @@ export interface DownloadFileOptions extends HttpOptions {
      */
     path: string;
     /**
+     * Optional task id registered in the native cancel table.
+     * Pass the same id to `cancelDownload` to abort the download.
+     */
+    taskId?: string;
+    /**
      * The directory to write the file to.
      * If this option is used, filePath can be a relative path rather than absolute.
      * The default is the `DATA` directory.
@@ -625,6 +630,29 @@ export interface FilesystemPlugin {
      * @since 5.1.0
      */
     addListener(eventName: 'progress', listenerFunc: ProgressListener): Promise<PluginListenerHandle> & PluginListenerHandle;
+    /**
+     * Cancel an in-flight download registered by taskId.
+     * The download aborts at the next chunk boundary and removes the partial file.
+     */
+    cancelDownload(options: CancelDownloadOptions): Promise<void>;
+    /**
+     * Generate a small JPEG thumbnail for an image/video file.
+     * Output is cached under the app cache dir keyed by path + mtime.
+     */
+    generateThumbnail(options: GenerateThumbnailOptions): Promise<GenerateThumbnailResult>;
+}
+export interface CancelDownloadOptions {
+    taskId: string;
+}
+export interface GenerateThumbnailOptions {
+    /** Absolute path or file:// URI of the source file */
+    path: string;
+    /** Max width/height in px, default 320 */
+    maxSize?: number;
+}
+export interface GenerateThumbnailResult {
+    uri: string;
+    mtime: number;
 }
 /**
  * @deprecated Use `ReadFileOptions`.

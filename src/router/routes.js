@@ -31,6 +31,7 @@ import Following from '@/views/Account/Following.vue'
 import Setting from '@/views/Setting/index.vue'
 import History from '@/views/Setting/History.vue'
 import Downloads from '@/views/Setting/Downloads.vue'
+import DownloadCenter from '@/views/Setting/DownloadCenter/index.vue'
 import ClearCache from '@/views/Setting/ClearCache.vue'
 import ContentsDisplay from '@/views/Setting/ContentsDisplay.vue'
 import SettingOthers from '@/views/Setting/OtherSetting.vue'
@@ -301,6 +302,12 @@ export const routes = [
             path: '/setting/downloads',
             name: 'Downloads',
             component: Downloads,
+            meta: { __depth: 2 },
+          },
+          {
+            path: '/setting/download-center',
+            name: 'DownloadCenter',
+            component: DownloadCenter,
             meta: { __depth: 2 },
           },
           {

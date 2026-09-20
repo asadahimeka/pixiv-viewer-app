@@ -1,5 +1,7 @@
 import Foundation
 import Capacitor
+import ImageIO
+import CryptoKit
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -8,6 +10,77 @@ import Capacitor
 @objc(FilesystemPlugin)
 public class FilesystemPlugin: CAPPlugin {
     private let implementation = Filesystem()
+
+    /**
+     * 取消下载:按 taskId 找回 URLSessionTask 并 cancel(),
+     * 任务以 error 完成回调,JS 侧收到 reject("cancelled")
+     */
+    @objc func cancelDownload(_ call: CAPPluginCall) {
+        guard let taskId = call.getString("taskId") else {
+            return call.reject("taskId is required")
+        }
+        Filesystem.cancelDownloadTask(taskId: taskId)
+        call.resolve()
+    }
+
+    /**
+     * 生成下载缩略图:ImageIO 按 maxSize 采样解码;
+     * 产物写入 Caches/download_thumbs/<md5(path+mtime)>.jpg,命中直接复用。
+     * 返回 { uri, mtime }。视频缩略图暂不支持,JS 侧回退类型图标。
+     */
+    @objc func generateThumbnail(_ call: CAPPluginCall) {
+        guard let path = call.getString("path") else {
+            return call.reject("path is required")
+        }
+        let maxSize = call.getInt("maxSize", 320)
+        var clean = path
+        if clean.hasPrefix("file://") {
+            clean = String(clean.dropFirst("file://".count))
+        }
+        let src = URL(fileURLWithPath: clean)
+        guard FileManager.default.fileExists(atPath: src.path) else {
+            return call.reject("FILE_NOT_FOUND")
+        }
+
+        var mtime: TimeInterval = 0
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: src.path),
+           let modDate = attrs[.modificationDate] as? Date {
+            mtime = modDate.timeIntervalSince1970
+        }
+
+        let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("download_thumbs", isDirectory: true)
+        try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        let digest = Insecure.MD5.hash(data: Data("\(clean)_\(mtime)".utf8))
+        let key = digest.map { String(format: "%02x", $0) }.joined()
+        let out = cacheDir.appendingPathComponent("\(key).jpg")
+
+        if FileManager.default.fileExists(atPath: out.path) {
+            call.resolve(["uri": out.absoluteString, "mtime": mtime])
+            return
+        }
+
+        guard let source = CGImageSourceCreateWithURL(src as CFURL, nil) else {
+            return call.reject("THUMB_UNSUPPORTED")
+        }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxSize
+        ]
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return call.reject("THUMB_UNSUPPORTED")
+        }
+        guard let dest = CGImageDestinationCreateWithURL(out as CFURL, "public.jpeg" as CFString, 1, nil) else {
+            return call.reject("THUMB_ERROR")
+        }
+        CGImageDestinationAddImage(dest, image, nil)
+        if CGImageDestinationFinalize(dest) {
+            call.resolve(["uri": out.absoluteString, "mtime": mtime])
+        } else {
+            call.reject("THUMB_ERROR")
+        }
+    }
 
     /**
      * Read a file from the filesystem.

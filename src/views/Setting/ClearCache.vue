@@ -169,6 +169,9 @@ export default {
       if (type === 'imgCache') {
         const { clearImageCache } = await import('@/platform/capacitor/utils')
         await clearImageCache()
+        // 下载中心缩略图(JS 解析缓存 + capacitor cache 目录下的产物)
+        const { clearThumbCaches } = await import('@/store/downloads')
+        await clearThumbCaches()
       }
 
       this.calcCacheSize()
