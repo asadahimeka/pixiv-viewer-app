@@ -86,11 +86,14 @@ export function toLegacyMirror(records = []) {
 }
 
 function normalizeRecord(raw = {}) {
+  // backup 目录里只会是设置/历史导出;旧版 .txt 被扩展名误判成 novel(guessKind 按
+  // 扩展名猜、看不到子目录),读入时按子目录纠正,存量记录也一并生效
+  const kind = raw.subDir == 'backup' ? 'backup' : raw.kind || guessKind(raw.fileName || '')
   return {
     id: raw.id || makeRecordId(),
     key: raw.key || makeRecordKey(raw.subDir, raw.fileName),
     artworkId: raw.artworkId ?? guessArtworkId(raw.fileName || ''),
-    kind: raw.kind || guessKind(raw.fileName || ''),
+    kind,
     url: raw.url || null,
     fileName: raw.fileName || '',
     subDir: raw.subDir || '',

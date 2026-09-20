@@ -1240,7 +1240,7 @@ export default {
       const blob = new Blob([btoa(unescape(encodeURIComponent(JSON.stringify(settings))))])
       if (action == 'return-blob') return blob
       window.umami?.track('exportSettings')
-      downloadFile(blob, 'pixiv-viewer-settings.txt', { subDir: 'backup' })
+      downloadFile(blob, 'pixiv-viewer-settings.txt', { subDir: 'backup', kind: 'backup' })
     },
     async shareSettings() {
       try {
@@ -1283,7 +1283,7 @@ export default {
         getCache('novels.history'),
         getCache('users.history'),
       ])
-      downloadFile(new Blob([JSON.stringify(history)]), `pixiv-viewer-history-${Date.now()}.json`, { subDir: 'backup' })
+      downloadFile(new Blob([JSON.stringify(history)]), `pixiv-viewer-history-${Date.now()}.json`, { subDir: 'backup', kind: 'backup' })
     },
     async checkShinobuRuntime() {
       const loading = this.$toast.loading({
