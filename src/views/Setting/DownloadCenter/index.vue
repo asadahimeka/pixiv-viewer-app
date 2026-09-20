@@ -26,10 +26,23 @@
       <span class="dlc-chip" :class="{ 'is-active': filter == 'failed' }" @click="setFilter('failed')">
         {{ $t('dlc.filter_failed') }}{{ failedNum ? ` (${failedNum})` : '' }}
       </span>
+      <span class="dlc-chip" :class="{ 'is-active': filter == 'image' }" @click="setFilter('image')">
+        {{ $t('dlc.filter_image') }}
+      </span>
+      <span class="dlc-chip" :class="{ 'is-active': filter == 'novel' }" @click="setFilter('novel')">
+        {{ $t('dlc.filter_novel') }}
+      </span>
+      <span class="dlc-chip" :class="{ 'is-active': filter == 'ugoira' }" @click="setFilter('ugoira')">
+        {{ $t('dlc.filter_ugoira') }}
+      </span>
+      <span class="dlc-chip" :class="{ 'is-active': filter == 'other' }" @click="setFilter('other')">
+        {{ $t('dlc.filter_other') }}
+      </span>
     </div>
 
     <!-- 记录流:虚拟化窗口渲染(VirtualWaterfall,定高模型) -->
     <van-pull-refresh v-model="refreshing" :head-distance="60" @refresh="onRefresh">
+      <van-empty v-if="!filteredRecords.length && !tasks.length" :description="emptyText" />
       <VirtualWaterfall
         :items="renderItems"
         row-key="id"
@@ -56,8 +69,6 @@
           />
         </template>
       </VirtualWaterfall>
-
-      <van-empty v-if="!filteredRecords.length && !tasks.length" :description="emptyText" />
     </van-pull-refresh>
 
     <!-- 未识别文件:磁盘有、账本没有(清数据/换机后的孤儿文件) -->
@@ -110,6 +121,19 @@ const GROUP_LABELS = {
   earlier: 'dlc.group_earlier',
 }
 
+// 类型筛选:kind 由 guessKind 按扩展名推断。动图转码产物(gif/mp4/webm/avif)的
+// kind 会被判成 image/video,但 subDir 固定为 'ugoira',所以动图按 kind+subDir 一起匹配,
+// 插画则排除动图目录。四个类型筛选互斥且完整覆盖;失败是状态筛选,与类型正交
+const isImageKind = r => r.kind == 'image' && r.subDir != 'ugoira'
+const isNovelKind = r => r.kind == 'novel' || r.kind == 'epub'
+const isUgoiraKind = r => r.kind == 'ugoira' || r.subDir == 'ugoira'
+const KIND_FILTERS = {
+  image: isImageKind,
+  novel: isNovelKind,
+  ugoira: isUgoiraKind,
+  other: r => !isImageKind(r) && !isNovelKind(r) && !isUgoiraKind(r),
+}
+
 // 定高模型:VirtualWaterfall 的 calcItemHeight 需要 px 数值,
 // 而页面尺寸用 rem 定义(html font-size 由 flexible 按屏宽设定),实时换算
 function htmlFontSize() {
@@ -156,9 +180,11 @@ export default {
       return this.records.filter(r => r.status == 'failed').length
     },
     filteredRecords() {
-      return this.filter == 'failed'
-        ? this.records.filter(r => r.status == 'failed')
-        : this.records
+      if (this.filter == 'failed') {
+        return this.records.filter(r => r.status == 'failed')
+      }
+      const byKind = KIND_FILTERS[this.filter]
+      return byKind ? this.records.filter(byKind) : this.records
     },
     // 展开成分组头 + 记录的线性列表,交给 VirtualWaterfall 窗口化渲染
     renderItems() {
@@ -339,6 +365,7 @@ export default {
 
 .dlc-filters
   display flex
+  flex-wrap wrap
   gap 0.16rem
   padding 0.08rem 0.4rem 0.16rem
 
