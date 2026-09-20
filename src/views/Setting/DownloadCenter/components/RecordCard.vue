@@ -123,6 +123,7 @@ export default {
       return KIND_ICONS[this.record.kind] || 'description'
     },
     destLabel() {
+      if (platform.isTauri) return ''
       const key = DEST_LABELS[this.record.dest?.type]
       return key ? this.$t(key) : ''
     },
