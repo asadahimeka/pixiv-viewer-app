@@ -112,6 +112,9 @@ importers:
       capacitor-plugin-pixiv-cronet:
         specifier: workspace:*
         version: link:packages/capacitor-plugin-pixiv-cronet
+      capacitor-plugin-pixiv-login:
+        specifier: workspace:*
+        version: link:packages/capacitor-plugin-pixiv-login
       capacitor-plugin-saf:
         specifier: workspace:*
         version: link:packages/capacitor-plugin-saf
@@ -476,6 +479,18 @@ importers:
       rollup:
         specifier: ^2.32.0
         version: 2.79.2
+      typescript:
+        specifier: ^4
+        version: 4.7.4
+
+  packages/capacitor-plugin-pixiv-login:
+    devDependencies:
+      '@capacitor/android':
+        specifier: ^5.6.0
+        version: 5.6.0(@capacitor/core@5.6.0)
+      '@capacitor/core':
+        specifier: ^5.6.0
+        version: 5.6.0
       typescript:
         specifier: ^4
         version: 4.7.4

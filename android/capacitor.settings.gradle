@@ -47,6 +47,9 @@ project(':capacitor-plugin-filedownload').projectDir = new File('../packages/cap
 include ':capacitor-plugin-pixiv-cronet'
 project(':capacitor-plugin-pixiv-cronet').projectDir = new File('../packages/capacitor-plugin-pixiv-cronet/android')
 
+include ':capacitor-plugin-pixiv-login'
+project(':capacitor-plugin-pixiv-login').projectDir = new File('../packages/capacitor-plugin-pixiv-login/android')
+
 include ':capacitor-plugin-saf'
 project(':capacitor-plugin-saf').projectDir = new File('../packages/capacitor-plugin-saf/android')
 

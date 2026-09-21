@@ -363,6 +363,11 @@
   "login": {
     "cant_login_msg": "<p>Unable to log in on the current site. Please visit <a href=\"https://pixiv.pictures\" target=\"_blank\">https://pixiv.pictures</a> to log in.<p>",
     "fail_tip": "Login failed",
+    "inapp": {
+      "title": "App API (In-App Login)",
+      "desc1": "Open the Pixiv official login page in an in-app WebView. The authorization code returns to the app automatically when finished — no external browser needed.",
+      "loading": "Logging in…"
+    },
     "logout_tip": "Confirm exit?",
     "o": {
       "desc1": "The Pixiv source site is about to open to log in, please make sure you can access Pixiv",

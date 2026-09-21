@@ -72,7 +72,39 @@ async function login(code, code_verifier) {
   return Pixiv.login(code, code_verifier)
 }
 
+/**
+ * 应用内 WebView 登录（Android 专用，IllustFerry 方案移植）
+ *
+ * 流程：prepare → 原生 WebView 打开 PKCE 登录页 → 截获 pixiv:// 回调 code
+ *   → 复用现有 login() 换 token（常规通道失败时自动走本机代理兜底）
+ *   → finally 停止代理
+ *
+ * 默认 useProxy=false（直连模式）：2025-09 实测 pixiv 源站对无 SNI 一律 403、
+ * 带 SNI 在墙内被 GFW RST，MITM 代理已无法覆盖真墙内直连环境，UI 不再提供代理开关；
+ * 应用内登录限定在能访问 Pixiv 的网络（直连可达或设备 VPN）下使用。
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.useProxy=false] 是否启用内置 MITM 代理
+ * @returns {Promise<{ refreshToken: string, mode: 'proxy'|'direct' }>}
+ */
+async function loginViaWebView({ useProxy = false } = {}) {
+  const loginProxy = await import('@/platform/capacitor/loginProxy')
+  if (!(await loginProxy.checkInAppLoginAvailable())) {
+    throw new Error('In-app login is only available on Android.')
+  }
+  const { login_url, code_verifier } = getLoginURL()
+  try {
+    const prepareRes = await loginProxy.prepareInAppLogin({ useProxy })
+    const { code } = await loginProxy.openInAppLogin(login_url, prepareRes.mode == 'proxy')
+    const refreshToken = await login(code, code_verifier)
+    return { refreshToken, mode: prepareRes.mode }
+  } finally {
+    await loginProxy.stopInAppLogin()
+  }
+}
+
 export {
   getLoginURL,
   login,
+  loginViaWebView,
 }

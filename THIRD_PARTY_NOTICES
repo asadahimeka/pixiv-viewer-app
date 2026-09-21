@@ -10,6 +10,10 @@ This project incorporates the following third-party open-source components.
 Each is licensed under its own license; see the links for details.
 
 GNU GPL-3.0 components (derived or vendored):
+- IllustFerry (https://github.com/peasoft/IllustFerry)
+  In-app login network layer in packages/capacitor-plugin-pixiv-login/android/
+  (LocalLoginProxy.kt MITM proxy, PixivDnsUpdater.kt, PixivNetworkConfig.kt, PixivHost.kt,
+  ported from app/src/main/java/JunZi/Pixiv/data/network/). GPL-3.0.
 - ShinobuTranslator (https://github.com/DonutShinobu/ShinobuTranslator)
   Manga translation engine under src/utils/translate/shinobu/ (mechanically converted TS→JS). GPL-3.0.
 - pxder (https://github.com/Tsuk1ko/pxder)

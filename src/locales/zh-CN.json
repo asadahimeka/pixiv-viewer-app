@@ -363,6 +363,11 @@
   "login": {
     "cant_login_msg": "<p>当前站点无法进行登录，请前往 <a href=\"https://pixiv.pictures\" target=\"_blank\">https://pixiv.pictures</a> 进行操作。<p>",
     "fail_tip": "登录失败",
+    "inapp": {
+      "title": "App API（应用内登录）",
+      "desc1": "在应用内置 WebView 打开 Pixiv 官网登录页，完成后授权自动返回应用，无需跳转外部浏览器。",
+      "loading": "登录中…"
+    },
     "logout_tip": "确认退出？",
     "o": {
       "desc1": "即将打开 Pixiv 源站进行登录，请确保可以访问 Pixiv",

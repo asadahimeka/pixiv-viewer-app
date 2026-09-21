@@ -52,6 +52,7 @@
     "capacitor-plugin-file-opener": "workspace:*",
     "capacitor-plugin-filedownload": "workspace:*",
     "capacitor-plugin-pixiv-cronet": "workspace:*",
+    "capacitor-plugin-pixiv-login": "workspace:*",
     "capacitor-plugin-saf": "workspace:*",
     "capacitor-plugin-safe-area": "2.0.6",
     "comlink": "4.4.2",

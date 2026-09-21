@@ -163,8 +163,16 @@ class PixivApi {
       data,
     }
     try {
-      const res = await callApi(`${OAUTH_URL}/auth/token`, options)
-      console.log('tokenRequest data: ', data)
+      let res
+      try {
+        const res0 = await callApi(`${OAUTH_URL}/auth/token`, options)
+        console.log('tokenRequest data: ', data)
+        res = res0
+      } catch (err) {
+        // 常规通道（axios/云代理/Cronet QUIC）失败：应用内登录代理就绪时走本机 MITM 兜底（动态 IP + SNI 直拨）
+        console.log('tokenRequest callApi err, fallback to in-app proxy: ', err)
+        res = await this.callViaLocalProxy(`${OAUTH_URL}/auth/token`, options)
+      }
       const auth = res.response
       this.auth = auth
       this._expireTime = Date.now() / 1000 + auth.expires_in
@@ -178,6 +186,29 @@ class PixivApi {
         throw err.message
       }
     }
+  }
+
+  /**
+   * 经应用内登录的本机 MITM 代理发请求（Android，IllustFerry 移植通道）。
+   * 注意：必须用原始 URL（不走 window.p_api_proxy 改写），上游由代理按动态 IP + SNI 直拨。
+   */
+  async callViaLocalProxy(url, options) {
+    const { requestViaInAppProxy, isInAppProxyReady } = await import('@/platform/capacitor/loginProxy')
+    if (!isInAppProxyReady()) throw new Error('in-app login proxy not ready')
+    const res = await requestViaInAppProxy({
+      url,
+      method: options.method,
+      headers: options.headers,
+      body: typeof options.data == 'string' ? options.data : options.data ? JSON.stringify(options.data) : undefined,
+    })
+    console.log('callViaLocalProxy status: ', res.status)
+    if (res.status != 200) {
+      let errData = res.body
+      try { errData = JSON.parse(res.body) } catch (e) { /* keep raw */ }
+      const err = { response: { status: res.status, data: errData } }
+      throw err
+    }
+    return JSON.parse(res.body)
   }
 
   logout() {

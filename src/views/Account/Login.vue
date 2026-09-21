@@ -3,10 +3,23 @@
     <top-bar id="top-bar-wrap" />
     <h3 class="af_title">{{ $t('user.sess.login') }}</h3>
     <div class="setting-cell-group">
+      <van-cell v-if="platform.isAndroid" size="large" center :title="$t('login.inapp.title')" is-link @click="openConfirmDialog('showInAppDialog')" />
       <van-cell size="large" center :title="$t('hqciRRXfoN19LYLh8xr4D')" is-link @click="openConfirmDialog('showTokenDialog')" />
       <van-cell size="large" center :title="$t('8zJrQTdrphmkCMMgL9SPW')" is-link @click="openConfirmDialog('showConfirmDialog')" />
       <van-cell size="large" center :title="$t('3ZvAP-w7q7teBcLoqOgCc')" is-link to="/account/session" />
     </div>
+    <van-dialog
+      v-model="showInAppDialog"
+      width="9rem"
+      :title="$t('login.inapp.title')"
+      show-cancel-button
+      :cancel-button-text="$t('common.cancel')"
+      :confirm-button-text="$t('common.confirm')"
+      @confirm="startInAppLogin"
+    >
+      <van-cell>{{ $t('login.inapp.desc1') }}</van-cell>
+      <van-cell>{{ $t('login.o.desc1') }}</van-cell>
+    </van-dialog>
     <van-dialog
       v-model="showConfirmDialog"
       width="9rem"
@@ -55,7 +68,8 @@ import platform from '@/platform'
 import PixivAuth from '@/api/client/pixiv-auth'
 import { getLoginURL } from '@/api/client/login'
 import { LocalStorage } from '@/utils/storage'
-import { Dialog } from '@/lib/vant-apis'
+import { Dialog, Toast } from '@/lib/vant-apis'
+import { i18n } from '@/i18n'
 
 export default {
   name: 'Login',
@@ -64,6 +78,7 @@ export default {
       appConfig: { ...localApi.APP_CONFIG },
       showConfirmDialog: false,
       showTokenDialog: false,
+      showInAppDialog: false,
       platform,
     }
   },
@@ -97,6 +112,37 @@ export default {
       const res = getLoginURL()
       LocalStorage.set('PXV_LOGIN_CODEV', res.code_verifier, 600)
       window.open(res.login_url, '_blank', 'noopener noreferrer')
+    },
+    /**
+     * 应用内 WebView 登录（Android，IllustFerry 方案移植）：
+     * 原生 WebView 截获 code + 现有 tokenRequest。
+     * 注意：仅适用于能直连/经 VPN 访问 Pixiv 的网络；真墙内直连环境
+     * WebView TCP 通道不可用（SNI 被 RST / 无 SNI 被 403），会加载失败，
+     * 届时请改用外部浏览器 OAuth 或 RefreshToken 方式。
+     */
+    async startInAppLogin() {
+      this.showInAppDialog = false
+      const toast = Toast.loading({ duration: 0, message: i18n.t('login.inapp.loading'), forbidClick: true })
+      try {
+        const { loginViaWebView } = await import('@/api/client/login')
+        await loginViaWebView({ useProxy: false })
+        window.umami?.track('login_inapp')
+        toast.clear()
+        Toast.success(i18n.t('login.succ_tip'))
+        setTimeout(() => {
+          location.replace('/')
+        }, 200)
+      } catch (err) {
+        toast.clear()
+        console.log('loginViaWebView err: ', err)
+        const msg = String(err?.message || err)
+        if (msg == 'cancelled') return
+        window.umami?.track('login_inapp_fail', { msg: msg.slice(0, 120) })
+        Dialog.alert({
+          title: i18n.t('login.fail_tip'),
+          message: msg.length > 200 ? msg.slice(0, 200) + '…' : msg,
+        })
+      }
     },
     async setUseApiProxy(val) {
       if (val) {
