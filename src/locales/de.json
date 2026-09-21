@@ -628,6 +628,13 @@
     },
     "other": {
       "api_proxy": {
+        "security_notice": "Sicherheitserinnerung: Anmeldeinformationen (RefreshToken/AccessToken) werden über den Proxyserver weitergeleitet. Bitte verwenden Sie nur vertrauenswürdige Quellen oder selbst erstellte Proxy-Dienste.",
+        "def": "Standard-Proxy wiederherstellen",
+        "input_desc": "Bitte geben Sie Ihren PxveAPI-Domänennamen ein (außer https://, unterstützt nur HTTPS), z. B. my-pxveapi.example.com",
+        "input_invalid": "Das Format des Proxy-Domänennamens ist falsch",
+        "input_ph": "my-pxveapi.example.com",
+        "manual": "Manuelle Eingabe",
+        "manual_title": "Geben Sie den AppAPI-Proxy manuell ein",
         "def_ph": "Wenn der Standard-Proxy nicht verwendet werden kann, können Sie es mit einem anderen Proxy versuchen",
         "sel_desc": "Bitte wählen Sie AppAPI Proxy",
         "title": "Wählen Sie AppAPI-Proxy aus"

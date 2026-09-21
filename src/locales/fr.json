@@ -628,6 +628,13 @@
     },
     "other": {
       "api_proxy": {
+        "security_notice": "Rappel de sécurité : les informations de connexion (RefreshToken/AccessToken) seront transmises via le serveur proxy. Veuillez utiliser uniquement des sources fiables ou des services proxy créés par vous-même.",
+        "def": "Restaurer le proxy par défaut",
+        "input_desc": "Veuillez renseigner votre nom de domaine PxveAPI (hors https://, ne prend en charge que HTTPS), tel que my-pxveapi.example.com",
+        "input_invalid": "Le format du nom de domaine proxy est incorrect",
+        "input_ph": "mon-pxveapi.example.com",
+        "manual": "Saisie manuelle",
+        "manual_title": "Entrez manuellement le proxy AppAPI",
         "def_ph": "Si le proxy par défaut ne peut pas être utilisé, vous pouvez essayer un autre proxy",
         "sel_desc": "Veuillez sélectionner le proxy AppAPI",
         "title": "Sélectionnez le proxy AppAPI"

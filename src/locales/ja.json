@@ -628,6 +628,13 @@
     },
     "other": {
       "api_proxy": {
+        "def": "デフォルトのプロキシに戻す",
+        "manual": "手動入力",
+        "manual_title": "AppAPI プロキシを手動入力",
+        "input_desc": "あなたの PxveAPI ドメインを入力してください（https:// は不要、HTTPS のみ対応）。例：my-pxveapi.example.com",
+        "security_notice": "セキュリティに関する注意事項: ログイン資格情報 (RefreshToken/AccessToken) はプロキシ サーバー経由で転送されます。信頼できるソースまたは独自に構築したプロキシ サービスのみを使用してください。",
+        "input_ph": "my-pxveapi.example.com",
+        "input_invalid": "プロキシドメインの形式が正しくありません",
         "def_ph": "デフォルトのプロキシを使用できない場合は、別のプロキシを試すことができます",
         "sel_desc": "AppAPI プロキシを選択してください",
         "title": "AppAPI プロキシを選択します"

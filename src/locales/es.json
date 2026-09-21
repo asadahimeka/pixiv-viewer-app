@@ -628,6 +628,13 @@
     },
     "other": {
       "api_proxy": {
+        "security_notice": "Recordatorio de seguridad: las credenciales de inicio de sesión (RefreshToken/AccessToken) se reenviarán a través del servidor proxy. Utilice únicamente fuentes confiables o servicios de proxy de creación propia.",
+        "def": "Restaurar el proxy predeterminado",
+        "input_desc": "Complete su nombre de dominio PxveAPI (excluyendo https://, solo admite HTTPS), como my-pxveapi.example.com",
+        "input_invalid": "El formato del nombre de dominio proxy es incorrecto",
+        "input_ph": "mi-pxveapi.ejemplo.com",
+        "manual": "Entrada manual",
+        "manual_title": "Ingrese manualmente el proxy AppAPI",
         "def_ph": "Si no se puede utilizar el proxy predeterminado, puede probar con otro proxy.",
         "sel_desc": "Seleccione el proxy AppAPI",
         "title": "Seleccione el proxy AppAPI"

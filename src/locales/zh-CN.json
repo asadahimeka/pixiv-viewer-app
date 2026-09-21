@@ -634,6 +634,13 @@
     },
     "other": {
       "api_proxy": {
+        "def": "恢复默认代理",
+        "manual": "手动输入",
+        "manual_title": "手动输入 AppAPI 代理",
+        "input_desc": "请填写你的 PxveAPI 域名（不含 https://，仅支持 HTTPS），如 my-pxveapi.example.com",
+        "security_notice": "安全提醒：登录凭据（RefreshToken/AccessToken）会经由代理服务器转发，请仅使用可信来源或自行搭建的代理服务。",
+        "input_ph": "my-pxveapi.example.com",
+        "input_invalid": "代理域名格式不正确",
         "def_ph": "默认代理无法使用的话可以尝试其他代理",
         "sel_desc": "请选择 AppAPI 代理",
         "title": "选择 AppAPI 代理"

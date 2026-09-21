@@ -628,6 +628,13 @@
     },
     "other": {
       "api_proxy": {
+        "security_notice": "Peringatan keselamatan: Bukti kelayakan log masuk (RefreshToken/AccessToken) akan dimajukan melalui pelayan proksi. Sila gunakan sumber yang dipercayai atau perkhidmatan proksi binaan sendiri sahaja.",
+        "def": "Pulihkan proksi lalai",
+        "input_desc": "Sila isikan nama domain PxveAPI anda (tidak termasuk https://, hanya menyokong HTTPS), seperti my-pxveapi.example.com",
+        "input_invalid": "Format nama domain proksi tidak betul",
+        "input_ph": "my-pxveapi.example.com",
+        "manual": "Kemasukan manual",
+        "manual_title": "Masukkan proksi AppAPI secara manual",
         "def_ph": "Sekiranya proksi lalai tidak dapat digunakan, anda boleh mencuba proksi lain",
         "sel_desc": "Sila pilih Proksi Appapi",
         "title": "Pilih Proksi AppAPI"
