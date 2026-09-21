@@ -379,6 +379,11 @@
       "d2": "Sila isi penyegaran semula, rujuk pautan di bawah untuk mendapatkannya",
       "d3": "Sila isi refreshtoken",
       "d4": "Refreshtoken dilepaskan"
+    },
+    "inapp": {
+      "desc1": "Buka halaman log masuk tapak web rasmi Pixiv dalam WebView terbina dalam aplikasi. Selepas kebenaran selesai, kebenaran akan kembali ke aplikasi secara automatik tanpa melompat ke penyemak imbas luaran.",
+      "loading": "Log masuk...",
+      "title": "App API (log masuk dalam apl)"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Mingguan popular mingguan",
@@ -566,7 +571,7 @@
     "succ_msg": "Pengesahan ID Sesi berjaya",
     "title": "Tetapkan cookie pixiv",
     "warn": {
-      "text": "Fungsi ini adalah kaedah log masuk yang tidak normal dan mungkin melibatkan risiko. \nMenggunakan fungsi ini dianggap sebagai persetujuan pengguna dan penggunaan risiko yang jelas. \nSekiranya keabnormalan akaun berlaku, pengarang projek ini tidak ada kaitan dengannya.",
+      "text": "Aplikasi ini adalah aplikasi tidak rasmi. Menggunakan aplikasi ini untuk log masuk dianggap sebagai persetujuan pengguna dan risiko penggunaan telah dijelaskan. Pengarang projek ini tiada kaitan dengan keabnormalan akaun dan situasi lain.",
       "title": "Notis risiko"
     }
   },

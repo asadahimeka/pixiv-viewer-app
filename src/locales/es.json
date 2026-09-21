@@ -379,6 +379,11 @@
       "d2": "Complete el RefreshToken; consulte el enlace a continuación para saber cómo obtenerlo.",
       "d3": "Por favor complete RefreshToken",
       "d4": "RefreshToken tiene un formato incorrecto"
+    },
+    "inapp": {
+      "desc1": "Abra la página de inicio de sesión del sitio web oficial de Pixiv en el WebView integrado de la aplicación. Una vez completada la autorización, la autorización volverá automáticamente a la aplicación sin tener que acceder a un navegador externo.",
+      "loading": "Acceso...",
+      "title": "API de aplicación (inicio de sesión en la aplicación)"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Ilustraciones populares semanales",
@@ -566,7 +571,7 @@
     "succ_msg": "La autenticación de ID de sesión se realizó correctamente",
     "title": "Establecer galleta Pixiv",
     "warn": {
-      "text": "Esta función es un método de inicio de sesión anormal y puede implicar riesgos. El uso de esta función se considera como el consentimiento del usuario y el uso claro de los riesgos. Si se producen anomalías en la cuenta, el autor de este proyecto no tiene nada que ver con ello.",
+      "text": "Esta aplicación es una aplicación no oficial. El uso de esta aplicación para iniciar sesión se considera el consentimiento del usuario y los riesgos de su uso han quedado claros. El autor de este proyecto no tiene nada que ver con anomalías de cuentas y otras situaciones.",
       "title": "Aviso de riesgo"
     }
   },

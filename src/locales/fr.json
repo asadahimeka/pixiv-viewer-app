@@ -379,6 +379,11 @@
       "d2": "Veuillez remplir le RefreshToken, reportez-vous au lien ci-dessous pour savoir comment l'obtenir",
       "d3": "Veuillez remplir RefreshToken",
       "d4": "RefreshToken est malformé"
+    },
+    "inapp": {
+      "desc1": "Ouvrez la page de connexion du site officiel de Pixiv dans la WebView intégrée de l'application. Une fois l'autorisation terminée, l'autorisation reviendra automatiquement à l'application sans passer à un navigateur externe.",
+      "loading": "Se connecter...",
+      "title": "API de l'application (connexion dans l'application)"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Illustrations populaires hebdomadaires",
@@ -566,7 +571,7 @@
     "succ_msg": "Authentification de l'ID de session réussie",
     "title": "Définir le cookie Pixiv",
     "warn": {
-      "text": "Cette fonction est une méthode de connexion anormale et peut comporter des risques. L'utilisation de cette fonction est considérée comme le consentement de l'utilisateur et une utilisation claire des risques. Si des anomalies de compte surviennent, l'auteur de ce projet n'y est pour rien.",
+      "text": "Cette application est une application non officielle. L'utilisation de cette application pour se connecter vaut consentement de l'utilisateur et les risques d'utilisation ont été précisés. L'auteur de ce projet n'a rien à voir avec les anomalies de compte et autres situations.",
       "title": "Avis de risque"
     }
   },

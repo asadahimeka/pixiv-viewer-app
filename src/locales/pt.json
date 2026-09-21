@@ -379,6 +379,11 @@
       "d2": "Por favor preencha o RefreshToken, consulte o link abaixo para saber como obtê-lo",
       "d3": "Por favor preencha RefreshToken",
       "d4": "RefreshToken está malformado"
+    },
+    "inapp": {
+      "desc1": "Abra a página de login do site oficial do Pixiv no WebView integrado do aplicativo. Após a conclusão da autorização, a autorização retornará automaticamente ao aplicativo sem saltar para um navegador externo.",
+      "loading": "Conecte-se...",
+      "title": "API do aplicativo (login no aplicativo)"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Ilustrações populares semanais",
@@ -566,7 +571,7 @@
     "succ_msg": "Autenticação do ID da sessão bem-sucedida",
     "title": "Definir cookie Pixiv",
     "warn": {
-      "text": "Esta função é um método de login anormal e pode envolver riscos. O uso desta função é considerado consentimento do usuário e uso claro dos riscos. Se ocorrerem anormalidades na conta, o autor deste projeto não terá nada a ver com isso.",
+      "text": "Este aplicativo é um aplicativo não oficial. O uso deste aplicativo para fazer login é considerado consentimento do usuário e os riscos de uso foram esclarecidos. O autor deste projeto não tem nada a ver com anormalidades de contas e outras situações.",
       "title": "Aviso de Risco"
     }
   },
