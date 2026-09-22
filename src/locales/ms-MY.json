@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "Alat lukisan",
   "3HnNTIScyvd1cNc2qAh7X": "Sembunyikan Mangas dalam Kedudukan",
   "3UCLxnEsirUQvP_xv4po4": "Ralat format token akses",
-  "3ZvAP-w7q7teBcLoqOgCc": "API Web (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Log masuk kuki",
   "3bW7wpYWQJ7UircVA8I76": "Adakah terdapat aplikasi iOS",
   "4--dCKaKniIMUQ7l_mKpg": "koleksi {0}.",
   "44eCE1yMuhnfx93siUVJ8": "Menyediakan kebanyakan sokongan antara muka API",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Pemilihan contoh API yang dilanjutkan",
   "8msFTe9uT5LS1hBRYrhDQ": "Cara mendapatkan refreshtoken",
   "8uktANA7hP_We9wM_o8lN": "Muat turun gambar menggunakan pemuat turun sistem",
-  "8zJrQTdrphmkCMMgL9SPW": "API App (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Log masuk OAuth laman web rasmi",
   "94IU-NPgYBjKNVa_XspuT": "Beri kebenaran penyimpanan aplikasi ini dalam tetapan sistem, atau muat turun versi terkini sebelum mencuba",
   "9H-9VJU67Fuabl8OgbhOr": "Klik untuk menyiarkan komen",
   "9X179hdP1zzapzk5Rvqx2": "Tetapan melayari",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "Pengguna",
-  "hqciRRXfoN19LYLh8xr4D": "API App (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "Log masuk RefreshToken",
   "hyCctySRvfcddmi6nVh9b": "Muat semula token akses",
   "iAH7adsXaqWMXEi3TOuwS": "Siri",
   "iHxoO4eLVL-CHSVMoVynN": "Pengguna yang disyorkan",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "Buka halaman log masuk tapak web rasmi Pixiv dalam WebView terbina dalam aplikasi. Selepas kebenaran selesai, kebenaran akan kembali ke aplikasi secara automatik tanpa melompat ke penyemak imbas luaran.",
       "loading": "Log masuk...",
-      "title": "App API (log masuk dalam apl)"
+      "title": "Log masuk dalam apl"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Mingguan popular mingguan",

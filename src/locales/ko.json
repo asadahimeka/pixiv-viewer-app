@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "그리기 도구",
   "3HnNTIScyvd1cNc2qAh7X": "순위에서 만화 숨기기",
   "3UCLxnEsirUQvP_xv4po4": "액세스 토큰 형식 오류",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "쿠키 로그인",
   "3bW7wpYWQJ7UircVA8I76": "iOS 앱이 있습니까?",
   "4--dCKaKniIMUQ7l_mKpg": "{0}님의 컬렉션",
   "44eCE1yMuhnfx93siUVJ8": "대부분의 API 인터페이스 지원을 제공합니다",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "확장 된 API 인스턴스 선택",
   "8msFTe9uT5LS1hBRYrhDQ": "\"RefreshToken\"을 얻는 방법",
   "8uktANA7hP_We9wM_o8lN": "시스템 다운로더를 사용하여 사진 다운로드",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "공식 웹사이트 OAuth 로그인",
   "94IU-NPgYBjKNVa_XspuT": "시스템 설정 에서이 애플리케이션 스토리지 권한을 부여하거나 시도하기 전에 최신 버전을 다운로드하십시오.",
   "9H-9VJU67Fuabl8OgbhOr": "댓글을 게시하려면 클릭하세요.",
   "9X179hdP1zzapzk5Rvqx2": "탐색 설정",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "사용자",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "RefreshToken 로그인",
   "hyCctySRvfcddmi6nVh9b": "상쾌한 액세스 토큰",
   "iAH7adsXaqWMXEi3TOuwS": "시리즈",
   "iHxoO4eLVL-CHSVMoVynN": "추천 사용자",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "애플리케이션에 내장된 WebView에서 Pixiv 공식 웹사이트 로그인 페이지를 엽니다. 인증이 완료되면 외부 브라우저로 이동하지 않고 자동으로 애플리케이션으로 인증이 반환됩니다.",
       "loading": "로그인...",
-      "title": "앱 API(인앱 로그인)"
+      "title": "인앱 로그인"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "주간 인기 일러스트",

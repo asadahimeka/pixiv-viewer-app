@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "Drawing tools",
   "3HnNTIScyvd1cNc2qAh7X": "Hide mangas in Ranking",
   "3UCLxnEsirUQvP_xv4po4": "Access token format error",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Cookie login",
   "3bW7wpYWQJ7UircVA8I76": "Is there an iOS App",
   "4--dCKaKniIMUQ7l_mKpg": "{0}'s collection",
   "44eCE1yMuhnfx93siUVJ8": "Provides most API interface support",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Extended API instance selection",
   "8msFTe9uT5LS1hBRYrhDQ": "How to get RefreshToken",
   "8uktANA7hP_We9wM_o8lN": "Download pictures using system downloader",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Official website OAuth login",
   "94IU-NPgYBjKNVa_XspuT": "Give this application storage permissions in the system settings, or download the latest version before trying",
   "9H-9VJU67Fuabl8OgbhOr": "Click to post a comment",
   "9X179hdP1zzapzk5Rvqx2": "Browsing settings",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "User",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "RefreshToken login",
   "hyCctySRvfcddmi6nVh9b": "Refreshing Access Token",
   "iAH7adsXaqWMXEi3TOuwS": "Series",
   "iHxoO4eLVL-CHSVMoVynN": "Recommended users",
@@ -364,7 +364,7 @@
     "cant_login_msg": "<p>Unable to log in on the current site. Please visit <a href=\"https://pixiv.pictures\" target=\"_blank\">https://pixiv.pictures</a> to log in.<p>",
     "fail_tip": "Login failed",
     "inapp": {
-      "title": "App API (In-App Login)",
+      "title": "In-App Login",
       "desc1": "Open the Pixiv official login page in an in-app WebView. The authorization code returns to the app automatically when finished — no external browser needed.",
       "loading": "Logging in…"
     },

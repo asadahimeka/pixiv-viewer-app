@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "描画ツール",
   "3HnNTIScyvd1cNc2qAh7X": "ランキング内の漫画を非表示にする",
   "3UCLxnEsirUQvP_xv4po4": "アクセストークンフォーマットエラー",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "クッキーログイン",
   "3bW7wpYWQJ7UircVA8I76": "iOSアプリはありますか",
   "4--dCKaKniIMUQ7l_mKpg": "{0} のコレクション",
   "44eCE1yMuhnfx93siUVJ8": "ほとんどのAPIインターフェイスサポートを提供します",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "拡張APIインスタンスの選択",
   "8msFTe9uT5LS1hBRYrhDQ": "RefreshTokenを取得する方法",
   "8uktANA7hP_We9wM_o8lN": "システムダウンローダーを使用して画像をダウンロードする",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "公式サイトのOAuthログイン",
   "94IU-NPgYBjKNVa_XspuT": "このアプリケーションをシステム設定で保存許可を与えるか、試行する前に最新バージョンをダウンロードする",
   "9H-9VJU67Fuabl8OgbhOr": "クリックしてコメントを投稿する",
   "9X179hdP1zzapzk5Rvqx2": "閲覧設定",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "ユーザー",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "リフレッシュトークンログイン",
   "hyCctySRvfcddmi6nVh9b": "リフレッシュアクセストークン",
   "iAH7adsXaqWMXEi3TOuwS": "シリーズ",
   "iHxoO4eLVL-CHSVMoVynN": "推奨ユーザー",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "アプリの内蔵WebViewでPixiv公式サイトのログインページを開きます。認証が完了すると、外部ブラウザにジャンプすることなく、自動的にアプリケーションに認証が戻ります。",
       "loading": "ログイン...",
-      "title": "アプリAPI（アプリ内ログイン）"
+      "title": "アプリ内ログイン"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "週間人気イラスト",

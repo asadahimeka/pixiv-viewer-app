@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "Outils de dessin",
   "3HnNTIScyvd1cNc2qAh7X": "Masquer les mangas dans le classement",
   "3UCLxnEsirUQvP_xv4po4": "Erreur de format du jeton d'accès",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Connexion aux cookies",
   "3bW7wpYWQJ7UircVA8I76": "Y a-t-il une application iOS",
   "4--dCKaKniIMUQ7l_mKpg": "Collection de {0}",
   "44eCE1yMuhnfx93siUVJ8": "Fournit la majeure partie de la prise en charge de l'interface API",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Sélection des instances API étendue",
   "8msFTe9uT5LS1hBRYrhDQ": "Comment obtenir \"RefreshToken\"",
   "8uktANA7hP_We9wM_o8lN": "Télécharger des images à l'aide du téléchargeur système",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Site officiel Connexion OAuth",
   "94IU-NPgYBjKNVa_XspuT": "Donnez à cette application des autorisations de stockage dans les paramètres du système ou téléchargez la dernière version avant d'essayer",
   "9H-9VJU67Fuabl8OgbhOr": "Cliquez pour poster un commentaire",
   "9X179hdP1zzapzk5Rvqx2": "Paramètres de navigation",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "Utilisateur",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "Connexion au jeton d'actualisation",
   "hyCctySRvfcddmi6nVh9b": "Jeton d'accès rafraîchissant",
   "iAH7adsXaqWMXEi3TOuwS": "série",
   "iHxoO4eLVL-CHSVMoVynN": "Utilisateurs recommandés",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "Ouvrez la page de connexion du site officiel de Pixiv dans la WebView intégrée de l'application. Une fois l'autorisation terminée, l'autorisation reviendra automatiquement à l'application sans passer à un navigateur externe.",
       "loading": "Se connecter...",
-      "title": "API de l'application (connexion dans l'application)"
+      "title": "Connexion dans l'application"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Illustrations populaires hebdomadaires",

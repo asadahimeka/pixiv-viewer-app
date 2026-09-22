@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "製圖工具",
   "3HnNTIScyvd1cNc2qAh7X": "在排名中隱藏漫畫",
   "3UCLxnEsirUQvP_xv4po4": "存取令牌格式錯誤",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API（Cookie）",
+  "3ZvAP-w7q7teBcLoqOgCc": "Cookie 登入",
   "3bW7wpYWQJ7UircVA8I76": "是否有 iOS App",
   "4--dCKaKniIMUQ7l_mKpg": "{0} 的珍藏冊",
   "44eCE1yMuhnfx93siUVJ8": "提供大部分 API 接口支援",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "擴充 API 實例選擇",
   "8msFTe9uT5LS1hBRYrhDQ": "如何獲取 RefreshToken",
   "8uktANA7hP_We9wM_o8lN": "使用系統下載器下載圖片",
-  "8zJrQTdrphmkCMMgL9SPW": "App API（OAuth）",
+  "8zJrQTdrphmkCMMgL9SPW": "OAuth 官網登入",
   "94IU-NPgYBjKNVa_XspuT": "到系統設定裡給予本應用程式儲存權限，或者下載最新版本後再進行嘗試",
   "9H-9VJU67Fuabl8OgbhOr": "點擊發表評論",
   "9X179hdP1zzapzk5Rvqx2": "瀏覽設定",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "使用者",
-  "hqciRRXfoN19LYLh8xr4D": "App API（RefreshToken）",
+  "hqciRRXfoN19LYLh8xr4D": "RefreshToken 登入",
   "hyCctySRvfcddmi6nVh9b": "刷新訪問令牌中",
   "iAH7adsXaqWMXEi3TOuwS": "系列",
   "iHxoO4eLVL-CHSVMoVynN": "推薦用戶",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "在應用程式內建 WebView 開啟 Pixiv 官網登入頁，完成後授權自動返回應用，無需跳轉外部瀏覽器。",
       "loading": "登入中…",
-      "title": "App API（應用程式內登入）"
+      "title": "應用程式內登入"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "每週人氣插畫",

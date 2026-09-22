@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "herramientas de dibujo",
   "3HnNTIScyvd1cNc2qAh7X": "Ocultar mangas en el Ranking",
   "3UCLxnEsirUQvP_xv4po4": "Error de formato del token de acceso",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Iniciar sesión con cookies",
   "3bW7wpYWQJ7UircVA8I76": "¿Hay una aplicación para iOS?",
   "4--dCKaKniIMUQ7l_mKpg": "colección de {0}",
   "44eCE1yMuhnfx93siUVJ8": "Proporciona la mayoría de los soportes de interfaz de API",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Selección de instancia de API extendida",
   "8msFTe9uT5LS1hBRYrhDQ": "Cómo obtener \"RefreshToken\"",
   "8uktANA7hP_We9wM_o8lN": "Descargar imágenes usando el descargador del sistema",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Inicio de sesión OAuth en el sitio web oficial",
   "94IU-NPgYBjKNVa_XspuT": "Proporcione estos permisos de almacenamiento de aplicaciones en la configuración del sistema, o descargue la última versión antes de intentarlo",
   "9H-9VJU67Fuabl8OgbhOr": "Haga clic para publicar un comentario",
   "9X179hdP1zzapzk5Rvqx2": "Configuración de navegación",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "Usuario",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "Inicio de sesión de actualización de token",
   "hyCctySRvfcddmi6nVh9b": "Token de acceso refrescante",
   "iAH7adsXaqWMXEi3TOuwS": "Serie",
   "iHxoO4eLVL-CHSVMoVynN": "Usuarios recomendados",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "Abra la página de inicio de sesión del sitio web oficial de Pixiv en el WebView integrado de la aplicación. Una vez completada la autorización, la autorización volverá automáticamente a la aplicación sin tener que acceder a un navegador externo.",
       "loading": "Acceso...",
-      "title": "API de aplicación (inicio de sesión en la aplicación)"
+      "title": "Inicio de sesión en la aplicación"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Ilustraciones populares semanales",

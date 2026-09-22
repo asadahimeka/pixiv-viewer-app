@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "Zeichenwerkzeuge",
   "3HnNTIScyvd1cNc2qAh7X": "Mangas im Ranking ausblenden",
   "3UCLxnEsirUQvP_xv4po4": "Fehler im Format des Zugriffstokens",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Cookie-Login",
   "3bW7wpYWQJ7UircVA8I76": "Gibt es eine iOS -App?",
   "4--dCKaKniIMUQ7l_mKpg": "Sammlung von {0}",
   "44eCE1yMuhnfx93siUVJ8": "Bietet die meisten API -Schnittstellenunterstützung",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Erweiterte API -Instanzauswahl",
   "8msFTe9uT5LS1hBRYrhDQ": "Wie man \"RefreshToken\" bekommt",
   "8uktANA7hP_We9wM_o8lN": "Laden Sie Bilder mit dem System-Downloader herunter",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Offizielle Website-OAuth-Anmeldung",
   "94IU-NPgYBjKNVa_XspuT": "Geben Sie diese Anwendungsspeicherberechtigungen in den Systemeinstellungen an oder laden Sie die neueste Version herunter, bevor Sie es versuchen",
   "9H-9VJU67Fuabl8OgbhOr": "Klicken Sie hier, um einen Kommentar zu posten",
   "9X179hdP1zzapzk5Rvqx2": "Browsereinstellungen",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "Benutzer",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "RefreshToken-Anmeldung",
   "hyCctySRvfcddmi6nVh9b": "Erfrischende Zugangstoken",
   "iAH7adsXaqWMXEi3TOuwS": "Serie",
   "iHxoO4eLVL-CHSVMoVynN": "Empfohlene Benutzer",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "Öffnen Sie die Anmeldeseite der offiziellen Pixiv-Website im integrierten WebView der Anwendung. Nach Abschluss der Autorisierung kehrt die Autorisierung automatisch zur Anwendung zurück, ohne dass ein Wechsel zu einem externen Browser erforderlich ist.",
       "loading": "Login...",
-      "title": "App-API (In-App-Login)"
+      "title": "In-App-Login"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Wöchentliche beliebte Illustrationen",

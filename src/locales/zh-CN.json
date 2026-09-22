@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "制图工具",
   "3HnNTIScyvd1cNc2qAh7X": "排行榜隐藏漫画",
   "3UCLxnEsirUQvP_xv4po4": "访问令牌格式错误",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Cookie 登录",
   "3bW7wpYWQJ7UircVA8I76": "是否有 iOS App",
   "4--dCKaKniIMUQ7l_mKpg": "{0} 的珍藏册",
   "44eCE1yMuhnfx93siUVJ8": "提供大部分 API 接口支持",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "扩充 API 实例选择",
   "8msFTe9uT5LS1hBRYrhDQ": "如何获取 RefreshToken",
   "8uktANA7hP_We9wM_o8lN": "使用系统下载器下载图片",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "OAuth 官网登录",
   "94IU-NPgYBjKNVa_XspuT": "到系统设置里给予本应用存储权限，或者下载最新版本后再进行尝试",
   "9H-9VJU67Fuabl8OgbhOr": "点击发表评论",
   "9X179hdP1zzapzk5Rvqx2": "浏览设置",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "用户",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "RefreshToken 登录",
   "hyCctySRvfcddmi6nVh9b": "刷新访问令牌中",
   "iAH7adsXaqWMXEi3TOuwS": "系列",
   "iHxoO4eLVL-CHSVMoVynN": "推荐用户",
@@ -364,7 +364,7 @@
     "cant_login_msg": "<p>当前站点无法进行登录，请前往 <a href=\"https://pixiv.pictures\" target=\"_blank\">https://pixiv.pictures</a> 进行操作。<p>",
     "fail_tip": "登录失败",
     "inapp": {
-      "title": "App API（应用内登录）",
+      "title": "应用内登录",
       "desc1": "在应用内置 WebView 打开 Pixiv 官网登录页，完成后授权自动返回应用，无需跳转外部浏览器。",
       "loading": "登录中…"
     },

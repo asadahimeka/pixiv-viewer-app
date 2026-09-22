@@ -19,7 +19,7 @@
   "38voBbE8fUIdxgli3n14t": "Εργαλεία σχεδίασης",
   "3HnNTIScyvd1cNc2qAh7X": "Απόκρυψη mangas στην κατάταξη",
   "3UCLxnEsirUQvP_xv4po4": "Σφάλμα μορφής διακριτικού πρόσβασης",
-  "3ZvAP-w7q7teBcLoqOgCc": "Web API (Cookie)",
+  "3ZvAP-w7q7teBcLoqOgCc": "Είσοδος cookie",
   "3bW7wpYWQJ7UircVA8I76": "Υπάρχει εφαρμογή iOS",
   "4--dCKaKniIMUQ7l_mKpg": "συλλογή του {0}",
   "44eCE1yMuhnfx93siUVJ8": "Παρέχει την περισσότερη υποστήριξη διασύνδεσης API",
@@ -49,7 +49,7 @@
   "8ko0ip_aETyyaSIMQmLqR": "Επιλογή παρατεταμένης επιλογής API",
   "8msFTe9uT5LS1hBRYrhDQ": "Πώς να πάρετε \"RefreshToken\"",
   "8uktANA7hP_We9wM_o8lN": "Λήψη εικόνων χρησιμοποιώντας το πρόγραμμα λήψης συστήματος",
-  "8zJrQTdrphmkCMMgL9SPW": "App API (OAuth)",
+  "8zJrQTdrphmkCMMgL9SPW": "Επίσημος ιστότοπος Είσοδος OAuth",
   "94IU-NPgYBjKNVa_XspuT": "Δώστε αυτά τα δικαιώματα αποθήκευσης εφαρμογών στις ρυθμίσεις του συστήματος ή κατεβάστε την τελευταία έκδοση πριν δοκιμάσετε",
   "9H-9VJU67Fuabl8OgbhOr": "Κάντε κλικ για να δημοσιεύσετε ένα σχόλιο",
   "9X179hdP1zzapzk5Rvqx2": "Ρυθμίσεις περιήγησης",
@@ -336,7 +336,7 @@
     }
   },
   "history_tab_label_user": "Μεταχειριζόμενος",
-  "hqciRRXfoN19LYLh8xr4D": "App API (RefreshToken)",
+  "hqciRRXfoN19LYLh8xr4D": "Είσοδος RefreshToken",
   "hyCctySRvfcddmi6nVh9b": "Αναζωογονητικό διακριτικό πρόσβασης",
   "iAH7adsXaqWMXEi3TOuwS": "Σειρά",
   "iHxoO4eLVL-CHSVMoVynN": "Συνιστώμενοι χρήστες",
@@ -383,7 +383,7 @@
     "inapp": {
       "desc1": "Ανοίξτε την επίσημη σελίδα σύνδεσης στον ιστότοπο του Pixiv στο ενσωματωμένο WebView της εφαρμογής. Αφού ολοκληρωθεί η εξουσιοδότηση, η εξουσιοδότηση θα επιστρέψει αυτόματα στην εφαρμογή χωρίς να μεταβεί σε εξωτερικό πρόγραμμα περιήγησης.",
       "loading": "Σύνδεση...",
-      "title": "App API (σύνδεση εντός εφαρμογής)"
+      "title": "σύνδεση εντός εφαρμογής"
     }
   },
   "lsPtlBf66gm0GWyn_c6pj": "Εβδομαδιαία Popular Illusts",
