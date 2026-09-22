@@ -21,22 +21,22 @@
     <!-- 筛选 -->
     <div v-if="records.length || filter != 'all'" class="dlc-filters">
       <span class="dlc-chip" :class="{ 'is-active': filter == 'all' }" @click="setFilter('all')">
-        {{ $t('dlc.filter_all') }}
+        {{ $t('dlc.filter_all') }}{{ countText('all') }}
       </span>
       <span class="dlc-chip" :class="{ 'is-active': filter == 'failed' }" @click="setFilter('failed')">
-        {{ $t('dlc.filter_failed') }}{{ failedNum ? ` (${failedNum})` : '' }}
+        {{ $t('dlc.filter_failed') }}{{ countText('failed') }}
       </span>
       <span class="dlc-chip" :class="{ 'is-active': filter == 'image' }" @click="setFilter('image')">
-        {{ $t('dlc.filter_image') }}
+        {{ $t('dlc.filter_image') }}{{ countText('image') }}
       </span>
       <span class="dlc-chip" :class="{ 'is-active': filter == 'novel' }" @click="setFilter('novel')">
-        {{ $t('dlc.filter_novel') }}
+        {{ $t('dlc.filter_novel') }}{{ countText('novel') }}
       </span>
       <span class="dlc-chip" :class="{ 'is-active': filter == 'ugoira' }" @click="setFilter('ugoira')">
-        {{ $t('dlc.filter_ugoira') }}
+        {{ $t('dlc.filter_ugoira') }}{{ countText('ugoira') }}
       </span>
       <span class="dlc-chip" :class="{ 'is-active': filter == 'other' }" @click="setFilter('other')">
-        {{ $t('dlc.filter_other') }}
+        {{ $t('dlc.filter_other') }}{{ countText('other') }}
       </span>
     </div>
 
@@ -176,8 +176,20 @@ export default {
     orphans() {
       return this.state.orphans
     },
-    failedNum() {
-      return this.records.filter(r => r.status == 'failed').length
+    // 各筛选 chip 的计数:单次遍历同时算全 6 项。
+    // all 含失败记录(与 filteredRecords 的 'all' 分支一致);failed 是状态筛选,
+    // 与四个类型正交,所以 all = failed 与四种类型之和可能有重叠
+    filterCounts() {
+      const counts = { all: 0, failed: 0, image: 0, novel: 0, ugoira: 0, other: 0 }
+      for (const r of this.records) {
+        counts.all++
+        if (r.status == 'failed') counts.failed++
+        if (isImageKind(r)) counts.image++
+        else if (isNovelKind(r)) counts.novel++
+        else if (isUgoiraKind(r)) counts.ugoira++
+        else counts.other++
+      }
+      return counts
     },
     filteredRecords() {
       if (this.filter == 'failed') {
@@ -233,6 +245,11 @@ export default {
     },
     setFilter(filter) {
       this.filter = filter
+    },
+    // chip 上的计数后缀,为 0 时不显示(与旧行为一致)
+    countText(key) {
+      const n = this.filterCounts[key]
+      return n ? ` (${n})` : ''
     },
     async onRefresh() {
       try {
