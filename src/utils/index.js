@@ -192,6 +192,12 @@ export function safeDecodeURIComponent(str = '') {
   }
 }
 
+// 文件型路径:file:// / POSIX 绝对路径 / Windows 盘符路径(D:\... 或 D:/...)。
+// 下载中心对账与 RecordCard 的"删除文件/打开"按钮共用,漏判盘符路径会漏掉 Windows 记录
+export function isFileLikePath(p) {
+  return !!p && (p.startsWith('file://') || p.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(p))
+}
+
 // ==== 下载错误分类 / 归一化 ====
 
 export function getDlErrMsg(err) {

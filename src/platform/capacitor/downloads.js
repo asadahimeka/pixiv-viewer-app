@@ -84,13 +84,15 @@ export async function runDownload(task, { showToast = true } = {}) {
       throw result.error instanceof Error ? result.error : new Error(result.error)
     }
 
-    // 读取实际文件大小,供下载中心记录与存储概览使用
+    // 读取实际文件大小与修改时间,供下载中心记录、存储概览与完成时播种使用
     let fileSize = null
+    let fileMtime = null
     const dlPath = result.res?.path || result.res?.uri
     if (dlPath && (dlPath.startsWith('file://') || dlPath.startsWith('/'))) {
       try {
         const stat = await Filesystem.stat({ path: dlPath.replace('file://', '') })
         fileSize = stat?.size || null
+        fileMtime = stat?.mtime || null
       } catch (err) {}
     }
 
@@ -114,6 +116,7 @@ export async function runDownload(task, { showToast = true } = {}) {
       destPath: result.res?.path || result.res?.uri || null,
       tipPath: result.res?.tipPath || null,
       fileSize,
+      fileMtime,
       successMsg: result.successMsg,
     }
   } catch (err) {
@@ -196,11 +199,13 @@ export async function clearThumbCache() {
 
 // 递归(限深)扫描 pixiv-viewer 下载目录,输出扁平文件列表供对账。
 // 顶层目录读取失败(权限被拒等)抛错,让对账整体放弃;
-// 子目录读取失败(可能已被删除)静默跳过
+// 子目录读取失败(可能已被删除)静默跳过。
+// rel 为相对 pixiv-viewer 的 '/' 分隔路径,root 为目录的绝对 file:// 位置,
+// 供对账按 subDir 精确匹配并校验记录是否落在扫描根内
 export async function listDisk() {
   const base = platform.isIOS ? Directory.Documents : Directory.Pictures
   const out = []
-  const walk = async (path, depth) => {
+  const walk = async (path, rel, depth) => {
     const { files = [] } = await Filesystem
       .readdir({ path, directory: base })
       .catch(err => {
@@ -208,8 +213,9 @@ export async function listDisk() {
         return { files: [] }
       })
     for (const it of files) {
+      const relFull = rel ? `${rel}/${it.name}` : it.name
       if (it.type == 'directory') {
-        if (depth < 3) await walk(`${path}/${it.name}`, depth + 1)
+        if (depth < 3) await walk(`${path}/${it.name}`, relFull, depth + 1)
         continue
       }
       const ms = it.ctime || it.mtime
@@ -218,11 +224,16 @@ export async function listDisk() {
         uri: it.uri,
         size: it.size,
         mtime: ms,
+        rel: relFull,
       })
     }
   }
-  await walk(DL_BASE_DIR, 0)
-  return out
+  await walk(DL_BASE_DIR, '', 0)
+  const root = await Filesystem
+    .getUri({ path: DL_BASE_DIR, directory: base })
+    .then(({ uri }) => uri)
+    .catch(() => null)
+  return { root, files: out }
 }
 
 // 尽力删除落盘文件:file:// 或绝对路径交给 Filesystem(无 directory 时

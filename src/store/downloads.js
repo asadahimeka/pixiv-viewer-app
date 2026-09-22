@@ -10,7 +10,7 @@ import Vue from 'vue'
 import platform from '@/platform'
 import { Toast } from '@/lib/vant-apis'
 import { i18n } from '@/i18n'
-import { replaceValidFileName, safeDecodeURIComponent } from '@/utils'
+import { isFileLikePath, replaceValidFileName, safeDecodeURIComponent } from '@/utils'
 import {
   makeRecordKey,
   guessKind,
@@ -224,7 +224,7 @@ function finishTask(task, result = {}) {
 
   if (result.ok) {
     // 完成即播种 fs 状态:不必等下一轮对账,缩略图与"打开"立即可用
-    const seedFs = seedFsFor(result.destType, result.destPath, result.fileSize)
+    const seedFs = seedFsFor(result.destType, result.destPath, result.fileSize, result.fileMtime)
     dbgDl(`done ${result.fileName} dest=${result.destType}:${result.destPath} size=${result.fileSize || '?'}`)
     state.records = upsertRecord(state.records, {
       key: result.key || task.key,
@@ -335,6 +335,9 @@ export async function removeRecordAndFile(record) {
 
 // ---------------- 磁盘对账 ----------------
 
+// 系统生成的元数据文件,不参与"未识别文件"展示
+const JUNK_NAME_RE = /^(desktop\.ini|thumbs\.db|\.ds_store|\.localized)$/i
+
 /**
  * 判断一个落盘位置是否属于可被磁盘扫描覆盖的目录:
  * - pictures / external:直接可扫
@@ -350,10 +353,15 @@ function isScannableDest(destType, destPath) {
   return false
 }
 
-// 完成时播种:存在即为 true,mtime 置 0 由下一次对账用真实 mtime 覆盖
-function seedFsFor(destType, destPath, fileSize) {
+// 完成时播种:存在即为 true。文件型路径在 runDownload 里已 stat 过,顺带带回首轮
+// 对账要用的真实 mtime;拿不到 mtime 时(如 content:// 媒体库路径)置 0 并打 pending:
+// 首轮对账未命中只宽限一次,撤销标记后才允许降级,
+// 避免旧实现里 mtime=0 的种子记录被永久卡在"文件存在"
+function seedFsFor(destType, destPath, fileSize, mtime = 0) {
   if (!isScannableDest(destType, destPath)) return null
-  return { exists: true, mtime: 0, size: fileSize || null }
+  const fs = { exists: true, mtime: mtime || 0, size: fileSize || null }
+  if (!fs.mtime) fs.pending = true
+  return fs
 }
 
 /**
@@ -372,12 +380,16 @@ export async function reconcile(force = false) {
     await ensureInit()
     const mod = await loadPlatformDownloads()
     // listDisk 内部失败(如权限被拒)会抛错,整个对账放弃,不得把记录全部标成"已不在"
-    const diskFiles = await mod.listDisk()
-    dbgDl(`reconcile: disk=${diskFiles.length} records=${state.records.length}`)
+    const { root, files: diskFiles } = await mod.listDisk()
+    dbgDl(`reconcile: disk=${diskFiles.length} records=${state.records.length} root=${root || '?'}`)
     const byName = new Map()
-    diskFiles.forEach(f => byName.set(f.name, f))
+    const byRel = new Map()
+    diskFiles.forEach(f => {
+      byName.set(f.name, f)
+      if (f.rel) byRel.set(f.rel, f)
+    })
 
-    const baseName = p => String(p || '').split('/').pop()?.split('?')[0]
+    const baseName = p => String(p || '').replace(/\\/g, '/').split('/').pop()?.split('?')[0]
     // 匹配候选:原始 basename、解码后的 basename(部分来源存的是百分号编码路径)、
     // 按现行规则重新消毒的名字(修复早期版本未消毒 fileName 的历史记录)
     const nameCandidates = p => {
@@ -385,17 +397,36 @@ export async function reconcile(force = false) {
       const decoded = safeDecodeURIComponent(base)
       return [...new Set([base, decoded, replaceValidFileName(decoded)])].filter(Boolean)
     }
-    const matchedNames = new Set()
+    // 扫描根成员校验:路径统一成正斜杠、去掉 file:// 与尾斜杠后做前缀比较。
+    // Windows 盘符路径大小写不敏感;根未知时放行,退回按 destType 判断的旧行为
+    const normPath = p => String(p || '').replace(/^file:\/\//i, '').replace(/\\/g, '/').replace(/\/+$/, '')
+    const winLower = p => (/^[a-z]:\//i.test(p) ? p.toLowerCase() : p)
+    const rootNorm = winLower(normPath(root))
+    const underRoot = p => {
+      if (!rootNorm) return true
+      return winLower(normPath(p)).startsWith(`${rootNorm}/`)
+    }
+    const matched = new Set()
     const records = state.records.map(record => {
-      const scanned = isScannableDest(record.dest?.type, record.dest?.path)
-      if (!scanned || !record.dest?.path) {
+      const destPath = record.dest?.path
+      // 文件型路径必须确认落在当前扫描根内:换过自定义下载目录(Tauri PXV_DL_DIR)
+      // 或手动移动过的文件扫不到,应记为未知而不是"已不在";
+      // content:// 媒体库路径不是文件路径,维持按文件名匹配的现状
+      const scanned = isScannableDest(record.dest?.type, destPath) &&
+        (!isFileLikePath(destPath) || underRoot(destPath))
+      if (!scanned || !destPath) {
         return record.fs === null ? record : { ...record, fs: null }
       }
+      // 先按 subDir + 文件名的相对路径精确匹配(跨目录同名互不干扰),
+      // 再退回 basename 匹配(孤儿认领记录、subDir 缺失或不一致的历史数据)
+      const relKey = name => (record.subDir ? `${record.subDir}/${name}` : name)
       const file =
-        nameCandidates(record.dest.path).map(k => byName.get(k)).find(Boolean) ||
+        nameCandidates(destPath).map(k => byRel.get(relKey(k))).find(Boolean) ||
+        nameCandidates(record.fileName).map(k => byRel.get(relKey(k))).find(Boolean) ||
+        nameCandidates(destPath).map(k => byName.get(k)).find(Boolean) ||
         nameCandidates(record.fileName).map(k => byName.get(k)).find(Boolean)
       if (file) {
-        matchedNames.add(file.name)
+        matched.add(file)
         if (
           record.fs && record.fs.exists && record.fs.mtime === file.mtime &&
           record.fileName === file.name
@@ -407,9 +438,14 @@ export async function reconcile(force = false) {
           : { ...record, fileName: file.name }
         return { ...healed, fs: { exists: true, mtime: file.mtime, size: file.size } }
       }
-      // 刚完成播种(mtime=0)的记录可能晚于本轮 listDisk 快照落盘,
-      // 不能据此降级为"已不在",留给下一轮对账确认
-      if (record.fs && record.fs.exists === true && record.fs.mtime === 0) return record
+      // 刚完成播种(mtime=0)的记录可能晚于本轮 listDisk 快照落盘:
+      // 首轮对账保留存在态并撤销 pending,之后仍未匹配才允许降级
+      // (旧版本持久化的记录没有 pending 字段,同样先宽限一轮再自愈)
+      if (record.fs && record.fs.exists === true && record.fs.mtime === 0) {
+        if (record.fs.pending !== false) {
+          return { ...record, fs: { ...record.fs, pending: false } }
+        }
+      }
       if (record.fs && record.fs.exists === false) return record
       if (record.dest.type == 'mediastore') {
         return { ...record, fs: null }
@@ -420,7 +456,7 @@ export async function reconcile(force = false) {
     persist()
 
     const orphans = diskFiles
-      .filter(f => !matchedNames.has(f.name))
+      .filter(f => !matched.has(f) && !JUNK_NAME_RE.test(f.name))
       .map(f => ({
         name: f.name,
         path: f.uri || f.path,
@@ -431,7 +467,7 @@ export async function reconcile(force = false) {
       }))
     state.orphans = orphans
     state.diskScanned = true
-    dbgDl(`reconcile done: matched=${matchedNames.size} orphans=${orphans.length}`)
+    dbgDl(`reconcile done: matched=${matched.size} orphans=${orphans.length}`)
   } catch (err) {
     dbgDl(`reconcile FAILED: ${err?.message || err}`)
     console.warn('reconcile downloads failed:', err)

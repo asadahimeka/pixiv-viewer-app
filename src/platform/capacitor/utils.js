@@ -390,7 +390,9 @@ export async function downloadBlob(blob, fileName, subpath, opts = {}) {
     })
     let { uri } = await Filesystem.getUri({ path, directory })
     let tipPath = ''
-    let destType = platform.isIOS ? 'pictures' : 'external'
+    // 普通写入走 getDLDir(false) = Android Pictures / iOS Documents,
+    // 与对账扫描根一致;mediastore/saf/shared 分支会在下方覆盖此值
+    let destType = 'pictures'
     if (useSaf) {
       step = 'safWrite'
       try {

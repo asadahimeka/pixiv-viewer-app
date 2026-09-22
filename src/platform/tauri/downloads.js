@@ -132,9 +132,11 @@ export async function runDownload(task, { showToast = true } = {}) {
     registerAssetDir(destDir)
 
     let fileSize = null
+    let fileMtime = null
     try {
       const stat = await fs.stat(result.res)
       fileSize = stat?.size || null
+      fileMtime = stat?.mtime ? new Date(stat.mtime).getTime() : null
     } catch (err) {}
 
     // 记录 fileName 用实际落盘路径的 basename:Rust 侧会对文件名再消毒
@@ -162,6 +164,7 @@ export async function runDownload(task, { showToast = true } = {}) {
       destPath: result.res,
       tipPath: null,
       fileSize,
+      fileMtime,
       successMsg: result.successMsg,
     }
   } catch (err) {
@@ -268,10 +271,12 @@ async function statSafe(p) {
     const stat = await fs.stat(p)
     return {
       size: stat?.size || 0,
-      mtime: stat?.mtime ? new Date(stat.mtime).getTime() : 0,
+      mtime: stat?.mtime ? new Date(stat.mtime).getTime() : null,
     }
   } catch (err) {
-    return { size: 0, mtime: 0 }
+    // stat 失败(文件刚被删/被锁):返回 null 而不是 {0,0} 冒充存在,
+    // mtime 为 null 也不会与播种哨兵 mtime=0 撞车
+    return { size: null, mtime: null }
   }
 }
 
@@ -280,8 +285,9 @@ export async function listDisk() {
   const baseDir = await tauriUtils.baseDlDir()
   const out = []
   // 先递归收集文件路径(目录遍历必须串行),再并发分批 stat:
-  // 逐文件串行 stat 意味着每文件一次桥接往返,几百文件时下拉刷新会明显卡顿
-  const walk = async (dir, depth) => {
+  // 逐文件串行 stat 意味着每文件一次桥接往返,几百文件时下拉刷新会明显卡顿。
+  // rel 为相对 baseDir 的 '/' 分隔路径,供对账按 subDir 精确匹配
+  const walk = async (dir, rel, depth) => {
     let entries = []
     try {
       entries = await fs.readDir(dir)
@@ -290,14 +296,15 @@ export async function listDisk() {
     }
     for (const it of entries) {
       const full = `${dir}${sep}${it.name}`
+      const relFull = rel ? `${rel}/${it.name}` : it.name
       if (it.isDirectory) {
-        if (depth < 3) await walk(full, depth + 1)
+        if (depth < 3) await walk(full, relFull, depth + 1)
         continue
       }
-      out.push({ name: it.name, uri: full })
+      out.push({ name: it.name, uri: full, rel: relFull })
     }
   }
-  await walk(baseDir, 0)
+  await walk(baseDir, '', 0)
 
   const CONCURRENCY = 8
   for (let i = 0; i < out.length; i += CONCURRENCY) {
@@ -308,7 +315,7 @@ export async function listDisk() {
       it.mtime = stats[j].mtime
     })
   }
-  return out
+  return { root: baseDir, files: out }
 }
 
 export async function deleteDestFile(dest = {}) {

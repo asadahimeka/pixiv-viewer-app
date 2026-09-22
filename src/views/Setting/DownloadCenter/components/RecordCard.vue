@@ -50,7 +50,7 @@
 
 <script>
 import dayjs from 'dayjs'
-import { formatBytes } from '@/utils'
+import { formatBytes, isFileLikePath } from '@/utils'
 import platform from '@/platform'
 import { destDisplayPath } from '@/utils/downloadRecords'
 import { thumbSrcCacheGet, thumbSrcCacheSet, dbgDl } from '@/store/downloads'
@@ -79,12 +79,6 @@ const DEST_TAG_TYPES = {
   mediastore: 'primary',
   saf: 'warning',
   download_manager: 'primary',
-}
-
-// 文件型路径:file:// / POSIX 绝对路径 / Windows 盘符路径(D:\... 或 D:/...)
-// Tauri 的落盘路径是盘符开头,漏判会导致"删除文件"按钮消失
-function isFileLikePath(p) {
-  return !!p && (p.startsWith('file://') || p.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(p))
 }
 
 export default {
