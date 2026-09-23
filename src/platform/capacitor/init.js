@@ -161,11 +161,14 @@ function addCapListeners() {
     if (url.startsWith('pixiv://novels')) {
       url = url.replace('pixiv://novels', '/novel')
     }
-    if (url.startsWith('https://www.pixiv.net/')) {
-      url = url.replace('https://www.pixiv.net/en', '')
-      url = url.replace('https://www.pixiv.net', '')
-      router.push(url)
-      return
+    const path = url.match(/^https:\/\/(www\.)?pixiv\.net(\/en)?(\/.+)/i)?.[3]
+    if (path) {
+      const to = router.resolve(path)
+      if (to.route.name == 'NotFound') {
+        location.href = `https://www.pixiv.net${path}`
+      } else {
+        url = path
+      }
     }
     if (url.startsWith('/')) {
       router.push(url)

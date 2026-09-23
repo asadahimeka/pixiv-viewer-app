@@ -11,7 +11,7 @@ function initVisualTheme() {
     changeVisualTheme('default')
     return
   }
-  if (location.hostname.includes('localhost')) {
+  if (location.hostname.includes('tauri')) {
     changeVisualTheme('sakuria')
     return
   }
