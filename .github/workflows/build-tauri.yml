@@ -39,15 +39,11 @@ jobs:
         # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm' # Set this to npm, yarn or pnpm.
+          # cache: 'pnpm' # Set this to npm, yarn or pnpm.
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -65,6 +61,7 @@ jobs:
         run: |
           rustc --version
           node -v
+          npm install -g pnpm@9
           pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.
