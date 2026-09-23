@@ -9,25 +9,29 @@ PODS:
     - GCDWebServer (~> 3.0)
   - CapacitorClipboard (5.0.6):
     - Capacitor
-  - CapacitorCommunityFileOpener (1.0.6):
-    - Capacitor
   - CapacitorCordova (5.6.0)
   - CapacitorDevice (5.0.6):
     - Capacitor
   - CapacitorFilesystem (5.1.2-alpha.2):
     - Capacitor
+  - CapacitorMediastore (0.2.0):
+    - Capacitor
   - CapacitorNativeSettings (5.0.1):
+    - Capacitor
+  - CapacitorNavigationBar (3.0.0):
     - Capacitor
   - CapacitorPluginFiledownload (1.0.6):
     - Alamofire (~> 5.2.2)
     - Capacitor
+  - CapacitorPluginFileOpener (5.0.1):
+    - Capacitor
   - CapacitorPluginSafeArea (2.0.6):
+    - Capacitor
+  - CapacitorPreferences (5.0.8):
     - Capacitor
   - CapacitorShare (5.0.6):
     - Capacitor
   - CapacitorStatusBar (5.0.6):
-    - Capacitor
-  - CapgoCapacitorNavigationBar (6.0.12):
     - Capacitor
   - GCDWebServer (3.5.4):
     - GCDWebServer/Core (= 3.5.4)
@@ -36,18 +40,20 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@5.6.0_@capacitor+core@5.6.0/node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/app`)"
-  - "CapacitorBlobWriter (from `../../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@himeka+capacitor-filesystem@file+packages_isrl6rjorgahlm5keuqtliz2hi/node_modules/capacitor-blob-writer`)"
+  - "CapacitorBlobWriter (from `../../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@capacitor+filesystem@packages+capacitor-filesystem/node_modules/capacitor-blob-writer`)"
   - "CapacitorClipboard (from `../../node_modules/.pnpm/@capacitor+clipboard@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/clipboard`)"
-  - "CapacitorCommunityFileOpener (from `../../node_modules/.pnpm/@capacitor-community+file-opener@1.0.6_@capacitor+core@5.6.0/node_modules/@capacitor-community/file-opener`)"
   - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@5.6.0_@capacitor+core@5.6.0/node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/.pnpm/@capacitor+device@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/device`)"
-  - "CapacitorFilesystem (from `../../node_modules/.pnpm/@himeka+capacitor-filesystem@file+packages+capacitor-filesystem_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-filesystem`)"
+  - CapacitorFilesystem (from `../../packages/capacitor-filesystem`)
+  - CapacitorMediastore (from `../../packages/capacitor-mediastore`)
   - "CapacitorNativeSettings (from `../../node_modules/.pnpm/capacitor-native-settings@5.0.1_@capacitor+core@5.6.0/node_modules/capacitor-native-settings`)"
-  - "CapacitorPluginFiledownload (from `../../node_modules/.pnpm/@himeka+capacitor-plugin-filedownload@file+packages+capacitor-plugin-filedownload_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-plugin-filedownload`)"
+  - CapacitorNavigationBar (from `../../packages/capacitor-navigation-bar`)
+  - CapacitorPluginFiledownload (from `../../packages/capacitor-plugin-filedownload`)
+  - CapacitorPluginFileOpener (from `../../packages/capacitor-plugin-file-opener`)
   - "CapacitorPluginSafeArea (from `../../node_modules/.pnpm/capacitor-plugin-safe-area@2.0.6_@capacitor+core@5.6.0/node_modules/capacitor-plugin-safe-area`)"
+  - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@5.0.8_@capacitor+core@5.6.0/node_modules/@capacitor/preferences`)"
   - "CapacitorShare (from `../../node_modules/.pnpm/@capacitor+share@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/share`)"
   - "CapacitorStatusBar (from `../../node_modules/.pnpm/@capacitor+status-bar@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/status-bar`)"
-  - "CapgoCapacitorNavigationBar (from `../../node_modules/.pnpm/@capgo+capacitor-navigation-bar@6.0.12_@capacitor+core@5.6.0/node_modules/@capgo/capacitor-navigation-bar`)"
 
 SPEC REPOS:
   trunk:
@@ -60,48 +66,54 @@ EXTERNAL SOURCES:
   CapacitorApp:
     :path: "../../node_modules/.pnpm/@capacitor+app@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/app"
   CapacitorBlobWriter:
-    :path: "../../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@himeka+capacitor-filesystem@file+packages_isrl6rjorgahlm5keuqtliz2hi/node_modules/capacitor-blob-writer"
+    :path: "../../node_modules/.pnpm/capacitor-blob-writer@1.1.14_@capacitor+core@5.6.0_@capacitor+filesystem@packages+capacitor-filesystem/node_modules/capacitor-blob-writer"
   CapacitorClipboard:
     :path: "../../node_modules/.pnpm/@capacitor+clipboard@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/clipboard"
-  CapacitorCommunityFileOpener:
-    :path: "../../node_modules/.pnpm/@capacitor-community+file-opener@1.0.6_@capacitor+core@5.6.0/node_modules/@capacitor-community/file-opener"
   CapacitorCordova:
     :path: "../../node_modules/.pnpm/@capacitor+ios@5.6.0_@capacitor+core@5.6.0/node_modules/@capacitor/ios"
   CapacitorDevice:
     :path: "../../node_modules/.pnpm/@capacitor+device@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/device"
   CapacitorFilesystem:
-    :path: "../../node_modules/.pnpm/@himeka+capacitor-filesystem@file+packages+capacitor-filesystem_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-filesystem"
+    :path: "../../packages/capacitor-filesystem"
+  CapacitorMediastore:
+    :path: "../../packages/capacitor-mediastore"
   CapacitorNativeSettings:
     :path: "../../node_modules/.pnpm/capacitor-native-settings@5.0.1_@capacitor+core@5.6.0/node_modules/capacitor-native-settings"
+  CapacitorNavigationBar:
+    :path: "../../packages/capacitor-navigation-bar"
   CapacitorPluginFiledownload:
-    :path: "../../node_modules/.pnpm/@himeka+capacitor-plugin-filedownload@file+packages+capacitor-plugin-filedownload_@capacitor+core@5.6.0/node_modules/@himeka/capacitor-plugin-filedownload"
+    :path: "../../packages/capacitor-plugin-filedownload"
+  CapacitorPluginFileOpener:
+    :path: "../../packages/capacitor-plugin-file-opener"
   CapacitorPluginSafeArea:
     :path: "../../node_modules/.pnpm/capacitor-plugin-safe-area@2.0.6_@capacitor+core@5.6.0/node_modules/capacitor-plugin-safe-area"
+  CapacitorPreferences:
+    :path: "../../node_modules/.pnpm/@capacitor+preferences@5.0.8_@capacitor+core@5.6.0/node_modules/@capacitor/preferences"
   CapacitorShare:
     :path: "../../node_modules/.pnpm/@capacitor+share@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/share"
   CapacitorStatusBar:
     :path: "../../node_modules/.pnpm/@capacitor+status-bar@5.0.6_@capacitor+core@5.6.0/node_modules/@capacitor/status-bar"
-  CapgoCapacitorNavigationBar:
-    :path: "../../node_modules/.pnpm/@capgo+capacitor-navigation-bar@6.0.12_@capacitor+core@5.6.0/node_modules/@capgo/capacitor-navigation-bar"
 
 SPEC CHECKSUMS:
   Alamofire: 814429acc853c6c54ff123fc3d2ef66803823ce0
-  Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
-  CapacitorApp: 024e1b1bea5f883d79f6330d309bc441c88ad04a
-  CapacitorBlobWriter: 110eeaf80611f19bf01a8a05ff3672149ed0baad
-  CapacitorClipboard: 77edf49827ea21da2a9c05c690a4a6a4d07199c4
-  CapacitorCommunityFileOpener: 7d4e2cbddce32cbdc4d8d3165cd51a7038246440
+  Capacitor: 543dcc8159d8e4bdbd0e6923df919f056990836e
+  CapacitorApp: 3bef09d0bbb9698fd1766398499f306647156bbf
+  CapacitorBlobWriter: d709e5d22ab9989afd730eb4773873d1ded5fd08
+  CapacitorClipboard: 38119e894d95bfae1969d94a29de244adf244ba2
   CapacitorCordova: 931b48fcdbc9bc985fc2f16cec9f77c794a27729
-  CapacitorDevice: 2c968f98a1ec4d22357418c1521e7ddc46c675e6
-  CapacitorFilesystem: 3e724c02cd416d8dfcbc546ee788ba89de83b23c
-  CapacitorNativeSettings: 6e94ed3c0465206756f320df18efc52f053ce3c7
-  CapacitorPluginFiledownload: 75991b55a7296e88001fda2d2c6b5c94880a7099
-  CapacitorPluginSafeArea: d55e4d4e70c98f611240f11dd80561438d0d70cb
-  CapacitorShare: cd41743331cb71d217c029de54b681cbd91e0fcc
-  CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
-  CapgoCapacitorNavigationBar: c5675bf5f155844d450ce66b491595c6ae64238f
+  CapacitorDevice: 1cd7c01075416a2c4cd09fe32d4f31dce051f18c
+  CapacitorFilesystem: c7f5181642ab8d0a63a203268d1d66ffbc5f6ebf
+  CapacitorMediastore: 2f484745465aa8664d4b1697043c9e088d554e6c
+  CapacitorNativeSettings: b7405e85a17703a47697185d49a14461bfaa996a
+  CapacitorNavigationBar: 2b0e2e11cb922b798976b1b587f46d7c8dce9ce3
+  CapacitorPluginFiledownload: c1da49409f35d7b14954de7a40c0d210f513fc45
+  CapacitorPluginFileOpener: b8c7ae9e8ef0dc14a9aa913a7a4debe6f46c73f1
+  CapacitorPluginSafeArea: 86ba15d016dd95d4c28ed369078186aa4d322565
+  CapacitorPreferences: 5331d7a33044d252dcb2f7fee712f0322c04bae7
+  CapacitorShare: 9789d7c471cbcdf4eb601f195b0883d774efe0d9
+  CapacitorStatusBar: f7e05ad7e5fb1a1cdacd2f0b55d488550ca07c41
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
 
-PODFILE CHECKSUM: f55b83f74987c6499a9d1a7119441de3424cb993
+PODFILE CHECKSUM: 7dafadcbaa29d0e9d3a81dd5af006a025321d1ed
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
