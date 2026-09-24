@@ -29,7 +29,7 @@ jobs:
             cairo desktop-file-utils gdk-pixbuf2 glib2 gtk3 \
             hicolor-icon-theme libsoup3 pango webkit2gtk-4.1 \
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
-            curl rustup nodejs pnpm
+            curl rustup nodejs npm pnpm
 
       - name: Check version consistency
         run: node scripts/check-version.mjs
@@ -52,7 +52,7 @@ jobs:
           url="https://github.com/asadahimeka/pixiv-viewer-app"
           license=('MIT')
           depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup3' 'pango' 'webkit2gtk-4.1')
-          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'nodejs' 'pnpm')
+          makedepends=('git' 'openssl' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'rustup' 'nodejs' 'npm' 'pnpm')
           options=('!lto' '!strip' '!debug')
           source=()
           sha256sums=()
