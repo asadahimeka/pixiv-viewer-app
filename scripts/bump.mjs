@@ -41,7 +41,7 @@ const sub = (f, re, rep) => {
 sub('package.json', /^(\s*"version"\s*:\s*")[^"]*(")/m, `$1${next}$2`)
 sub('src-tauri/tauri.conf.json', /^(\s*"version"\s*:\s*")[^"]*(")/m, `$1${next}$2`)
 sub('src-tauri/Cargo.toml', /^version\s*=\s*"[^"]*"/m, `version = "${next}"`)
-sub('src-tauri/Cargo.lock', /(name = "app"\nversion = ")[^"]+(")/, `$1${next}$2`)
+sub('src-tauri/Cargo.lock', /(name = "app"\r?\nversion = ")[^"]+(")/, `$1${next}$2`)
 sub('android/app/build.gradle', /versionName\s+"[^"]*"/, `versionName "${next}"`)
 sub('android/app/build.gradle', /versionCode\s+\d+/, `versionCode ${code}`)
 sub('ios/App/App.xcodeproj/project.pbxproj', /(MARKETING_VERSION = )[^;]+;/g, `$1${next};`)

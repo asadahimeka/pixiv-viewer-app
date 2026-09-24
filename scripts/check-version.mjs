@@ -14,7 +14,7 @@ const m1 = (s, re) => { const m = s.match(re); return m ? m[1] : null }
 
 expect('src-tauri/tauri.conf.json', m1(read('src-tauri/tauri.conf.json'), /^\s*"version"\s*:\s*"([^"]+)"/m))
 expect('src-tauri/Cargo.toml', m1(read('src-tauri/Cargo.toml'), /^version\s*=\s*"([^"]+)"/m))
-expect('src-tauri/Cargo.lock', m1(read('src-tauri/Cargo.lock'), /name = "app"\nversion = "([^"]+)"/))
+expect('src-tauri/Cargo.lock', m1(read('src-tauri/Cargo.lock'), /name = "app"\r?\nversion = "([^"]+)"/))
 expect('android/app/build.gradle', m1(read('android/app/build.gradle'), /versionName\s+"([^"]+)"/))
 
 const gradleCode = m1(read('android/app/build.gradle'), /versionCode\s+(\d+)/)
