@@ -32,6 +32,8 @@ jobs:
           dnf install -y nodejs
           node -v
           npm -v
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
       - name: Install frontend dependencies
         run: |
           npm install -g pnpm@9

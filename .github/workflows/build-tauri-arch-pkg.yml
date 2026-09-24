@@ -31,6 +31,9 @@ jobs:
             openssl appmenu-gtk-module libappindicator-gtk3 librsvg \
             curl rustup nodejs pnpm
 
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
+
       - name: Extract app version
         shell: bash
         run: |

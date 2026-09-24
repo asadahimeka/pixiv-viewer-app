@@ -1,6 +1,7 @@
+import pkg from '../../package.json'
 import { LocalStorage } from '@/utils/storage'
 
-export const CURRENT_APP_VERSION = 'v1.37.5'
+export const CURRENT_APP_VERSION = `v${pkg.version}`
 export const isProduction = process.env.NODE_ENV === 'production'
 export const BASE_URL = process.env.BASE_URL
 export const DEF_PXIMG_MAIN = process.env.VUE_APP_DEF_PXIMG_MAIN || 'i.pixiv.re'

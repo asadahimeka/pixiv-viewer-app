@@ -21,6 +21,9 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
+
       - name: Install dependencies
         run: pnpm install
 
