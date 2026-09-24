@@ -32,6 +32,7 @@ jobs:
             curl rustup nodejs pnpm
 
       - name: Extract app version
+        shell: bash
         run: |
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
