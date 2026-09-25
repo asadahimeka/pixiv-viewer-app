@@ -32,6 +32,8 @@ jobs:
           dnf install -y nodejs
           node -v
           npm -v
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
       - name: Install frontend dependencies
         run: |
           npm install -g pnpm@9
@@ -62,6 +64,7 @@ jobs:
           VUE_APP_PLATFORM: 'tauri'
 
       - name: Extract app version and repackage AppImage
+        shell: bash
         run: |
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV

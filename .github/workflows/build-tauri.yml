@@ -39,11 +39,16 @@ jobs:
         # libwebkit2gtk-4.0-dev is for Tauri v1 - libwebkit2gtk-4.1-dev is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
+      - uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: 'pnpm' # Set this to npm, yarn or pnpm.
+          cache: 'pnpm' # Set this to npm, yarn or pnpm.
+
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -61,18 +66,18 @@ jobs:
         run: |
           rustc --version
           node -v
-          npm install -g pnpm@9
           pnpm -v
           pnpm install
         # change this to npm or pnpm depending on which one you use.
 
       - name: Extract app version
+        shell: bash
         run: |
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VUE_APP_DEF_HIBIAPI_MAIN: ${{ secrets.VUE_APP_DEF_HIBIAPI_MAIN }}
@@ -93,6 +98,7 @@ jobs:
         with:
           args: ${{ matrix.args }}
           tagName: draft_v_${{ env.APP_VERSION }}
+          releaseName: draft_v_${{ env.APP_VERSION }}
           releaseDraft: true
           prerelease: true
 
@@ -100,14 +106,14 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           cd src-tauri/target/release/bundle/appimage
-          "./Pixiv-Viewer_${VERSION}_amd64.AppImage" --appimage-extract
+          "./Pixiv-Viewer_${APP_VERSION}_amd64.AppImage" --appimage-extract
           mv squashfs-root appdir
           rm -f appdir/usr/lib/*wayland*so*
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
           ./appimagetool-x86_64.AppImage --appimage-extract
           mv squashfs-root appimagetool
-          ./appimagetool/AppRun appdir "Pixiv-Viewer_${VERSION}_amd64-archlinux.AppImage"
+          ./appimagetool/AppRun appdir "Pixiv-Viewer_${APP_VERSION}_amd64-archlinux.AppImage"
           ls -la
 
       - name: Upload AppImage to release

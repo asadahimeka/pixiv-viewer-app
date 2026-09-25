@@ -16,6 +16,8 @@
     "dev:web:tauri": "cross-env VUE_APP_PLATFORM=tauri vue-cli-service serve --port 8080",
     "build:web": "vue-cli-service build",
     "lint": "eslint src --fix --ext .js,.vue",
+    "bump": "node scripts/bump.mjs",
+    "check-version": "node scripts/check-version.mjs",
     "preinstall": "npx -y only-allow pnpm"
   },
   "dependencies": {

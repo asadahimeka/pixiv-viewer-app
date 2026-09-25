@@ -13,16 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
+
+      - name: Check version consistency
+        run: node scripts/check-version.mjs
 
       - name: Install dependencies
-        run: |
-          npm install -g pnpm@9
-          pnpm -v
-          pnpm install
+        run: pnpm install
 
       - name: Build frontend
         run: npm run build:web
@@ -67,6 +70,7 @@ jobs:
 
       - name: Extract app name and version
         id: app-info
+        shell: bash
         run: |
           NAME=$(node -p "require('./package.json').name || 'app'")
           VERSION=$(node -p "require('./package.json').version || '0.0.0'")
