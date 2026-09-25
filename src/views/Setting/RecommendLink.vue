@@ -2,13 +2,6 @@
   <div class="setting-page">
     <van-cell
       center
-      title="Sakuria"
-      is-link
-      label="https://sakuria.syarolia.com"
-      @click="openLink('https://sakuria.syarolia.com/?ref=pixiv.pictures')"
-    />
-    <van-cell
-      center
       title="PixivFun"
       is-link
       label="https://pxfun.cocomi.eu.org"
