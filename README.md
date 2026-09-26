@@ -73,10 +73,10 @@
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64.dmg">
         <img alt src="https://img.shields.io/badge/DMG-Intel%20X64-%230071C5.svg?logo=apple">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_aarch64.app.tar.gz">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_aarch64.app.tar.gz">
         <img alt src="https://img.shields.io/badge/APP-Apple%20Silicon-%23000000.svg?logo=apple">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_x64.app.tar.gz">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64.app.tar.gz">
         <img alt src="https://img.shields.io/badge/APP-Intel%20X64-%230071C5.svg?logo=apple">
       </a>
     </td>
@@ -87,11 +87,11 @@
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64.dmg">
         <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/Pixiv-Viewer_1.37.5_x64.dmg?label=DL&color=0071C5">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_aarch64.app.tar.gz">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/Pixiv-Viewer_aarch64.app.tar.gz?label=DL&color=000000">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_aarch64.app.tar.gz">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/Pixiv-Viewer_1.37.5_aarch64.app.tar.gz?label=DL&color=000000">
       </a><br>
-      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_x64.app.tar.gz">
-        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/Pixiv-Viewer_x64.app.tar.gz?label=DL&color=0071C5">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64.app.tar.gz">
+        <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/Pixiv-Viewer_1.37.5_x64.app.tar.gz?label=DL&color=0071C5">
       </a>
     </td>
   </tr>
@@ -107,11 +107,8 @@
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_amd64.AppImage">
         <img alt src="https://img.shields.io/badge/AppImage-Debian%2FUbuntu%20x64-E95420.svg?logo=ubuntu">
       </a><br>
-     <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer-1.37.5-1-x86_64.pkg.tar.zst">
+      <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer-1.37.5-1-x86_64.pkg.tar.zst">
         <img alt src="https://img.shields.io/badge/pkg-ArchLinux%20x64-1793D1.svg?logo=archlinux">
-      </a><br>
-      <a href="https://aur.archlinux.org/packages/pixiv-viewer">
-         <img alt src="https://img.shields.io/badge/AUR-ArchLinux%20x64-1793D1.svg?logo=archlinux">
       </a>
     </td>
     <td>
@@ -126,15 +123,26 @@
       </a><br>
       <a href="https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer-1.37.5-1-x86_64.pkg.tar.zst">
         <img alt="" src="https://img.shields.io/github/downloads/asadahimeka/pixiv-viewer-app/v1.37.5/pixiv-viewer-1.37.5-1-x86_64.pkg.tar.zst?label=DL&color=1793D1">
-      </a><br>
-      <code>yay -S pixiv-viewer</code>
+      </a>
     </td>
   </tr>
 </table>
 
+## Documentation
+
+| Document | 中文 |
+| --- | --- |
+| [Features](docs/Features.md) | [功能特性](docs/Features.zh-CN.md) |
+| [Architecture & Technical Details](docs/Architecture.md) | [架构与技术细节](docs/Architecture.zh-CN.md) |
+| [Development Guide](docs/Development.md) | [开发指南](docs/Development.zh-CN.md) |
+| [Deployment Guide](docs/Deployment.md) | [部署说明](docs/Deployment.zh-CN.md) |
+| [FAQ](docs/FAQ.md) | [常见问题](docs/FAQ.zh-CN.md) |
+
+Chinese version of this README: [docs/README.zh-CN.md](docs/README.zh-CN.md)
+
 ## Features
 
-https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-features
+See [docs/Features.md](docs/Features.md) · [中文](docs/Features.zh-CN.md)
 
 ## Feedback
 
@@ -142,9 +150,9 @@ https://github.com/asadahimeka/pixiv-viewer/issues
 
 ## Preview
 
-<kbd><img src="https://raw.githubusercontent.com/asadahimeka/pixiv-viewer/master/docs/ea1.jpg" width="390"></kbd>  <kbd><img src="https://raw.githubusercontent.com/asadahimeka/pixiv-viewer/master/docs/ea2.jpg" width="390"></kbd>
+<kbd><img src="docs/screenshots/1.jpg" width="390"></kbd>  <kbd><img src="docs/screenshots/2.jpg" width="390"></kbd>
 
-<kbd><img src="https://raw.githubusercontent.com/asadahimeka/pixiv-viewer/master/docs/ea3.jpg" width="390"></kbd>  <kbd><img src="https://raw.githubusercontent.com/asadahimeka/pixiv-viewer/master/docs/ea4.jpg" width="390"></kbd>
+<kbd><img src="docs/screenshots/3.jpg" width="390"></kbd>  <kbd><img src="docs/screenshots/4.jpg" width="390"></kbd>
 
 ## Sponsor
 
@@ -156,7 +164,7 @@ Sponsors list: https://sponsors-yumine.netlify.app/account
 
 ## FAQ
 
-https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-faq
+See [docs/FAQ.md](docs/FAQ.md) · [中文](docs/FAQ.zh-CN.md)
 
 ## Credits
 
@@ -170,8 +178,12 @@ https://github.com/asadahimeka/pixiv-viewer/blob/master/docs/README.en.md#-faq
 ### Projects
 - [HibiAPI](https://github.com/mixmoe/HibiAPI): Provide most Pixiv App API support
 - [PixivNow](https://github.com/FreeNowOrg/PixivNow): Provide partial support for Pixiv Web API.
-- [PixEz](https://github.com/Notsfsssf/pixez-flutter): Direct connect mode logic reference.
+- [PixEz](https://github.com/Notsfsssf/pixez-flutter): Direct connect mode and client logic reference.
 - [Pixiv-Shaft](https://github.com/CeuiLiSA/Pixiv-Shaft): Direct connect mode logic reference.
+- [pxder](https://github.com/Tsuk1ko/pxder)：OAuth login reference.
+- [IllustFerry](https://github.com/peasoft/IllustFerry): In-app login reference.
+- [ShinobuTranslator](https://github.com/DonutShinobu/ShinobuTranslator)：Manga translate engine.
+- [KISS Translator](https://github.com/fishjar/kiss-translator)：Fullpage translate tool.
 
 ### Services
 - [Pixiv.cat](https://pixiv.re/): Pximg proxy service

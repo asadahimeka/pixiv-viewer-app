@@ -9,6 +9,13 @@
     />
     <van-cell
       center
+      title="PixivBiu"
+      is-link
+      label="https://pxfun.cocomi.eu.org"
+      @click="openLink('https://pxfun.cocomi.eu.org/')"
+    />
+    <van-cell
+      center
       title="Mita"
       is-link
       label="https://mita.cocomi.eu.org"

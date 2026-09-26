@@ -78,6 +78,13 @@
       />
       <van-cell
         center
+        title="IllustFerry"
+        is-link
+        label="In-app login reference."
+        @click="openLink('https://github.com/peasoft/IllustFerry')"
+      />
+      <van-cell
+        center
         title="ShinobuTranslator"
         is-link
         label="漫画翻译引擎"
