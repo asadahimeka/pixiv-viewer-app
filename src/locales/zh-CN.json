@@ -929,5 +929,8 @@
   "dlc.empty_failed": "没有失败的下载",
   "dlc.unknown_error": "未知错误",
   "dlc.retry_no_url": "该记录没有可重试的下载地址",
-  "dlc.open_failed": "打开失败"
+  "dlc.open_failed": "打开文件失败",
+  "dlc.open_no_app": "没有可打开该文件的应用",
+  "dlc.saf_no_grant": "SAF 目录授权已失效，请重新选择下载目录",
+  "dlc.delete_file_failed": "文件删除失败，记录已保留"
 }

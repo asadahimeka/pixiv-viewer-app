@@ -128,9 +128,12 @@ async function mediaSave(func, path, fileNameSub) {
     const filename = nameParts.pop()
     const album = [dlBaseDir].concat(nameParts).join('/')
     const { uri } = await Mediastore[func]({ album, filename, path })
+    // 删除前取大小，让 mediastore 分支也能回报文件体积
+    const stat = await Filesystem.stat({ path }).catch(() => null)
+    const size = stat?.size ?? null
     await Filesystem.deleteFile({ path }).catch(() => {})
     const dirMap = { savePicture: 'Pictures', saveVideo: 'Movies', saveToDownloads: 'Download' }
-    return { uri, tipPath: `/storage/emulated/0/${dirMap[func]}/${album}/${filename}` }
+    return { uri, tipPath: `/storage/emulated/0/${dirMap[func]}/${album}/${filename}`, size }
   } catch (err) {
     throw markDlError(err, 'mediaSave')
   }
@@ -203,12 +206,19 @@ async function safSave(tempPath, fileName) {
       treeUri,
       relativeDir,
       fileName: baseName,
-      srcPath: tempPath.replace('file://', ''),
+      // getUri 返回的 file:// URI 是百分号编码的，原生 FileInputStream 不解码会 ENOENT；
+      // 仅对 file:// 前缀解码，downloadFile 给的裸绝对路径已是解码态，避免二次解码
+      srcPath: tempPath.startsWith('file://')
+        ? safeDecodeURIComponent(tempPath).replace('file://', '')
+        : tempPath,
       mime: getMime(fileName),
     })
+    // 删除前取大小：stat 不带 directory 走 Uri 解码分支，编码路径也能读对
+    const stat = await Filesystem.stat({ path: tempPath }).catch(() => null)
+    const size = stat?.size ?? null
     await Filesystem.deleteFile({ path: tempPath }).catch(() => {})
     const treeSeg = safeDecodeURIComponent((treeUri || '').split('/').pop())
-    return { uri: res.uri, tipPath: `SAF:/${treeSeg}/${relativeDir}/${res.name || baseName}` }
+    return { uri: res.uri, tipPath: `SAF:/${treeSeg}/${relativeDir}/${res.name || baseName}`, size }
   } catch (err) {
     throw markDlError(err, 'safWrite')
   }
@@ -246,9 +256,10 @@ export async function downloadFile(url, fileName, subpath, onProgress, opts = {}
             step = 'mediaSave'
             checkCanceled()
             try {
-              const { uri, tipPath } = await mediaSave('savePicture', result.res.path, fileName)
+              const { uri, tipPath, size } = await mediaSave('savePicture', result.res.path, fileName)
               result.res.path = uri
               result.res.tipPath = tipPath
+              result.res.size = size
               destType = 'mediastore'
             } catch (err) {
               step = 'share'
@@ -282,9 +293,10 @@ export async function downloadFile(url, fileName, subpath, onProgress, opts = {}
           checkCanceled()
           step = 'safWrite'
           try {
-            const { uri, tipPath } = await safSave(result.res.path, fileName)
+            const { uri, tipPath, size } = await safSave(result.res.path, fileName)
             result.res.path = uri
             result.res.tipPath = tipPath
+            result.res.size = size
             destType = 'saf'
           } catch (err) {
             step = 'share'
@@ -320,13 +332,14 @@ export async function downloadFile(url, fileName, subpath, onProgress, opts = {}
             step = 'mediaSave'
             checkCanceled()
             try {
-              const { uri, tipPath } = await mediaSave(
+              const { uri, tipPath, size } = await mediaSave(
                 /\.(jpe?g|png|gif)$/.test(url) ? 'savePicture' : 'saveToDownloads',
                 result.res.path,
                 fileName
               )
               result.res.path = uri
               result.res.tipPath = tipPath
+              result.res.size = size
               destType = 'mediastore'
             } catch (err) {
               step = 'share'
@@ -390,6 +403,7 @@ export async function downloadBlob(blob, fileName, subpath, opts = {}) {
     })
     let { uri } = await Filesystem.getUri({ path, directory })
     let tipPath = ''
+    let size = null
     // 普通写入走 getDLDir(false) = Android Pictures / iOS Documents,
     // 与对账扫描根一致;mediastore/saf/shared 分支会在下方覆盖此值
     let destType = 'pictures'
@@ -399,6 +413,7 @@ export async function downloadBlob(blob, fileName, subpath, opts = {}) {
         const res = await safSave(uri, fileName)
         uri = res.uri
         tipPath = res.tipPath
+        size = res.size
         destType = 'saf'
       } catch (err) {
         step = 'share'
@@ -420,6 +435,7 @@ export async function downloadBlob(blob, fileName, subpath, opts = {}) {
         const res = await mediaSave(func, uri, fileName)
         uri = res.uri
         tipPath = res.tipPath
+        size = res.size
       } catch (err) {
         step = 'share'
         // blob 成品已在私有目录，转存失败时可调起系统分享手动保存
@@ -435,7 +451,7 @@ export async function downloadBlob(blob, fileName, subpath, opts = {}) {
     }
 
     const successMsg = `${i18n.t('tip.downloaded')}: ${tipPath || safeDecodeURIComponent(uri.replace('file://', ''))}`
-    return { res: { uri }, destType, fileName, successMsg }
+    return { res: { uri, size }, destType, fileName, successMsg }
   } catch (error) {
     if (isCancelError(error)) throw canceledError()
     return { error: markDlError(error, step) }

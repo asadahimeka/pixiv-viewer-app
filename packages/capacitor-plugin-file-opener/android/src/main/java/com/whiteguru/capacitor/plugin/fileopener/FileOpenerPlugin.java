@@ -44,7 +44,15 @@ public class FileOpenerPlugin extends Plugin {
         openFileIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         if (openFileIntent.resolveActivity(getContext().getPackageManager()) != null) {
-            startActivityForResult(call, openFileIntent, "openFileResult");
+            try {
+                startActivityForResult(call, openFileIntent, "openFileResult");
+            } catch (SecurityException e) {
+                // 无权把本应用持有的 URI 授权传播给目标应用时，startActivity 会同步抛
+                // SecurityException；若放任其冒出插件方法，Capacitor 会包装成 FATAL
+                // 崩掉整个进程。这里转成 reject，让 JS 侧已有的失败 toast 兜底。
+                String msg = e.getMessage();
+                call.reject("OPEN_SECURITY_DENIED: " + (msg != null ? msg : e.getClass().getSimpleName()));
+            }
         } else {
             call.reject("No default apps for open file");
         }

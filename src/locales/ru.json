@@ -930,5 +930,8 @@
   "dlc.empty_failed": "Нет неудачных загрузок",
   "dlc.unknown_error": "Неизвестная ошибка",
   "dlc.retry_no_url": "Нет URL для повтора",
-  "dlc.open_failed": "Не удалось открыть"
+  "dlc.open_failed": "Не удалось открыть",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

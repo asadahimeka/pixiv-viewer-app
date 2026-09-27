@@ -321,16 +321,32 @@ export function removeRecord(recordId) {
   persist()
 }
 
+// "删除文件"菜单项:先删盘上文件,成功才移除记录并落盘。
+// 平台层契约:deleteDestFile 返回真值 = 目标已不存在(删成功或本就不存在),
+// 假值 = 已尝试但没删掉;也可能直接 reject。
+// 失败时记录必须原样保留 —— 否则文件还在盘上,记录却没了,
+// 用户既找不到文件也无从重试(可退而用"删除记录"只删行)。
+// 返回 true = 记录已移除;false = 文件没删掉、记录保留。供调用方弹提示。
 export async function removeRecordAndFile(record) {
-  if (record?.dest?.path) {
-    try {
-      const mod = await loadPlatformDownloads()
-      await mod.deleteDestFile(record.dest)
-    } catch (err) {
-      console.warn('delete file failed:', err)
+  // 没有落盘位置(失败记录 / 无 dest):无文件可删,直接移除记录
+  if (!record?.dest?.path) {
+    removeRecord(record.id)
+    return true
+  }
+  try {
+    const mod = await loadPlatformDownloads()
+    const ok = await mod.deleteDestFile(record.dest)
+    if (!ok) {
+      console.warn('delete file failed, keep record:', record.dest.path)
+      return false
     }
+  } catch (err) {
+    // 平台层可能 reject 而不是返回 false,同样按失败处理:记录保留
+    console.warn('delete file failed:', err)
+    return false
   }
   removeRecord(record.id)
+  return true
 }
 
 // ---------------- 磁盘对账 ----------------
@@ -517,7 +533,8 @@ export async function openDest(dest, fileName) {
     const mod = await loadPlatformDownloads()
     return await mod.openDest(dest, fileName)
   } catch (err) {
-    Toast(err?.message || i18n.t('dlc.open_failed'))
+    // 只回 false,提示交由 UI 层统一弹(onOpen),这里再弹就是同一个失败两次 toast
+    console.warn('open dest failed:', err)
     return false
   }
 }

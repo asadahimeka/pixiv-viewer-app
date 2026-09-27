@@ -930,5 +930,8 @@
   "dlc.empty_failed": "Καμία αποτυχημένη λήψη",
   "dlc.unknown_error": "Άγνωστο σφάλμα",
   "dlc.retry_no_url": "Δεν υπάρχει URL για επανάληψη",
-  "dlc.open_failed": "Αποτυχία ανοίγματος"
+  "dlc.open_failed": "Αποτυχία ανοίγματος",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

@@ -9,20 +9,16 @@
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { FileDownload } from 'capacitor-plugin-filedownload'
+import { Saf } from 'capacitor-plugin-saf'
 import { Toast } from '@/lib/vant-apis'
 import { i18n } from '@/i18n'
-import { dlErrorText, formatBytes, formatDlError, replaceValidFileName, safeDecodeURIComponent } from '@/utils'
+import { dlErrorText, formatBytes, formatDlError, isFileLikePath, replaceValidFileName, safeDecodeURIComponent } from '@/utils'
+import { isContentUri } from '@/utils/downloadRecords'
 import platform from '..'
 
 const DL_BASE_DIR = 'pixiv-viewer'
 const THUMB_MAX_SIZE = 320
 let thumbWarned = false
-
-function dlDir(isCache = false) {
-  return platform.isAndroid
-    ? (isCache ? Directory.External : Directory.Pictures)
-    : Directory.Documents
-}
 
 export async function runDownload(task, { showToast = true } = {}) {
   // 排队期间已被取消的任务直接短路
@@ -95,6 +91,11 @@ export async function runDownload(task, { showToast = true } = {}) {
         fileMtime = stat?.mtime || null
       } catch (err) {}
     }
+    // content://(SAF/媒体库非图片目录)没有 stat 途径,Saf.writeFile 也只回 {uri,name},
+    // 拿不到大小就一路回退:平台层落盘前 stat 到的 res.size → Blob 源自身大小(生成型下载必有)
+    fileSize = fileSize ??
+      result.res?.size ??
+      (isBlob ? task.source.size : null)
 
     if (loading) {
       try {
@@ -164,11 +165,41 @@ export async function cancelTask(taskId) {
 
 // 按需缩略:原生生成 320px 小图(解码快、缩略框下清晰度足够),
 // 失败回退原图 URL(常见可解码格式),再失败 null(显示类型图标)。
-// content://(媒体库)路径先按记录文件名解析回 Pictures/pixiv-viewer 下的真实文件
+// content://(SAF/媒体库)原样透传,原生侧不认就走下面的回退
 export async function thumbnail({ path, fileName } = {}) {
   if (!path) return null
   const target = await resolveDestPath(path, fileName)
   if (!target) return null
+
+  // content:// 必须分两个走向:打开文件要真 URI(原生 FileOpener 认 content scheme),
+  // 而 generateThumbnail 内部走 new File() 只认文件路径,喂 content:// 必失败,
+  // 所以缩略图这里单独按记录文件名猜回旧映射的 Pictures/pixiv-viewer 真实文件
+  if (target.startsWith('content://')) {
+    const name = safeDecodeURIComponent(String(fileName || '').split('/').pop())
+    if (!name || !/\.\w+$/.test(name)) return null
+    const { uri } = await Filesystem
+      .getUri({
+        path: `${DL_BASE_DIR}/${name}`,
+        directory: platform.isAndroid ? Directory.Pictures : Directory.Documents,
+      })
+      .catch(() => ({}))
+    if (!uri) return null
+    try {
+      const res = await Filesystem.generateThumbnail({ path: uri, maxSize: THUMB_MAX_SIZE })
+      if (res?.uri) return Capacitor.convertFileSrc(res.uri)
+    } catch (err) {
+      if (!thumbWarned) {
+        thumbWarned = true
+        console.warn('generateThumbnail unavailable/failing, fallback to original file:', err?.message || err)
+      }
+    }
+    // 猜出来的 uri 仍是本地图,图片扩展名可直接回退原图
+    if (/\.(jpe?g|png|gif|webp|bmp)$/i.test(uri)) {
+      return Capacitor.convertFileSrc(uri)
+    }
+    return null
+  }
+
   try {
     const res = await Filesystem.generateThumbnail({ path: target, maxSize: THUMB_MAX_SIZE })
     // 原生返回裸 file:// URI,WebView(https 源)禁止直接加载,
@@ -236,41 +267,87 @@ export async function listDisk() {
   return { root, files: out }
 }
 
-// 尽力删除落盘文件:file:// 或绝对路径交给 Filesystem(无 directory 时
-// 原生侧按绝对路径/file:// 解析);content://(媒体库)/SAF URI 交由用户在系统里管理
+// 删除落盘文件。返回值契约(UI 层依赖,勿改):
+//   true  = 目标已不存在(本次删掉了,或本来就没有),期望终态达成
+//   false = 尝试删除但没成功(记录保留,UI 提示 dlc.delete_file_failed)
+// file:// 与绝对路径交给 Filesystem(无 directory 时原生侧按绝对路径/file:// 解析);
+// content:// 走 SAF 的 delete(SafPlugin 持有树的持久授权),SAF 树之外的媒体库
+// URI 会失败——如实返回 false,不谎报成功
 export async function deleteDestFile(dest = {}) {
   const path = dest.path
   if (!path) return false
-  if (!path.startsWith('file://') && !path.startsWith('/')) return false
+  if (isContentUri(path)) {
+    try {
+      const { deleted } = await Saf.delete({ uri: path })
+      return !!deleted
+    } catch (err) {
+      return false
+    }
+  }
+  if (!isFileLikePath(path)) return false
   const clean = safeDecodeURIComponent(path).replace('file://', '')
-  await Filesystem.deleteFile({ path: clean }).catch(() => {})
-  return true
+  // 先 stat:拿不到 stat(文件已不在,或权限等原因读不到)一律视为已不在,
+  // 期望终态已达成,返回 true
+  try {
+    await Filesystem.stat({ path: clean })
+  } catch (err) {
+    return true
+  }
+  try {
+    await Filesystem.deleteFile({ path: clean })
+    return true
+  } catch (err) {
+    return false
+  }
 }
 
-// 把落盘位置解析成可访问的 file:// 绝对路径:
-// content://(媒体库)URI 的尾段是数字 id,需按记录文件名回查 Pictures/pixiv-viewer;
+// 把落盘位置解析成可访问的路径:
+// content://(SAF/媒体库)URI 原样返回——FileOpener 原生侧识别 content scheme 后
+// 直接拿 URI 打开(不走 new File()),应用又持有 SAF 树的持久读写授权(覆盖其后代文档),
+// 按文件名回查 Pictures/pixiv-viewer 只会猜出一个不存在的文件(subDir 也会被忽略);
 // 部分来源(如 DownloadManager 的 COLUMN_LOCAL_URI)存的是百分号编码路径,
 // Java 侧 File API 不解码 %XX,必须先安全解码,否则缩略图/打开全部 FILE_NOT_FOUND
 async function resolveDestPath(path, fileName) {
   if (!path) return null
   path = safeDecodeURIComponent(path)
   if (path.startsWith('file://') || path.startsWith('/')) return path
-  if (path.startsWith('content://')) {
-    const name = safeDecodeURIComponent(String(fileName || '').split('/').pop())
-    if (name && /\.\w+$/.test(name)) {
-      const { uri } = await Filesystem
-        .getUri({ path: `${DL_BASE_DIR}/${name}`, directory: dlDir(false) })
-        .catch(() => ({}))
-      if (uri) return uri
-    }
-  }
+  if (path.startsWith('content://')) return path
   return null
 }
 
+// 打开落盘位置。返回值是普通值(不抛错),契约(UI 层依赖,勿改形状):
+//   { ok: true }                          — 已唤起系统打开
+//   { ok: false, reason: 'unresolvable' } — dest.path 为空/无法解析
+//   { ok: false, reason: 'no_app' }       — 设备上没有能处理该文件的应用
+//   { ok: false, reason: 'no_grant' }     — SAF 目录授权已失效,需重新选择
+//   { ok: false, reason: 'failed' }       — 其它打开失败
+// 'no_app' 依赖原生侧 reject 文案 "No default apps for open file",
+// 'no_grant' 依赖 SafPlugin 的 "SAF permission lost",均按稳定子串匹配;
+// 若上游文案改动则降级为 'failed'(不会误报成 no_app/no_grant)
 export async function openDest(dest = {}, fileName) {
+  // SAF 记录不能走 FileOpener:树授权无法经 intent 传播给查看器,系统会以
+  // SecurityException 拒绝(Fix A 后不再崩进程,但仍打不开)。改走
+  // Saf.openDocument:用我们自己的授权复制到缓存,再以应用自有 URI 唤起查看器
+  if (dest?.type === 'saf') {
+    if (!dest.path) return { ok: false, reason: 'unresolvable' }
+    try {
+      await Saf.openDocument({ uri: dest.path })
+      return { ok: true }
+    } catch (err) {
+      const msg = `${err?.message || err || ''}`
+      if (msg.includes('No default apps for open file')) return { ok: false, reason: 'no_app' }
+      if (msg.includes('SAF permission lost')) return { ok: false, reason: 'no_grant' }
+      return { ok: false, reason: 'failed' }
+    }
+  }
   const target = await resolveDestPath(dest.path, fileName)
-  if (!target) return false
+  if (!target) return { ok: false, reason: 'unresolvable' }
   const { openFile } = await import('@/platform/capacitor/utils')
-  await openFile(target)
-  return true
+  try {
+    await openFile(target)
+  } catch (err) {
+    const msg = `${err?.message || err || ''}`
+    return { ok: false, reason: msg.includes('No default apps for open file') ? 'no_app' : 'failed' }
+  }
+  return { ok: true }
 }

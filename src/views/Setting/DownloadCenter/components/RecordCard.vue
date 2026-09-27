@@ -47,7 +47,7 @@
 import dayjs from 'dayjs'
 import { formatBytes, isFileLikePath } from '@/utils'
 import platform from '@/platform'
-import { destDisplayPath } from '@/utils/downloadRecords'
+import { destDisplayPath, isContentUri } from '@/utils/downloadRecords'
 import { thumbSrcCacheGet, thumbSrcCacheSet, dbgDl } from '@/store/downloads'
 
 const KIND_ICONS = {
@@ -159,8 +159,10 @@ export default {
     canOpen() {
       if (this.record.status != 'done' || !this.record.dest?.path) return false
       if (this.record.fs) return this.record.fs.exists === true
-      // 对账尚未运行时,文件型路径先按可打开处理
-      return this.fileLikeDest
+      // 对账尚未运行时,文件型路径先按可打开处理;content://(SAF/媒体库)
+      // 不可扫描、fs 恒为 null,靠 isContentUri 单独放行——不能并进 isFileLikePath,
+      // 否则对账的 underRoot 前缀扫描会漏掉媒体库记录(见 store/downloads.js)
+      return this.fileLikeDest || isContentUri(this.record.dest?.path)
     },
     canDetail() {
       return !!this.record.artworkId
@@ -181,7 +183,11 @@ export default {
         actions.push({ text: this.$t('dlc.locate'), key: 'locate' })
       }
       const p = this.record.dest?.path
-      if (isFileLikePath(p) && this.record.fs?.exists !== false) {
+      // 仅 SAF 记录(content:// 且 dest.type === 'saf')才走 content 分支:
+      // 应用只持有自己那棵 SAF 树的持久化授权,媒体库 content:// 不同 authority,
+      // 必被插件的后代校验拒绝 → deleted:false → 每次点都"删除失败",故不展示
+      const isSafRecord = isContentUri(p) && this.record.dest?.type === 'saf'
+      if ((isFileLikePath(p) || isSafRecord) && this.record.fs?.exists !== false) {
         actions.push({ text: this.$t('dlc.delete_file'), key: 'delete_file', color: '#ee0a24' })
       }
       actions.push({ text: this.$t('dlc.delete_record'), key: 'delete_record', color: '#ee0a24' })

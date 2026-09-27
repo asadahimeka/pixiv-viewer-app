@@ -930,5 +930,8 @@
   "dlc.empty_failed": "失敗したダウンロードはありません",
   "dlc.unknown_error": "不明なエラー",
   "dlc.retry_no_url": "この記録には再試行できるURLがありません",
-  "dlc.open_failed": "開けませんでした"
+  "dlc.open_failed": "開けませんでした",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

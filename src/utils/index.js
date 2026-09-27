@@ -440,22 +440,53 @@ export function trackEvent(name, properties) {
 
 const isOverlayOff = LocalStorage.get('PXV_STATUSBAR_OVERLAY_OFF', false)
 
+// leave 延迟 16ms 清理的定时器句柄：enter 到来时取消它，
+// 否则旧定时器会在新页面已加上 pt0/op0 之后再把它抹掉（进入态被竞态吃掉）
+let pendingLeaveTimer = null
+// 沉浸式状态的"期望值"：enter 置 true，leave 置 false。
+// 所有 class 增删都由 applyImmersive 按这个期望值幂等落地，
+// 因此冷启动时 #nav-bar-overlay 尚不存在的那次调用不会丢状态，
+// 等元素挂载后（App.vue mounted）再 apply 一次即可补上。
+let immersiveWanted = false
+
+// 幂等地把 immersiveWanted 落到 <html> 与 #nav-bar-overlay 上；
+// 元素尚未挂载时用 ?. 容错跳过，等待后续调用补齐
+export function applyImmersive() {
+  if (!platform.isAndroid || isOverlayOff) return
+  const overlay = window['nav-bar-overlay']
+  if (immersiveWanted) {
+    document.documentElement.classList.add('pt0')
+    overlay?.classList.add('op0')
+  } else {
+    document.documentElement.classList.remove('pt0')
+    // 清理路径额外移除滚动逻辑加上的 show，进入路径不加 show（保持原有不对称）
+    overlay?.classList.remove('op0', 'show')
+  }
+}
+
 export function dealStatusBarOnEnter() {
   if (!platform.isAndroid || isOverlayOff) return
-  document.documentElement.classList.add('pt0')
-  window['nav-bar-overlay']?.classList.add('op0')
+  // 新的进入总是先作废在途的 leave 清理，保证"进入"赢下这场竞态
+  if (pendingLeaveTimer) {
+    clearTimeout(pendingLeaveTimer)
+    pendingLeaveTimer = null
+  }
+  immersiveWanted = true
+  applyImmersive()
 }
 
 export async function dealStatusBarOnLeave() {
+  // 早退在创建任何定时器之前：关闭状态下绝不会留下悬空的延时清理
   if (!platform.isAndroid || isOverlayOff) return
+  immersiveWanted = false
   if (store.state.appSetting.pageTransition) {
-    setTimeout(() => {
-      document.documentElement.classList.remove('pt0')
-      window['nav-bar-overlay']?.classList.remove('op0', 'show')
+    // 保留 16ms（一帧）延迟：无新页面进入时避免在退场动画中途重排
+    pendingLeaveTimer = setTimeout(() => {
+      pendingLeaveTimer = null
+      applyImmersive()
     }, 16)
   } else {
-    document.documentElement.classList.remove('pt0')
-    window['nav-bar-overlay']?.classList.remove('op0', 'show')
+    applyImmersive()
   }
 }
 

@@ -930,5 +930,8 @@
   "dlc.empty_failed": "沒有失敗的下載",
   "dlc.unknown_error": "未知錯誤",
   "dlc.retry_no_url": "該記錄沒有可重試的下載地址",
-  "dlc.open_failed": "開啟失敗"
+  "dlc.open_failed": "開啟失敗",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

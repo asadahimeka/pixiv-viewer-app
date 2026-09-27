@@ -15,6 +15,7 @@ import store from '@/store'
 import { checkIsLogin } from '@/store/actions/check-login'
 import { fetchNotices } from '@/store/actions/fetch-notice'
 import { loadKISSTranslator } from './utils/translate'
+import { applyImmersive } from '@/utils'
 
 export default {
   name: 'App',
@@ -39,6 +40,9 @@ export default {
     fetchNotices()
   },
   async mounted() {
+    // 冷启动进入详情页时，路由守卫在 mount 之前就跑完了，当时
+    // #nav-bar-overlay 还不存在；此处元素已挂载，把挂起的沉浸态补上
+    applyImmersive()
     document.querySelector('#ldio-loading')?.remove()
     if (store.state.appSetting.isAutoLoadKissT) loadKISSTranslator(true)
     if (platform.isCapacitor) (await import('@/platform/capacitor/mounted')).onMounted()

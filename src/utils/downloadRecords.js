@@ -51,10 +51,25 @@ export function guessArtworkId(fileName = '') {
   return fileName.match(/_(\d{4,})[_.]/)?.[1] || null
 }
 
+// content:// 目的地(SAF 目录树 / 媒体库):原生 FileOpener 可直接用
+// ACTION_VIEW 打开,tree 授权覆盖子文档;与 isFileLikePath 是并列关系,
+// 不能合并——见 src/store/downloads.js 对账的扫描范围判定
+// (!isFileLikePath(destPath) || underRoot(destPath)):content:// 不是文件路径,
+// 一旦并进 isFileLikePath 就会被 underRoot 前缀扫描判为"不在扫描根内"而漏掉
+export function isContentUri(p) {
+  return !!p && p.startsWith('content://')
+}
+
 // 从落盘路径形态推断 dest.type(迁移旧记录时用;新记录由执行层精确写入)
 export function inferDestType(path = '') {
   if (!path) return null
-  if (path.startsWith('content://')) return 'mediastore'
+  if (path.startsWith('content://')) {
+    // SAF 树文档走 copy-out 打开 + 可删除,须归 saf;媒体库 content://
+    // (authority 为 media)归 mediastore。authority 是系统 provider 标识,
+    // 不随用户目录变化
+    if (path.startsWith('content://com.android.externalstorage.documents')) return 'saf'
+    return 'mediastore'
+  }
   if (path.startsWith('SAF:/')) return 'saf'
   if (path.includes('/Android/data/')) return 'external'
   if (path.includes('/Download/')) return 'download_manager'

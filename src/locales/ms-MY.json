@@ -930,5 +930,8 @@
   "dlc.empty_failed": "Tiada muat turun gagal",
   "dlc.unknown_error": "Ralat tidak diketahui",
   "dlc.retry_no_url": "Tiada URL untuk dicuba semula",
-  "dlc.open_failed": "Gagal membuka"
+  "dlc.open_failed": "Gagal membuka",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

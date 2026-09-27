@@ -930,5 +930,8 @@
   "dlc.empty_failed": "Nenhum download com falha",
   "dlc.unknown_error": "Erro desconhecido",
   "dlc.retry_no_url": "Sem URL para tentar novamente",
-  "dlc.open_failed": "Falha ao abrir"
+  "dlc.open_failed": "Falha ao abrir",
+  "dlc.open_no_app": "No app can open this file",
+  "dlc.saf_no_grant": "SAF folder permission lost — please re-pick the download folder",
+  "dlc.delete_file_failed": "Failed to delete the file — the record was kept"
 }

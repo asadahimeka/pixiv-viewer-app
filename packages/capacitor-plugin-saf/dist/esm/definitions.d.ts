@@ -14,4 +14,8 @@ export interface SafPlugin extends Plugin {
     /** 缺省为 application/octet-stream */
     mime?: string
   }): Promise<{ uri: string; name: string | null }>
+  /** 删除 SAF 目录树下的文件，返回是否删除成功 */
+  delete(options: { uri: string }): Promise<{ deleted: boolean }>
+  /** 用应用自有 URI 打开 SAF 目录树内的文档（先复制到缓存中转，不依赖 intent 授权传播） */
+  openDocument(options: { uri: string }): Promise<{ opened: boolean }>
 }

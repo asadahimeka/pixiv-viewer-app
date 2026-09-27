@@ -92,7 +92,7 @@
 </template>
 
 <script>
-import { Dialog } from '@/lib/vant-apis'
+import { Dialog, Toast } from '@/lib/vant-apis'
 import TopBar from '@/components/TopBar'
 import VirtualWaterfall from '@/components/VirtualWaterfall.vue'
 import ActiveTaskCard from './components/ActiveTaskCard.vue'
@@ -270,8 +270,25 @@ export default {
         cancelAllTasks()
       }).catch(() => {})
     },
-    onOpen(record) {
-      openDest(record.dest, record.fileName)
+    // 打开失败必须可见:静默无操作与按钮坏了对用户而言无法区分。
+    // openDest 返回值的具体形态归平台层所有(capacitor/tauri 的 downloads.js
+    // 及 store/downloads.js 的包装),这里只做防御性判定——falsy / false /
+    // {ok:false} / 抛错一律按失败;reason 仅在平台层真的带回时才读
+    // (result?.reason),其枚举值同样归平台层,匹配不上退回通用文案
+    async onOpen(record) {
+      let res
+      try {
+        res = await openDest(record.dest, record.fileName)
+      } catch (err) {
+        res = { ok: false, reason: err?.reason }
+      }
+      if (res && res.ok !== false) return
+      // reason 形如 'no_grant'(SAF 授权失效,优先)、'no_app'/'noApp' 才用对应
+      // 专用文案,其余失败原因走通用文案
+      const reason = String(res?.reason || '')
+      const noGrant = /no[_-]?grant/i.test(reason)
+      const noApp = /no[_-]?app/i.test(reason)
+      Toast(this.$t(noGrant ? 'dlc.saf_no_grant' : noApp ? 'dlc.open_no_app' : 'dlc.open_failed'))
     },
     onDetail(record) {
       if (!record.artworkId) return
@@ -289,7 +306,16 @@ export default {
       } else if (key == 'delete_file') {
         const ok = await this.confirm(this.$t('dlc.delete_file_confirm'))
         if (!ok) return
-        await removeRecordAndFile(record)
+        // removeRecordAndFile 的返回值契约归 store 层所有:布尔=文件是否真的删掉;
+        // 失败时记录会被保留在列表里,必须提示,否则"删不掉"和"删掉了"看起来一样。
+        // 成功路径保持静默(与旧行为一致)
+        let res
+        try {
+          res = await removeRecordAndFile(record)
+        } catch (err) {
+          res = false
+        }
+        if (!res) Toast(this.$t('dlc.delete_file_failed'))
       } else if (key == 'delete_record') {
         const ok = await this.confirm(this.$t('dlc.delete_record_confirm'))
         if (!ok) return
