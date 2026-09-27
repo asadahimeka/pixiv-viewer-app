@@ -110,7 +110,12 @@ export default {
         threshold: [0],
       }
       const ob = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && this.loading) {
+        // 零面积元素(如懒加载未设 src 的 img)Chrome 会报 isIntersecting=false，
+        // 用包围盒与视口的包含关系兜底，避免"没 src 所以 0 尺寸、0 尺寸所以不加载"死锁
+        const rect = entries[0].boundingClientRect
+        const inViewport = rect.top < window.innerHeight && rect.bottom > 0 &&
+          rect.left < window.innerWidth && rect.right > 0
+        if ((entries[0].isIntersecting || inViewport) && this.loading) {
           this.setImgSrc()
           ob.disconnect()
         }

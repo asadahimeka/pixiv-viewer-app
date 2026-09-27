@@ -8,6 +8,7 @@
       overlong,
       censored,
       'horizon-scroll': isHorizonScroll,
+      'horizon-swiper': isImgViewSwiper,
     }"
     @click="showFull"
     @wheel="handleWheel"
@@ -20,6 +21,7 @@
             :alt="`${artwork.title} - Page ${index + 1}`"
             :style="isLargeWebp && index==0 ? 'view-transition-name: artwork-cover' : ''"
             class="image"
+            nobg
             @click.native.stop="view(index)"
           />
           <template v-if="showPicTranslateBtn">
@@ -545,6 +547,10 @@ export default {
   &.loaded {
     width: 100%;
     min-height: unset;
+    // 切断 min-content 向 .ia-left 传播：横排模式下几十页内容的固有宽度会把
+    // .ia-left 撑到上万 px，把 .ia-right（Meta 区）挤到视口外
+    // （Chrome 对 flex 嵌套滚动容器的自动最小尺寸处理不按规范归零，需显式 contain）
+    contain: inline-size;
   }
 
   &.shrink {

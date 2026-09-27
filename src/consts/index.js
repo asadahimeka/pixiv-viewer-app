@@ -8,6 +8,7 @@ export const DEF_PXIMG_MAIN = process.env.VUE_APP_DEF_PXIMG_MAIN || 'i.pixiv.re'
 export const PXIMG_PROXY_BASE = LocalStorage.get('PXIMG_PROXY', DEF_PXIMG_MAIN)
 export const PXIMG_PROXYS = process.env.VUE_APP_PXIMG_PROXYS || ''
 export const PXIMG_PID_BASE = 'https://i.loli.best/'
+export const PXIMG_TEST_IMAGE = '/user-profile/img/2022/02/03/15/54/20/22159592_fce9f5c7a908c9b601dc7e9da7a412a3_50.jpg'
 export const DEF_HIBIAPI_MAIN = (process.env.VUE_APP_DEF_HIBIAPI_MAIN || 'https://api.cocomi.eu.org').replace('/api/pixiv', '')
 export const PIXIV_NEXT_URL = LocalStorage.get('PXVEAPI_BASE', DEF_HIBIAPI_MAIN)
 export const PIXIV_NOW_URL = `${PIXIV_NEXT_URL}/api/pixiv-now/http`

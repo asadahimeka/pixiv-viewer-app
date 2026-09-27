@@ -94,6 +94,19 @@ async function directDownloadZip(rawZip, path, onProgress) {
   return readZipCache(path)
 }
 
+/** Capacitor：原生 Filesystem 下载直落盘（无 CORS 限制、大文件不经 base64 桥），读回 blob */
+async function nativeDownloadZip(url, path) {
+  const [{ directory }, { fsDownloadFile }] = await Promise.all([
+    getZipCacheDir(),
+    // 动态导入避免把 Capacitor 依赖带进 Tauri 构建（此函数仅 Capacitor 可达）
+    import('@/platform/capacitor/utils'),
+  ])
+  await fsDownloadFile({ url, path, directory, recursive: true, headers: { Referer: 'https://www.pixiv.net' } })
+  const blob = await readZipCache(path)
+  if (!blob) throw new Error('native download readback failed')
+  return blob
+}
+
 /**
  * 浏览器级 fetch：Capacitor 上是原生桥保存的原始 fetch（CapacitorWebFetch），受 CORS 限制，
  * 要求图床返回 CORS 头；支持流式读取上报进度与超时
@@ -202,12 +215,15 @@ export async function loadUgoira(id, onProgress) {
     level = 'direct'
   }
 
-  // 非直连：图床 fetch → __httpRequest__ 原生请求 → 自建通用代理 三级回退
+  // 非直连：图床 fetch → 原生下载落盘(Capacitor)/__httpRequest__ → 自建通用代理 三级回退
   if (!blob && !isDirectMode) {
     const imgZip = imgProxy(fetchZip)
     const attempts = [
       { level: 'l1', url: imgZip, fn: fetchZipAsBlob, progress: true },
-      { level: 'l2', url: imgZip, fn: requestZipAsBlob, progress: false },
+      // CapacitorHttp 的 blob 响应走 base64 过桥，大 zip 不可靠，改用原生下载直落盘
+      platform.isCapacitor
+        ? { level: 'l2', url: imgZip, fn: u => nativeDownloadZip(u, cachePath), progress: false }
+        : { level: 'l2', url: imgZip, fn: requestZipAsBlob, progress: false },
     ]
     if (COMMON_IMAGE_PROXY) {
       attempts.push({ level: 'l3', url: COMMON_IMAGE_PROXY + rawZip, fn: fetchZipAsBlob, progress: true })
@@ -228,8 +244,8 @@ export async function loadUgoira(id, onProgress) {
       window.umami?.track('ugoira_zip_fail', { err: firstErr ? formatDlError(firstErr) : 'unknown' })
       throw new Error(`${i18n.t('D8R2062pjASZe9mgvpeLr')} (${firstErr?.message || 'unknown'})`)
     }
-    // 下载成功后尽力落盘缓存，下次同尺寸直接读文件
-    if (platform.isCapacitor) writeZipCache(cachePath, blob)
+    // 下载成功后尽力落盘缓存，下次同尺寸直接读文件（l2 已落盘，无需重复写）
+    if (platform.isCapacitor && level !== 'l2') writeZipCache(cachePath, blob)
   }
 
   window.umami?.track('ugoira_zip_level', { level })

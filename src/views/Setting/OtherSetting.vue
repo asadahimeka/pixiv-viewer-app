@@ -632,13 +632,13 @@ import PixivAuth from '@/api/client/pixiv-auth'
 import store from '@/store'
 import platform from '@/platform'
 import localDb from '@/utils/storage/localDb'
-import { APP_API_PROXYS, DEF_API_PROXY, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, PXIMG_PROXYS } from '@/consts'
+import { APP_API_PROXYS, DEF_API_PROXY, DEF_HIBIAPI_MAIN, DEF_PXIMG_MAIN, PXIMG_PROXYS, PXIMG_TEST_IMAGE } from '@/consts'
 import { i18n } from '@/i18n'
 import { applyVisualTheme } from '@/utils/theme'
 import { changeVisualTheme } from '@/store/actions/change-theme'
 import { localApi } from '@/api'
 import { getSampleFileName } from '@/store/actions/filename'
-import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, readTextFile, checkDlEnvCompat } from '@/utils'
+import { checkImgAvailable, checkUrlAvailable, copyText, downloadFile, isURL, measureImgLatency, readTextFile, checkDlEnvCompat } from '@/utils'
 import { mintVerify } from '@/utils/filter'
 import { LocalStorage, SessionStorage } from '@/utils/storage'
 import { getCache, setCache } from '@/utils/storage/siteCache'
@@ -924,6 +924,10 @@ export default {
       }
       this.reloadPage()
     },
+    'pximgBed_.show'(val) {
+      // 打开图床选择面板时后台并行测速，把延迟标进每项的副标题
+      if (val) this.measureMirrorLatency()
+    },
   },
   mounted() {
     checkDlEnvCompat().then(env => {
@@ -1153,9 +1157,7 @@ export default {
     },
     async changePximgBed() {
       const url = `https://${this.pximgBed.value}`
-      const res = await this.checkURL(url, () => {
-        return checkImgAvailable(`${url}/user-profile/img/2022/02/03/15/54/20/22159592_fce9f5c7a908c9b601dc7e9da7a412a3_50.jpg?_t=${Date.now()}`)
-      })
+      const res = await this.checkURL(url, () => this.probeMirror(url))
       if (!res) return
       SessionStorage.clear()
       await localDb.clear()
@@ -1163,14 +1165,24 @@ export default {
     },
     async changePximgBed_({ _value }) {
       const url = `https://${_value}`
-      const res = await this.checkURL(url, () => {
-        return checkImgAvailable(`${url}/user-profile/img/2022/02/03/15/54/20/22159592_fce9f5c7a908c9b601dc7e9da7a412a3_50.jpg?_t=${Date.now()}`)
-      })
+      const res = await this.checkURL(url, () => this.probeMirror(url))
       if (!res) return
       this.pximgBed_.value = _value
       SessionStorage.clear()
       await localDb.clear()
       this.saveSetting('PXIMG_PROXY', _value)
+    },
+    probeMirror(url) {
+      return checkImgAvailable(`${url}${PXIMG_TEST_IMAGE}?_t=${Date.now()}`)
+    },
+    async measureMirrorLatency() {
+      const key = 'measure_mirror_latency_done'
+      if (sessionStorage.getItem(key)) return
+      await Promise.all(this.pximgBed_.actions.map(async action => {
+        const ms = await measureImgLatency(`https://${action._value}`)
+        this.$set(action, 'subname', ms == null ? '--' : `${ms}ms`)
+      }))
+      sessionStorage.setItem(key, '1')
     },
     async changeHibiapi() {
       const url = this.hibiapi.value

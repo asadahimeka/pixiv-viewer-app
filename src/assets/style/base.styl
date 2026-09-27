@@ -346,6 +346,8 @@ html.dark
 .dark
   background #16161a
   color #fff
+  .dl-pop,
+  .dl-page-select,
   .van-dialog,
   .van-button,
   .comments-popup,
@@ -1055,6 +1057,13 @@ html:has(.novel_text) #immersive-translate-popup
     width: 0.17333rem
 #app .users .info-container .info .share_btn
   display none
+// 平板（768–1119px）保持底部栏形态：居中、限宽、圆角悬浮，避免手机栏拉满全宽的观感。
+// 侧边栏布局（≥1120px）与底部栏的分界不变；颜色/背景仍由各主题提供
+@media screen and (min-width: 768px) and (max-width: 1119px)
+  #app .nav-container .nav-bar
+    max-width 480PX
+    margin 0 auto 12PX
+    border-radius 24PX !important
 @media screen and (min-width: 1120px)
   #app
     .nav-bar .nav_to_top,

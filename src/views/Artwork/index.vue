@@ -1249,8 +1249,10 @@ img[src*="https://api.moedog.org/qr/?url="]
     display flex
     justify-content center
     align-items center
+    box-sizing border-box
     width 72%
-    min-width 72%
+    // 溢出由图片区自行吸收（滚动/裁剪），不允许把 Meta 挤出视口
+    min-width 0
     margin-top 20px
     padding 0 20px
 
@@ -1276,7 +1278,8 @@ img[src*="https://api.moedog.org/qr/?url="]
         box-shadow: 0 0 transparent, 0 0 transparent, 0 1PX 3PX 0 rgba(0,0,0,.1), 0 1PX 2PX -1PX rgba(0,0,0,.1)
 
   .ia-right
-    max-width 28%
+    width 28%
+    flex-shrink 0
     padding-right 40px
     box-sizing border-box
     overflow hidden
@@ -1313,6 +1316,7 @@ img[src*="https://api.moedog.org/qr/?url="]
 
   .ia-right
     position relative !important
+    width 100% !important
     max-width 100% !important
     padding-right 0 !important
     .artwork-meta
@@ -1367,6 +1371,13 @@ img[src*="https://api.moedog.org/qr/?url="]
       .image
         max-width 95vw !important
         max-height 79vh !important
+
+  // Swiper 模式：图片区自持裁剪，slide 不携带最小宽度，
+  // 否则 slide 数量会按 300px(4rem) 累加把 .ia-right 挤成 0 宽
+  ::v-deep .image-view.horizon-swiper
+    overflow hidden
+    .swiper-slide
+      min-width 0 !important
 
 .artwork
   ::v-deep .top-bar-wrap

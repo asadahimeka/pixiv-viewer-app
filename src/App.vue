@@ -225,6 +225,9 @@ html,body
       width 1.2rem
       height 100% !important
       height 100vh !important
+      // 防塌陷：主题层的 height 覆盖或异常视口下，侧边栏高度不足会把
+      // 绝对定位的 设置/回顶/返回 与纵向 items 全部叠到左上角
+      min-height 100vh
       opacity 1
       transform: translate(0, 0) !important;
     .nav-bar

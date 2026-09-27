@@ -135,7 +135,7 @@ export function tryURL(url) {
   }
 }
 
-export async function checkImgAvailable(src) {
+export async function checkImgAvailable(src, timeout = 10000) {
   return Promise.race([
     new Promise((resolve, reject) => {
       let img = document.createElement('img')
@@ -151,7 +151,25 @@ export async function checkImgAvailable(src) {
       }
     }),
     new Promise((_resolve, reject) => {
-      setTimeout(() => reject(new Error('请求超时')), 5000)
+      setTimeout(() => reject(new Error('请求超时')), timeout)
+    }),
+  ])
+}
+
+// 测量加载耗时（毫秒）；失败/超时返回 null
+export async function measureImgLatency(src, timeout = 10000) {
+  return Promise.race([
+    (async () => {
+      const start = performance.now()
+      try {
+        await window.__httpRequest__(src, '{"method":"HEAD"}')
+        return Math.round(performance.now() - start)
+      } catch (err) {
+        return null
+      }
+    })(),
+    new Promise(resolve => {
+      setTimeout(() => resolve(null), timeout)
     }),
   ])
 }
