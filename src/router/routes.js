@@ -5,8 +5,8 @@ import Home from '@/views/Home/index.vue'
 import HomeManga from '@/views/Home/HomeManga.vue'
 import HomeNovel from '@/views/Home/HomeNovel.vue'
 import HomeAll from '@/views/Home/HomeAll.vue'
-import Lives from '@/views/Lives/index.vue'
-import LiveDetail from '@/views/Lives/LiveDetail.vue'
+// import Lives from '@/views/Lives/index.vue'
+// import LiveDetail from '@/views/Lives/LiveDetail.vue'
 import Discovery from '@/views/Discovery/Discovery.vue'
 import DiscoveryPollution from '@/views/Discovery/DiscoveryPollution.vue'
 import PopularIllust from '@/views/Discovery/PopularIllust.vue'
@@ -431,18 +431,18 @@ export const routes = [
             component: Login,
             meta: { __depth: 2 },
           },
-          {
-            path: '/lives',
-            name: 'Lives',
-            component: Lives,
-            meta: { __depth: 2 },
-          },
-          {
-            path: '/live/:id',
-            name: 'LiveDetail',
-            component: LiveDetail,
-            meta: { __depth: 3 },
-          },
+          // {
+          //   path: '/lives',
+          //   name: 'Lives',
+          //   component: Lives,
+          //   meta: { __depth: 2 },
+          // },
+          // {
+          //   path: '/live/:id',
+          //   name: 'LiveDetail',
+          //   component: LiveDetail,
+          //   meta: { __depth: 3 },
+          // },
           {
             path: '/my-illust-bookmarks',
             name: 'IllustBookmarksAlt',

@@ -56,6 +56,7 @@
 </template>
 
 <script>
+// Lives 模块已废弃
 import api, { imgProxy } from '@/api'
 import _ from '@/lib/lodash'
 import { COMMON_PROXY } from '@/consts'

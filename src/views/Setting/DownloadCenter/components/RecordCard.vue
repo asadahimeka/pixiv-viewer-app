@@ -8,7 +8,8 @@
     <div class="record-card__body" @click="onPrimaryClick">
       <div class="record-card__title">{{ baseName }}</div>
       <div class="record-card__meta">
-        <van-tag v-if="destLabel" plain size="medium" :type="destTagType" class="record-card__dest">{{ destLabel }}</van-tag>
+        <van-tag v-if="fileExt" plain class="record-card__dest">{{ fileExt }}</van-tag>
+        <van-tag v-if="destLabel" plain :type="destTagType" class="record-card__dest">{{ destLabel }}</van-tag>
         <span v-if="sizeText" class="num">{{ sizeText }}</span>
         <span class="num">{{ timeText }}</span>
         <span v-if="record.downloadCount > 1" class="num">×{{ record.downloadCount }}</span>
@@ -24,12 +25,6 @@
       </div>
     </div>
     <div class="record-card__actions">
-      <van-button v-if="canOpen" size="small" type="info" plain round @click="$emit('open')">
-        {{ $t('dlc.open') }}
-      </van-button>
-      <van-button v-if="canDetail" size="small" plain round @click="$emit('detail')">
-        {{ $t('dlc.detail') }}
-      </van-button>
       <van-button v-if="canRetry" size="small" type="danger" plain round @click="$emit('retry')">
         {{ $t('dlc.retry') }}
       </van-button>
@@ -100,6 +95,9 @@ export default {
   computed: {
     baseName() {
       return String(this.record.fileName || '').split('/').pop()
+    },
+    fileExt() {
+      return this.baseName?.split('.').pop().toUpperCase()
     },
     // dest.path 是否为可直接访问的文件路径(默认下载落盘是不带 scheme 的绝对路径)
     fileLikeDest() {
@@ -173,6 +171,12 @@ export default {
     // ⋯ 菜单:定位(桌面)、删除文件(仅文件型路径且仍在架)、删除记录
     menuActions() {
       const actions = []
+      if (this.canOpen) {
+        actions.push({ text: this.$t('dlc.open'), key: 'open' })
+      }
+      if (this.canDetail) {
+        actions.push({ text: this.$t('dlc.detail'), key: 'detail' })
+      }
       if (platform.isTauri) {
         actions.push({ text: this.$t('dlc.locate'), key: 'locate' })
       }
@@ -242,7 +246,12 @@ export default {
     },
     onMenuSelect(action) {
       this.showMenu = false
-      if (action?.key) this.$emit('menu', { key: action.key })
+      if (!action?.key) return
+      if (action.key == 'open' || action.key == 'detail') {
+        this.$emit(action.key)
+        return
+      }
+      this.$emit('menu', { key: action.key })
     },
   },
 }
@@ -315,6 +324,7 @@ export default {
     margin-top 0.06rem
     font-size 0.24rem
     color #969799
+    line-height 1.4
     white-space nowrap
     overflow hidden
 
@@ -386,4 +396,12 @@ export default {
     outline-color rgba(255, 255, 255, 0.1)
 
   border-bottom-color rgba(255, 255, 255, 0.08)
+</style>
+<style lang="stylus">
+.custom_theme.t_md-visual,
+.custom_theme.t_ios26-visual
+  #app .DownloadCenter .record-card__meta .van-tag
+    height auto !important
+    line-height inherit !important
+    padding 0 6PX !important
 </style>
