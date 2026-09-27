@@ -884,6 +884,10 @@
     "zip_reso_title": "Clarté du chargement d'Ugoira"
   },
   "dlc.title": "Centre de téléchargement",
+  "dlc.download_all": "Tout télécharger",
+  "dlc.select_pages": "Sélectionner les pages à télécharger",
+  "dlc.pages_title": "Sélectionner les pages",
+  "dlc.page_range_ph": "Plage de pages, ex. 1-5,8",
   "dlc.overview_files": "{n} fichiers · {size}",
   "dlc.section_active": "Téléchargement en cours",
   "dlc.cancel_all": "Tout annuler",

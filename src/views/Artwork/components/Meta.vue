@@ -135,16 +135,26 @@
         >
           {{ bookmarkId ? $t('user.faved') : $t('user.fav') }}
         </van-button>
-        <van-button
-          type="info"
-          icon="down"
-          size="small"
-          plain
-          color="#5DAC81"
-          @click="downloadArtwork()"
-        >
-          {{ $t('common.download') }}
-        </van-button>
+        <van-popover v-model="dlPopShow" placement="top">
+          <template #reference>
+            <van-button
+              type="info"
+              icon="down"
+              size="small"
+              plain
+              color="#5DAC81"
+              style="width: 100%;"
+              @click="downloadArtwork()"
+            >
+              {{ $t('common.download') }}
+            </van-button>
+          </template>
+          <div class="dl-pop">
+            <van-icon name="cross" class="dl-pop-close" @click="dlPopShow = false" />
+            <div class="dl-pop-item" @click="startDownload(null)">{{ $t('dlc.download_all') }}</div>
+            <div class="dl-pop-item" @click="openPageSelect">{{ $t('dlc.select_pages') }}</div>
+          </div>
+        </van-popover>
         <van-button type="info" icon="comment-o" size="small" plain color="#005CAF" @click="showComments = true">
           <span>{{ $t('user.view_comments') }}</span>
         </van-button>
@@ -159,25 +169,58 @@
           <span>翻译设置</span>
         </van-button>
       </div>
+      <van-popup v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
+        <template v-if="showComments">
+          <p class="comments-title">{{ $t('hGqGftQ7v772prEac1hbJ') }}</p>
+          <CommentsArea :id="artwork.id" :count="0" :limit="10" />
+        </template>
+      </van-popup>
+      <van-popup
+        v-if="showPicTranslateBtn"
+        v-model="showTranslateSettings"
+        position="bottom"
+        class="translate-settings-popup"
+        round
+        closeable
+        close-icon-position="top-right"
+        get-container="body"
+      >
+        <MangaTranslateSettings />
+      </van-popup>
+      <van-popup v-model="dlPageSelectShow" round class="dl-page-select-popup" get-container="body" closeable>
+        <div class="dl-page-select">
+          <div class="dl-page-title">{{ $t('dlc.pages_title') }}</div>
+          <van-checkbox-group v-model="dlSelectedPages" class="dl-page-grid">
+            <van-checkbox
+              v-for="(img, index) in artwork.images"
+              :key="index"
+              :name="index"
+              class="dl-page-item"
+            >
+              <div class="dl-page-thumb-wrap">
+                <Pximg :src="img.s" nobg class="dl-page-thumb" :alt="`p${index + 1}`" />
+                <span class="dl-page-num">{{ index + 1 }}</span>
+              </div>
+            </van-checkbox>
+          </van-checkbox-group>
+          <div v-if="artwork.images.length > 20" class="dl-page-range">
+            <van-field v-model="dlPageRange" :placeholder="$t('dlc.page_range_ph')" class="dl-page-range-input" />
+            <van-button size="small" plain @click="applyPageRange">{{ $t('common.confirm') }}</van-button>
+          </div>
+          <div class="dl-page-btns">
+            <van-button size="small" plain @click="dlPageSelectShow = false">{{ $t('common.cancel') }}</van-button>
+            <van-button
+              type="info"
+              size="small"
+              :disabled="!dlSelectedPages.length"
+              @click="downloadSelectedPages"
+            >
+              {{ $t('common.confirm') }} ({{ dlSelectedPages.length }})
+            </van-button>
+          </div>
+        </div>
+      </van-popup>
     </template>
-    <van-popup v-if="!isNovel" v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
-      <template v-if="showComments">
-        <p class="comments-title">{{ $t('hGqGftQ7v772prEac1hbJ') }}</p>
-        <CommentsArea :id="artwork.id" :count="0" :limit="10" />
-      </template>
-    </van-popup>
-    <van-popup
-      v-if="!isNovel && showPicTranslateBtn"
-      v-model="showTranslateSettings"
-      position="bottom"
-      class="translate-settings-popup"
-      round
-      closeable
-      close-icon-position="top-right"
-      get-container="body"
-    >
-      <MangaTranslateSettings />
-    </van-popup>
   </div>
 </template>
 
@@ -238,6 +281,10 @@ export default {
       favLoading: false,
       showComments: false,
       showTranslateSettings: false,
+      dlPopShow: false,
+      dlPageSelectShow: false,
+      dlSelectedPages: [],
+      dlPageRange: '',
     }
   },
   computed: {
@@ -501,6 +548,19 @@ export default {
         this.$emit('ugoira-download')
         return
       }
+      // 多页作品弹出下载菜单（Popover，仅关闭图标可关），单页直接下载
+      if (this.artwork.images.length > 1) {
+        this.dlPopShow = true
+        return
+      }
+      this.startDownload(null)
+    },
+    openPageSelect() {
+      this.dlSelectedPages = []
+      this.dlPageRange = ''
+      this.dlPageSelectShow = true
+    },
+    async startDownload(indices) {
       if (localApi.APP_CONFIG.useLocalAppApi && !this.bookmarkId && isAutoBookmarkAfterDownload) {
         this.favLoading = true
         localApi.illustBookmarkAdd(
@@ -520,8 +580,11 @@ export default {
       }
       const artwork = _.cloneDeep(this.artwork)
       const len = artwork.images.length
-      window.umami?.track('download_artwork_btn', { len })
-      for (let index = 0; index < len; index++) {
+      const pages = indices == null
+        ? artwork.images.map((e, i) => i)
+        : [...new Set(indices)].filter(i => i >= 0 && i < len).sort((a, b) => a - b)
+      window.umami?.track('download_artwork_btn', { len, pages: pages.length })
+      for (const index of pages) {
         const item = artwork.images[index]
         const fileName = `${getArtworkFileName(artwork, index)}.${item.o.split('.').pop()}`
         await downloadFile(item.o, fileName, {
@@ -529,6 +592,25 @@ export default {
           subDir: store.state.appSetting.dlSubDirByAuthor ? artwork.author.name : undefined,
         })
       }
+    },
+    async downloadSelectedPages() {
+      if (!this.dlSelectedPages.length) return
+      this.dlPageSelectShow = false
+      await this.startDownload([...this.dlSelectedPages])
+    },
+    applyPageRange() {
+      // 支持 "1-5,8" 形式的页码范围（1 起始，含两端）
+      const picked = new Set(this.dlSelectedPages)
+      const len = this.artwork.images.length
+      this.dlPageRange.split(/[,，]/).forEach(seg => {
+        const m = seg.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/)
+        if (!m) return
+        let a = parseInt(m[1]) - 1
+        let b = m[2] ? parseInt(m[2]) - 1 : a
+        if (a > b) [a, b] = [b, a]
+        for (let i = a; i <= b; i++) if (i >= 0 && i < len) picked.add(i)
+      })
+      this.dlSelectedPages = [...picked].sort((x, y) => x - y)
     },
     async copyId(text) {
       copyText(
@@ -580,10 +662,13 @@ export default {
   margin-top 16px
   gap 0.15rem
   flex-wrap wrap
-  ::v-deep .van-button {
+  ::v-deep .van-popover__wrapper,
+  ::v-deep > .van-button {
     flex 1
     width max-content
     min-width max-content
+  }
+  ::v-deep .van-button {
     transition: filter 0.2s
     filter: none
 
@@ -848,6 +933,134 @@ export default {
     ::v-deep a {
       color: #36a8f5;
     }
+  }
+}
+
+.dl-pop {
+  position: relative;
+  padding: 10px 0;
+
+  .dl-pop-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    padding: 4px;
+    color: #999;
+    cursor: pointer;
+  }
+
+  .dl-pop-item {
+    padding: 10px 16px;
+    font-size: 14PX;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    &:active {
+      background: #f5f5f5;
+    }
+  }
+}
+
+.dl-page-select {
+  width 9rem
+  padding: 20px 16px;
+
+  .dl-page-title {
+    text-align: center;
+    font-size: 16PX;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .dl-page-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    .dl-page-item {
+      box-sizing: border-box;
+      width: calc((100% - 20px) / 3);
+      padding: 0;
+      position: relative;
+      border: 1PX solid #ddd;
+      border-radius: 8PX;
+      overflow: hidden;
+
+      // 勾选角标悬浮在缩略图左上角
+      ::v-deep .van-checkbox__icon {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 1;
+        height: auto;
+
+        .van-icon {
+          display: block;
+        }
+      }
+
+      ::v-deep .van-checkbox__label {
+        width: 100%;
+        margin: 0;
+        line-height: 0;
+      }
+
+      .dl-page-thumb-wrap {
+        position: relative;
+        width: 100%;
+      }
+
+      .dl-page-thumb {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+
+      .dl-page-num {
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        padding: 0 5px;
+        border-radius: 4PX;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 11PX;
+        line-height: 16PX;
+      }
+
+      &:has(.van-checkbox__icon--checked) {
+        border-color: var(--accent-color, #f2c358);
+        box-shadow: 0 0 0 1PX var(--accent-color, #f2c358);
+      }
+    }
+  }
+
+  .dl-page-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+
+    .dl-page-range-input {
+      flex: 1;
+      padding: 6px 10px;
+      background: #f5f5f5;
+      border-radius: 8PX;
+    }
+  }
+
+  .dl-page-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
   }
 }
 </style>

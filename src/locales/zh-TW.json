@@ -884,6 +884,10 @@
     "zip_reso_title": "動圖載入清晰度"
   },
   "dlc.title": "下載中心",
+  "dlc.download_all": "全部下載",
+  "dlc.select_pages": "選擇頁碼下載",
+  "dlc.pages_title": "選擇下載頁碼",
+  "dlc.page_range_ph": "頁碼範圍，如 1-5,8",
   "dlc.overview_files": "{n} 個檔案 · {size}",
   "dlc.section_active": "正在下載",
   "dlc.cancel_all": "全部取消",

@@ -884,6 +884,10 @@
     "zip_reso_title": "우고이라 로딩 선명도"
   },
   "dlc.title": "다운로드 센터",
+  "dlc.download_all": "전체 다운로드",
+  "dlc.select_pages": "페이지 선택 다운로드",
+  "dlc.pages_title": "페이지 선택",
+  "dlc.page_range_ph": "페이지 범위 (예: 1-5,8)",
   "dlc.overview_files": "{n}개 파일 · {size}",
   "dlc.section_active": "다운로드 중",
   "dlc.cancel_all": "모두 취소",

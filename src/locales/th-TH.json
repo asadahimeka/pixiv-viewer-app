@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira กำลังโหลดความชัดเจน"
   },
   "dlc.title": "ศูนย์ดาวน์โหลด",
+  "dlc.download_all": "ดาวน์โหลดทั้งหมด",
+  "dlc.select_pages": "เลือกหน้าที่จะดาวน์โหลด",
+  "dlc.pages_title": "เลือกหน้า",
+  "dlc.page_range_ph": "ช่วงหน้า เช่น 1-5,8",
   "dlc.overview_files": "{n} ไฟล์ · {size}",
   "dlc.section_active": "กำลังดาวน์โหลด",
   "dlc.cancel_all": "ยกเลิกทั้งหมด",

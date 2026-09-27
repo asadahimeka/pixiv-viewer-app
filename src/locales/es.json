@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira cargando claridad"
   },
   "dlc.title": "Centro de descargas",
+  "dlc.download_all": "Descargar todo",
+  "dlc.select_pages": "Seleccionar páginas para descargar",
+  "dlc.pages_title": "Seleccionar páginas",
+  "dlc.page_range_ph": "Rango de páginas, p. ej. 1-5,8",
   "dlc.overview_files": "{n} archivos · {size}",
   "dlc.section_active": "Descargando",
   "dlc.cancel_all": "Cancelar todo",

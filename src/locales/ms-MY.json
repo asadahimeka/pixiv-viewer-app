@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira memuatkan kejelasan"
   },
   "dlc.title": "Pusat Muat Turun",
+  "dlc.download_all": "Muat turun semua",
+  "dlc.select_pages": "Pilih halaman untuk dimuat turun",
+  "dlc.pages_title": "Pilih halaman",
+  "dlc.page_range_ph": "Julat halaman, cth 1-5,8",
   "dlc.overview_files": "{n} fail · {size}",
   "dlc.section_active": "Sedang memuat turun",
   "dlc.cancel_all": "Batalkan semua",

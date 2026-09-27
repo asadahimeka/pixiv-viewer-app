@@ -884,6 +884,10 @@
     "zip_reso_title": "Угойра ясность загрузки"
   },
   "dlc.title": "Центр загрузок",
+  "dlc.download_all": "Скачать всё",
+  "dlc.select_pages": "Выбрать страницы для скачивания",
+  "dlc.pages_title": "Выбрать страницы",
+  "dlc.page_range_ph": "Диапазон страниц, напр. 1-5,8",
   "dlc.overview_files": "{n} файлов · {size}",
   "dlc.section_active": "Загрузка",
   "dlc.cancel_all": "Отменить все",

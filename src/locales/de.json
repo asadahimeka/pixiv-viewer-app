@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira lädt Klarheit"
   },
   "dlc.title": "Download-Center",
+  "dlc.download_all": "Alle herunterladen",
+  "dlc.select_pages": "Seiten zum Herunterladen wählen",
+  "dlc.pages_title": "Seiten auswählen",
+  "dlc.page_range_ph": "Seitenbereich, z. B. 1-5,8",
   "dlc.overview_files": "{n} Dateien · {size}",
   "dlc.section_active": "Wird geladen",
   "dlc.cancel_all": "Alle abbrechen",

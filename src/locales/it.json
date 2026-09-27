@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira carica chiarezza"
   },
   "dlc.title": "Centro di download",
+  "dlc.download_all": "Scarica tutto",
+  "dlc.select_pages": "Seleziona pagine da scaricare",
+  "dlc.pages_title": "Seleziona pagine",
+  "dlc.page_range_ph": "Intervallo di pagine, es. 1-5,8",
   "dlc.overview_files": "{n} file · {size}",
   "dlc.section_active": "Download in corso",
   "dlc.cancel_all": "Annulla tutto",

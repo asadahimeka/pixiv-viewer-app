@@ -884,6 +884,10 @@
     "zip_reso_title": "Ugoira φόρτωση σαφήνεια"
   },
   "dlc.title": "Κέντρο λήψεων",
+  "dlc.download_all": "Λήψη όλων",
+  "dlc.select_pages": "Επιλογή σελίδων για λήψη",
+  "dlc.pages_title": "Επιλογή σελίδων",
+  "dlc.page_range_ph": "Εύρος σελίδων, π.χ. 1-5,8",
   "dlc.overview_files": "{n} αρχεία · {size}",
   "dlc.section_active": "Λήψη σε εξέλιξη",
   "dlc.cancel_all": "Ακύρωση όλων",
