@@ -79,8 +79,13 @@ export async function fsDownloadFile(options, onProgress) {
 
 async function fsDirectDownload(url, fileName, isCache = false, onProgress, taskId) {
   const newUrl = new URL(url)
-  if (platform.isIOS) newUrl.protocol = 'http:'
-  newUrl.host = window.p_pximg_ip
+  if (platform.isIOS) {
+    newUrl.protocol = 'http:'
+    newUrl.host = 'i1.pximg.net'
+  } else {
+    newUrl.protocol = 'https:'
+    newUrl.host = window.p_pximg_ip
+  }
   const downloadUrl = newUrl.href
   const res = await fsDownloadFile({
     url: downloadUrl,
@@ -488,7 +493,7 @@ export function getPximgUri(url) {
 
 export async function getPximgUriIOS(url) {
   url.protocol = 'http:'
-  url.host = window.p_pximg_ip
+  url.host = 'i1.pximg.net'
   const path = url.pathname.slice(1)
   const directory = Directory.Cache
   const stats = await Filesystem.stat({ path, directory }).catch(() => ({ uri: null }))

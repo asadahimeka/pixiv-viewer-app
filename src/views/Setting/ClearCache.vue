@@ -33,8 +33,8 @@
           </van-button>
         </template>
       </van-cell>
-      <van-cell v-if="platform.isCapacitor" center :title="$t('ltKHIZm9mBZ8Dit_u8aW4')">
-        <template v-if="platform.isAndroid" #label>
+      <van-cell v-if="showThumbCache" center :title="$t('ltKHIZm9mBZ8Dit_u8aW4')">
+        <template v-if="platform.isAndroid || platform.isTauri" #label>
           <span>{{ $t('cache.records', [size.imgCache[1]]) }} ~ {{ size.imgCache[0] | bytes }}</span>
         </template>
         <template #right-icon>
@@ -87,6 +87,7 @@ import { LocalStorage, SessionStorage } from '@/utils/storage'
 import localDb from '@/utils/storage/localDb'
 import { i18n } from '@/i18n'
 import platform from '@/platform'
+import store from '@/store'
 
 export default {
   name: 'SettingClearCache',
@@ -112,6 +113,12 @@ export default {
   },
   computed: {
     ...mapGetters(['isLoggedIn']),
+    appSetting() {
+      return store.state.appSetting
+    },
+    showThumbCache() {
+      return platform.isCapacitor || (platform.isTauri && this.appSetting.isDirectPximg)
+    },
   },
   activated() {
     this.calcCacheSize()
@@ -127,6 +134,10 @@ export default {
       if (platform.isAndroid) {
         const { getCacheSize } = await import('@/platform/capacitor/utils')
         this.size.imgCache = await getCacheSize()
+      }
+      if (platform.isTauri && this.appSetting.isDirectPximg) {
+        const { pximgThumbCacheStats } = await import('@/platform/tauri/pximgCache')
+        this.size.imgCache = await pximgThumbCacheStats()
       }
     },
     async showConfirm(message = this.$t('cache.confirm_default')) {
@@ -167,9 +178,15 @@ export default {
       if (type === 'local') LocalStorage.clear()
       if (type === 'session') SessionStorage.clear()
       if (type === 'imgCache') {
-        const { clearImageCache } = await import('@/platform/capacitor/utils')
-        await clearImageCache()
-        // 下载中心缩略图(JS 解析缓存 + capacitor cache 目录下的产物)
+        if (platform.isCapacitor) {
+          const { clearImageCache } = await import('@/platform/capacitor/utils')
+          await clearImageCache()
+        }
+        if (platform.isTauri && this.appSetting.isDirectPximg) {
+          const { clearPximgThumbCache } = await import('@/platform/tauri/pximgCache')
+          await clearPximgThumbCache()
+        }
+        // 下载中心缩略图(JS 解析缓存 + 各平台产物:capacitor cache 目录 / tauri 会话内存)
         const { clearThumbCaches } = await import('@/store/downloads')
         await clearThumbCaches()
       }

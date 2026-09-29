@@ -1,4 +1,3 @@
-import axios from 'axios'
 import * as fs from '@tauri-apps/plugin-fs'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-shell'
@@ -7,16 +6,9 @@ import { sep as sepFn, pictureDir } from '@tauri-apps/api/path'
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
 import { i18n } from '@/i18n'
 import { LocalStorage } from '@/utils/storage'
-import {
-  safeDecodeURIComponent,
-  markDlError,
-  isRetryableDlError,
-  retryWhere,
-} from '@/utils'
-import axiosTauriAdapter from './axios-tauri-adapter'
+import { safeDecodeURIComponent, markDlError, isRetryableDlError, retryWhere } from '@/utils'
 
 const sep = sepFn()
-const client = axios.create({ adapter: axiosTauriAdapter })
 
 export function copyText(text, cb, errCb) {
   writeText(`${text}`).then(cb, errCb)
@@ -150,11 +142,7 @@ export async function downloadBlob(blob, fileName, subDir = '', opts = {}) {
 // }
 
 export async function getPximgUri(url) {
-  url.protocol = 'http:'
-  url.host = window.p_pximg_ip
-  const { data } = await client(url.href, {
-    responseType: 'blob',
-    headers: { Host: 'i.pximg.net', Referer: 'https://www.pixiv.net/' },
-  })
-  return URL.createObjectURL(data)
+  const { getPximgBlob } = await import('./pximgCache')
+  const blob = await getPximgBlob(url)
+  return URL.createObjectURL(blob)
 }

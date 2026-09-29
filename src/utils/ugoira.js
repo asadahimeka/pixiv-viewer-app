@@ -80,8 +80,13 @@ async function directDownloadZip(rawZip, path, onProgress) {
   ])
   const url = new URL(rawZip)
   const isIOS = platform.isIOS
-  if (isIOS) url.protocol = 'http:'
-  url.host = window.p_pximg_ip
+  if (isIOS) {
+    url.protocol = 'http:'
+    url.host = 'i1.pximg.net'
+  } else {
+    url.protocol = 'https:'
+    url.host = window.p_pximg_ip
+  }
   await fsDownloadFile({
     url: url.href,
     path,
@@ -95,13 +100,13 @@ async function directDownloadZip(rawZip, path, onProgress) {
 }
 
 /** Capacitor：原生 Filesystem 下载直落盘（无 CORS 限制、大文件不经 base64 桥），读回 blob */
-async function nativeDownloadZip(url, path) {
+async function nativeDownloadZip(url, path, onProgress) {
   const [{ directory }, { fsDownloadFile }] = await Promise.all([
     getZipCacheDir(),
     // 动态导入避免把 Capacitor 依赖带进 Tauri 构建（此函数仅 Capacitor 可达）
     import('@/platform/capacitor/utils'),
   ])
-  await fsDownloadFile({ url, path, directory, recursive: true, headers: { Referer: 'https://www.pixiv.net' } })
+  await fsDownloadFile({ url, path, directory, recursive: true, headers: { Referer: 'https://www.pixiv.net' } }, onProgress)
   const blob = await readZipCache(path)
   if (!blob) throw new Error('native download readback failed')
   return blob
@@ -222,7 +227,7 @@ export async function loadUgoira(id, onProgress) {
       { level: 'l1', url: imgZip, fn: fetchZipAsBlob, progress: true },
       // CapacitorHttp 的 blob 响应走 base64 过桥，大 zip 不可靠，改用原生下载直落盘
       platform.isCapacitor
-        ? { level: 'l2', url: imgZip, fn: u => nativeDownloadZip(u, cachePath), progress: false }
+        ? { level: 'l2', url: imgZip, fn: (u, p) => nativeDownloadZip(u, cachePath, p), progress: true }
         : { level: 'l2', url: imgZip, fn: requestZipAsBlob, progress: false },
     ]
     if (COMMON_IMAGE_PROXY) {
