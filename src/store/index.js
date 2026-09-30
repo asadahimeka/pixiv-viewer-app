@@ -34,8 +34,8 @@ export default new Vuex.Store({
     isNovelViewShrink: true,
     isMobile,
     isSafari: isSafari(),
-    /** @type {any[]|null} */
-    appNotice: null,
+    /** 同时生效的多条横幅通知 */
+    appNotice: [],
     /** @type {string[][]} */
     scPromo: [],
     translateConfig: {

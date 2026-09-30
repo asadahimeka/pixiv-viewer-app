@@ -81,6 +81,18 @@ export function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// 比较形如 v1.2.3 的版本号，a >= b 时返回 true
+export function versionGte(a, b) {
+  const pa = a.replace(/^v/, '').split('.').map(Number)
+  const pb = b.replace(/^v/, '').split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const x = pa[i] || 0
+    const y = pb[i] || 0
+    if (x !== y) return x > y
+  }
+  return true
+}
+
 export function setCookie(name, value, days) {
   let expires = ''
   if (days) {

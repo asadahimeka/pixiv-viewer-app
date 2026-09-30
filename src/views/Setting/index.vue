@@ -8,13 +8,14 @@
       </div>
     </h1>
     <van-notice-bar
-      v-if="notice"
+      v-for="n in notices"
+      :key="n.id"
       class="custom-notice"
-      :color="notice.color || '#B5495B'"
-      :background="notice.bg || '#FEDFE1'"
-      :left-icon="notice.icon"
+      :color="n.color || '#B5495B'"
+      :background="n.bg || '#FEDFE1'"
+      :left-icon="n.icon"
     >
-      {{ notice.text }}
+      {{ n.text }}
     </van-notice-bar>
     <div class="setting-group">
       <van-cell v-if="isLoggedIn" size="large" center is-link :to="`/u/${user.id}`">
@@ -66,7 +67,7 @@ export default {
   computed: {
     ...mapState(['user']),
     ...mapGetters(['isLoggedIn']),
-    notice() {
+    notices() {
       return store.state.appNotice
     },
   },

@@ -162,6 +162,7 @@
 <script>
 import { Dialog } from '@/lib/vant-apis'
 import { CURRENT_APP_VERSION } from '@/consts'
+import { versionGte } from '@/utils'
 import platform from '@/platform'
 
 export default {
@@ -198,7 +199,8 @@ export default {
       const resp = await fetch('https://pxve-notice.nanoka.top/version.json')
       const json = await resp.json()
       const latest = json[platform.current]
-      if (latest && latest != CURRENT_APP_VERSION) {
+      // 仅当最新版严格大于当前版本时提示更新（语义化比较，避免 v1.10.0 < v1.9.0 之类的误判）
+      if (latest && latest != CURRENT_APP_VERSION && versionGte(latest, CURRENT_APP_VERSION)) {
         const res = await Dialog.confirm({ message: this.$t('JKCgrgXZfg4-HDftheb96') }).catch(() => {})
         if (res != 'confirm') return
         this.openGithubRelease()
