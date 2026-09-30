@@ -136,10 +136,17 @@ export default {
           this.recomList = res.data.recommend
         }
         this.loading = false
+        if (!res.data.articles?.length) {
+          this.finished = true
+          return
+        }
         this.curPage++
       } else {
-        this.finished = true
+        this.$toast({
+          message: res.msg,
+        })
         this.loading = false
+        this.error = true
       }
     }, 1500),
     init() {

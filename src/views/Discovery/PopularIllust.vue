@@ -102,7 +102,7 @@ export default {
       this.loading = true
       const res = await api.getPopularIllusts(this.curPage, this.restrict, this.illustType)
       if (res.status === 0) {
-        if (res.data.length) {
+        if (res.rawLen) {
           this.artList = _.uniqBy([
             ...this.artList,
             ...res.data,

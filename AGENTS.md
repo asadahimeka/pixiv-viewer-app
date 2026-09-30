@@ -235,7 +235,7 @@ If it's a UI library, add tree-shaking config to `babel.config.js`.
 - **Consoles are allowed** — ESLint `no-console: 'off'`. The production build only drops them via Terser (`drop_console: true`).
 - **No tests** — no Jest/Vitest. Verification is manual or lint-based.
 - **Browserslist** varies per build: `capacitor`, `tauri`, `development` envs.
-- **env vars** (CI): `VUE_APP_DEF_HIBIAPI_MAIN`, `VUE_APP_PXIMG_PROXYS`, `VUE_APP_DEF_PXIMG_MAIN`, `VUE_APP_HIBIAPI_ALTS`, `VUE_APP_DEF_APP_API_PROXY`, `VUE_APP_COMMON_PROXY`, `VUE_APP_SILICON_CLOUD_API_KEY` and more.
+- **env vars** (CI): `VUE_APP_DEF_HIBIAPI_MAIN`, `VUE_APP_PXIMG_PROXYS`, `VUE_APP_DEF_PXIMG_MAIN`, `VUE_APP_HIBIAPI_ALTS`, `VUE_APP_DEF_APP_API_PROXY`, `VUE_APP_COMMON_PROXY` and more.
 - **Umami analytics** tracked via `window.umami?.track(...)`. Can be disabled by user setting.
 - **Fancybox** for image lightbox — loaded on-demand from static files. Not in npm dependencies.
 - **gif.js**, **ts-whammy**, **modern-mp4** for ugoira animation processing.
@@ -244,3 +244,47 @@ If it's a UI library, add tree-shaking config to `babel.config.js`.
 - **Android app** builds with `./gradlew assembleDebug` in the `android/` directory.
 - **iOS app** builds unsigned via xcodebuild with `CODE_SIGNING_ALLOWED=NO`.
 - **Tauri v2** uses `src-tauri/` with `<identifier>` plugin pattern and schema v2 config.
+
+## Playwright QA Test Notes
+
+> **总原则**：**默认不进行 Playwright 浏览器模拟测试**。浏览器 UI 的最终验收由用户**手动**进行——agent 跑浏览器模拟既耗时（每场景 ~3 分钟 + dev server 90s+ 启动）又低效（用户反正会自己实测）。agent 允许的验证方式：
+> - **脚本级测试**（优先）：bash/curl、node 脚本、node:test 单元测试——验证逻辑正确性足够
+> - **不跑浏览器模拟**，除非用户**显式**要求"帮我用浏览器测一下 X"（如跨域/CORS、真实点击流等必须真实浏览器行为的场景）
+> - 需要验证用户可见效果时，产出**清晰的改动说明 + 预期行为清单**，由用户手动确认，而非 agent 截图代劳
+> - 以下环境事实与技巧保留备用（万一用户显式要求浏览器测试时仍需要）
+
+> Historical lesson: real manual QA sessions have exceeded the 30-min sync `task()` poll limit. Lessons learned below.
+
+### Environment facts (no login needed for most features)
+- **No login required** to browse/test most features. Login state can be simulated via localStorage (`PXV_*` prefix).
+- **Bypassing login**: `Nav.vue` computes `isLogin: localApi.APP_CONFIG.useLocalAppApi || existsSessionId()`（src/components/Nav.vue）. `existsSessionId()` = presence of `localStorage.PXV_NOW_COOKIE`（src/api/user.js:73，**任意真值即可，本项目无 token 格式校验**；该值同时作为 PixivNow web-session API 的 `x-auth` 请求头）。
+- **AI 翻译 Key**：真实翻译测试需先有可用 Key——设置页注入或 `localStorage.PXV_TRANSLATE_CONFIG`（store 持久化）；本地 dev 不假设有内置 Key。
+- **dev server reuse**: before QA, `curl localhost:8080` — if listening, reuse it（`npm run dev:web` 编译 45-90s+，重启浪费 ~10 分钟）。需新起时：`nohup npm run dev:web > /tmp/opencode/dev-web.log 2>&1 &` 并记下 pid。
+- **hibiapi.cocomi.eu.org rejects automation**: it returns "Not Accepted" (surfacing as HTTP 400) for requests with `HeadlessChrome` in the User-Agent or without a proper referer. In QA scripts, headless mode is fine but you MUST set a normal UA (no `HeadlessChrome` substring) and a `localhost` referer:
+  ```js
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    extraHTTPHeaders: { Referer: 'http://localhost:8080/' },
+  })
+  ```
+  Browser (real user) requests are unaffected — the app cannot and does not set UA/Referer for hibiapi (forbidden headers).
+- **大面积 4xx 先怀疑自动化指纹，再归因"环境限制/API 故障"**（2026-09 实测教训：曾把此 400 误定性为环境限制并写进交付结论，后被翻案）。30 秒定性手段：`curl` 直接打同一 API 看 response body（"Not Accepted" 字样 = 客户端被拒，非服务端故障）。
+
+### Execution rules
+- **QA/UI automation tasks MUST run in background** (`run_in_background=true` / background task dispatch) — sync `task()` has a hard 30-min poll limit; serial UI scenarios will hit it.
+- Bash checks (files/grep/license) take seconds; **each UI scenario takes ~3 min** — keep scenario count low, split as needed.
+- Page loads: use `waitUntil: 'domcontentloaded'`, NOT `'networkidle'` (lazy-loaded image pages never reach networkidle); after `goto`, `waitForTimeout(8000-10000)` for Vue mount + API round-trip.
+
+### QA script techniques
+- **Read Vue computed values via `__vue__`** (walk `$parent` to the component by `$options.name`) instead of expanding DOM — rendering 1000s of region nodes OOMs the page.
+- **van-dialog DOM lingers during close transition** — assert absence via `display:none`, not `querySelector === null`, else false positives.
+- Reuse browser context across runs (models cached); single attempt is enough.
+- **断言信号选数据不选文案**：`page.on('response')` 按 URL 正则记录分页请求与状态（如 `rank:1=200, rank:2=200…`）+ 列表卡片计数（`.image-card`）作为增长信号；"没有更多"类文案只做**负向断言**（错误态 ≠ 没有更多）。文案会随 locale 变，数据不会。
+- **console 噪音过滤**：滤掉应用固有的 `Refused to set unsafe header` 与 4xx resource 报错（`/unsafe header|Failed to load resource/`），剩下的才是回归信号（基线应为 0 JS 异常）。
+- **内置浏览器面板超时（45s 无响应）就直接降级 Playwright 脚本**，别耗在面板上——无头脚本本来就是浏览器测试的默认形态。
+
+### 本机工具链事实（2026-09 实测，Linux/WSL）
+- **`NODE_PATH` 对 ESM 无效**：`import { chromium } from 'playwright'` 在脚本目录解析不到 nvm 全局安装（ESM import 不走 NODE_PATH，仅 CJS `require` 认）。修法：脚本写 `.cjs`（`require` + async IIFE），用 `NODE_PATH=$(npm root -g) node x.cjs` 运行。
+- **管道退出码陷阱**：`node x.cjs | tail` 的退出码来自 `tail`（恒 0），`|| 回退命令` 会被静默吞掉。带兜底回退的命令不要接管道（或先 `set -o pipefail`）。
+- **Playwright 可用性分三层验证**：`npx playwright --version` 出版本号 ≠ 模块可 import ≠ 浏览器已装。三层分别看：CLI（npx）/ 模块解析（`npm root -g` + CJS 方式）/ 浏览器二进制（`ls ~/.cache/ms-playwright/`）。本机：playwright 1.62.1 装于 nvm 全局（`/home/yumine/.nvm/versions/node/v22.23.1/lib/node_modules`），chromium 缓存齐全。
+- **别用 sed/文本变换拼接或转换脚本代码**——产出损坏文件极难排查，直接用 write 工具写目标文件。

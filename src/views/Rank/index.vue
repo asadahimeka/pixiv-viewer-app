@@ -265,7 +265,7 @@ export default {
         res = await api.getRankList(type, this.curPage, this.date)
       }
       if (res.status === 0) {
-        if (res.data.length == 0) {
+        if (!res.rawLen) {
           this.finished = true
         } else {
           let artList = res.data

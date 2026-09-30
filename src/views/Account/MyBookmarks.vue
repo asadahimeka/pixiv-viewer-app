@@ -88,7 +88,7 @@ export default {
         ], 'id')
         this.loading = false
         this.curPage += 1
-        if (!res.data.length) this.finished = true
+        if (!res.rawLen) this.finished = true
       } else {
         this.$toast({
           message: res.msg,

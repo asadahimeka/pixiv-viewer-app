@@ -53,6 +53,7 @@ export default {
     return {
       curPage: 1,
       artList: [],
+      rawCount: 0,
       loading: false,
       finished: false,
     }
@@ -62,6 +63,7 @@ export default {
       this.loading = true
       this.artList = []
       this.curPage = 1
+      this.rawCount = 0
       this.finished = false
       this.getList()
     },
@@ -76,8 +78,9 @@ export default {
           ),
         ], 'id')
 
+        this.rawCount += res.length
         this.loading = false
-        if (!this.pagination || res._total === this.artList.length) {
+        if (!this.pagination || (res._total && res._total <= this.rawCount)) {
           this.finished = true
         } else {
           this.curPage++

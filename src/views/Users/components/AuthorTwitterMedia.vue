@@ -94,6 +94,12 @@ export default {
         if (!res.next_cursor) {
           this.finished = true
         }
+      } else if (res?.error) {
+        this.$toast({
+          message: this.$t('tips.net_err'),
+        })
+        this.loading = false
+        return
       } else {
         this.finished = true
       }

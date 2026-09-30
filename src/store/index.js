@@ -98,7 +98,7 @@ export default new Vuex.Store({
       dlFileNameTpl: '{author}_{title}_{pid}_p{index}',
       dlFileNameNoSingleP0: false,
       isImgLazy: true,
-      searchListMinFavNum: '5',
+      searchListMinFavNum: '0',
       isImageCardBorderRadius: true,
       isImageCardBoxShadow: true,
       ugoiraDefDLFormat: '',

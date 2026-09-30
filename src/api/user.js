@@ -305,16 +305,25 @@ export async function getFollowingIllusts(page = 1, mode = 'all') {
       return {
         status: 0,
         data: [],
+        rawLen: 0,
       }
     }
   }
 
-  return { status: 0, data: list }
+  return { status: 0, data: list, rawLen: list.length }
 }
 
 export async function getNewIllusts(page = 1, lastId = 0, restrict = 'safe') {
-  const cacheKey = `new.illusts.${page}.${restrict}`
-  let list = await getCache(cacheKey)
+  const cacheKey = `new.illusts.v2.${page}.${restrict}`
+  const cached = await getCache(cacheKey)
+
+  let list
+  let newLastId = 0
+
+  if (cached) {
+    list = cached.list
+    newLastId = cached.lastId || 0
+  }
 
   if (!list) {
     const { data: res } = await doGet('/ajax/illust/new', {
@@ -335,17 +344,19 @@ export async function getNewIllusts(page = 1, lastId = 0, restrict = 'safe') {
           e.url = e.url.replace(/\/c\/.+\/img\/(.+)_\w+1200\.(.+)/, '/c/540x540_70/img-master/img/$1_master1200.$2')
           return parseWebApiIllust(e)
         })
-      list._lastId = res?.lastId || 0
-      setCache(cacheKey, list, 60 * 10)
+      newLastId = res?.lastId || 0
+      setCache(cacheKey, { list, lastId: newLastId }, 60 * 10)
     } else {
       return {
         status: 0,
         data: [],
+        rawLen: 0,
+        lastId: 0,
       }
     }
   }
 
-  return { status: 0, data: list }
+  return { status: 0, data: list, rawLen: list.length, lastId: newLastId }
 }
 
 export async function getBookmarkIllusts(page = 1, userId) {
@@ -377,11 +388,12 @@ export async function getBookmarkIllusts(page = 1, userId) {
       return {
         status: 0,
         data: [],
+        rawLen: 0,
       }
     }
   }
 
-  return { status: 0, data: list }
+  return { status: 0, data: list, rawLen: list.length }
 }
 
 export async function isIllustBookmarked(id) {
