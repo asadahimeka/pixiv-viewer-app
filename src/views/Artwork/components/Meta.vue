@@ -123,18 +123,19 @@
     </div>
     <template v-if="!isNovel">
       <div v-show="isBtnsShow" class="meta_btns" :class="{ censored }">
-        <van-button
-          v-if="isLoggedIn"
-          v-longpress="showBookmarkDialog"
-          size="small"
-          :loading="favLoading"
-          :icon="bookmarkId ? 'like' : 'like-o'"
-          plain
-          color="#E87A90"
-          @click="toggleBookmark"
-        >
-          {{ bookmarkId ? $t('user.faved') : $t('user.fav') }}
-        </van-button>
+        <div v-if="isLoggedIn" class="meta-btn-cell">
+          <van-button
+            v-longpress="showBookmarkDialog"
+            size="small"
+            :loading="favLoading"
+            :icon="bookmarkId ? 'like' : 'like-o'"
+            plain
+            color="#E87A90"
+            @click="toggleBookmark"
+          >
+            {{ bookmarkId ? $t('user.faved') : $t('user.fav') }}
+          </van-button>
+        </div>
         <van-popover v-model="dlPopShow" placement="top">
           <template #reference>
             <van-button
@@ -155,19 +156,22 @@
             <div class="dl-pop-item" @click="openPageSelect">{{ $t('dlc.select_pages') }}</div>
           </div>
         </van-popover>
-        <van-button type="info" icon="comment-o" size="small" plain color="#005CAF" @click="showComments = true">
-          <span>{{ $t('user.view_comments') }}</span>
-        </van-button>
-        <van-button
-          v-if="showPicTranslateBtn"
-          type="info"
-          icon="setting-o"
-          size="small"
-          plain
-          @click.stop="showTranslateSettings = true"
-        >
-          <span>翻译设置</span>
-        </van-button>
+        <div class="meta-btn-cell">
+          <van-button type="info" icon="comment-o" size="small" plain color="#005CAF" @click="showComments = true">
+            <span>{{ $t('user.view_comments') }}</span>
+          </van-button>
+        </div>
+        <div v-if="showPicTranslateBtn" class="meta-btn-cell">
+          <van-button
+            type="info"
+            icon="setting-o"
+            size="small"
+            plain
+            @click.stop="showTranslateSettings = true"
+          >
+            <span>翻译设置</span>
+          </van-button>
+        </div>
       </div>
       <van-popup v-model="showComments" class="comments-popup" position="right" get-container="body" closeable>
         <template v-if="showComments">
@@ -662,19 +666,45 @@ export default {
   margin-top 16px
   gap 0.15rem
   flex-wrap wrap
+  // 等宽外壳：弹性布局等分的是「内容盒」，按钮自带的 8px 内边距 + 1px 边框
+  // 会叠在等分宽度之外，直接当弹性项就会比无内边距的弹层宽 18px。
+  // 让每个可见按钮都装进内外边距为 0 的外壳（.meta-btn-cell / 弹层 wrapper），
+  // 各弹性项对等宽的贡献就完全一致，任何语言/按钮数量下外宽都严格相等
   ::v-deep .van-popover__wrapper,
-  ::v-deep > .van-button {
+  .meta-btn-cell {
     flex 1
     width max-content
-    min-width max-content
+    // 统一的宽度下限（与各按钮标签长度无关）：所有按钮的 clamp 基准相同，
+    // 同排必然等宽；窄到一行放不下时按该统一下限换行，每行仍等宽
+    min-width 2.5rem
+  }
+  // 外壳内的按钮撑满外壳（border-box 下 100% 即外壳外宽）
+  .meta-btn-cell > .van-button {
+    width 100%
+  }
+  // 外壳改作弹性容器，让内部引用按钮直接参与同一套尺寸计算：
+  // 按钮由 flex 1 撑满外壳，外壳再与兄弟按钮等分
+  ::v-deep .van-popover__wrapper {
+    display flex
+  }
+  ::v-deep .van-popover__wrapper > .van-button {
+    flex 1
+    min-width 0
   }
   ::v-deep .van-button {
+    overflow hidden
     transition: filter 0.2s
     filter: none
 
     &:hover {
       filter: brightness(1.05);
     }
+  }
+  // 标签超过等分宽度时省略号截断，而不是挤占兄弟按钮的宽度
+  ::v-deep .van-button__text {
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
   }
 }
 
