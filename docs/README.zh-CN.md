@@ -41,11 +41,11 @@
 
 | 平台 | 格式 |
 | --- | --- |
-| Android | [APK (Universal)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer_1.37.5_android.apk) |
-| iOS | [IPA (未签名，需自行签名单侧载)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer_1.37.5_ios_unsigned.ipa) |
-| Windows | [EXE 安装包](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64-setup.exe) / [MSI 安装包](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64_en-US.msi) |
-| macOS | [DMG (Apple Silicon)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_aarch64.dmg) / [DMG (Intel)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_x64.dmg) |
-| Linux | [deb](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_amd64.deb) / [rpm](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer-1.37.5-1.x86_64.rpm) / [AppImage](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/Pixiv-Viewer_1.37.5_amd64.AppImage) / [Arch pkg](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.5/pixiv-viewer-1.37.5-1-x86_64.pkg.tar.zst) |
+| Android | [APK (Universal)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/pixiv-viewer_1.37.6_android.apk) |
+| iOS | [IPA (未签名，需自行签名单侧载)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/pixiv-viewer_1.37.6_ios_unsigned.ipa) |
+| Windows | [EXE 安装包](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_x64-setup.exe) / [MSI 安装包](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_x64_en-US.msi) |
+| macOS | [DMG (Apple Silicon)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_aarch64.dmg) / [DMG (Intel)](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_x64.dmg) |
+| Linux | [deb](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_amd64.deb) / [rpm](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer-1.37.6-1.x86_64.rpm) / [AppImage](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/Pixiv-Viewer_1.37.6_amd64.AppImage) / [Arch pkg](https://github.com/asadahimeka/pixiv-viewer-app/releases/download/v1.37.6/pixiv-viewer-1.37.6-1-x86_64.pkg.tar.zst) |
 
 ## ✨ 功能特性
 
