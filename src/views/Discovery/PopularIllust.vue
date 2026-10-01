@@ -100,6 +100,7 @@ export default {
     },
     getRankList: _.throttle(async function () {
       this.loading = true
+      this.error = false
       const res = await api.getPopularIllusts(this.curPage, this.restrict, this.illustType)
       if (res.status === 0) {
         if (res.rawLen) {

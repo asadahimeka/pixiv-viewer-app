@@ -80,6 +80,7 @@ export default {
     getBookmarksWeb: _.throttle(async function () {
       if (!this.user?.id || this.loading || this.finished) return
       this.loading = true
+      this.error = false
       const res = await getBookmarkIllusts(this.curPage, this.user.id)
       if (res.status === 0) {
         this.artList = _.uniqBy([
@@ -101,6 +102,7 @@ export default {
       if (!this.user?.id || this.loading || this.finished) return
       if (this.next == null) return
       this.loading = true
+      this.error = false
       const options = {}
       if (this.restrict) options.restrict = this.restrict
       if (this.bookmarkTag) options.tag = this.bookmarkTag

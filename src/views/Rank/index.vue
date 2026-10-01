@@ -255,6 +255,7 @@ export default {
     getRankList: async function () {
       if (this.loading || this.finished) return
       this.loading = true
+      this.error = false
       const type = this.getIOType(this.curType)
       let res
       const isWebRank = !!type?.includes('-web')

@@ -1266,8 +1266,8 @@ const api = {
         rankList.length && setCache(cacheKey, rankList, 60 * 60 * 24 * 14)
       } else {
         return {
-          status: 0,
-          data: [],
+          status: -1,
+          msg: i18n.t('tip.unknown_err'),
         }
       }
     }
@@ -1293,8 +1293,8 @@ const api = {
       list = illust.filter(e => !e.isAdContainer && !blockIds.includes(`${e.id}`) && !isBlockTagHit(new Set(blockTags), e.tags)).map(e => parseWebApiIllust(e))
     } else {
       return {
-        status: 0,
-        data: [],
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
 
@@ -1317,8 +1317,8 @@ const api = {
       list = res.illusts.filter(e => !e.isAdContainer).map(e => parseWebApiIllust(e))
     } else {
       return {
-        status: 0,
-        data: [],
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
 
@@ -1345,8 +1345,8 @@ const api = {
       artList = res.map(parseWebPopularIllust)
     } else {
       return {
-        status: 0,
-        data: [],
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
 
@@ -2076,7 +2076,7 @@ const api = {
       }
     }
 
-    return { status: 0, data: memberArtwork }
+    return { status: 0, data: filterCensoredNovels(memberArtwork), rawLen: memberArtwork.length }
   },
 
   /**

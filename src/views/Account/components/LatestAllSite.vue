@@ -58,6 +58,7 @@ export default {
     getRankList: _.throttle(async function () {
       if (this.loading || this.finished) return
       this.loading = true
+      this.error = false
       const res = await getNewIllusts(this.curPage, this.lastId, this.restrict)
       if (res.status === 0) {
         this.artList = _.uniqBy([
