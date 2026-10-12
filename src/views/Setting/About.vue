@@ -81,7 +81,7 @@
         title="IllustFerry"
         is-link
         label="In-app login reference."
-        @click="openLink('https://github.com/peasoft/IllustFerry')"
+        @click="openLink('https://github.com/ZZCYUN/IllustFerry')"
       />
       <van-cell
         center
