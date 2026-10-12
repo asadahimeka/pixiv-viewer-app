@@ -181,7 +181,7 @@ See [docs/FAQ.md](docs/FAQ.md) · [中文](docs/FAQ.zh-CN.md)
 - [PixEz](https://github.com/Notsfsssf/pixez-flutter): Direct connect mode and client logic reference.
 - [Pixiv-Shaft](https://github.com/CeuiLiSA/Pixiv-Shaft): Direct connect mode logic reference.
 - [pxder](https://github.com/Tsuk1ko/pxder)：OAuth login reference.
-- [IllustFerry](https://github.com/peasoft/IllustFerry): In-app login reference.
+- [IllustFerry](https://github.com/ZZCYUN/IllustFerry): In-app login reference.
 - [ShinobuTranslator](https://github.com/DonutShinobu/ShinobuTranslator)：Manga translate engine.
 - [KISS Translator](https://github.com/fishjar/kiss-translator)：Fullpage translate tool.
 
