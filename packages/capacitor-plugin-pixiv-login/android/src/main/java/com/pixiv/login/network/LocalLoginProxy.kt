@@ -1,5 +1,5 @@
 /*
- * Ported from IllustFerry (https://github.com/peasoft/IllustFerry) — GPL-3.0
+ * Ported from IllustFerry (https://github.com/ZZCYUN/IllustFerry) — GPL-3.0
  * Original: app/src/main/java/JunZi/Pixiv/data/network/LocalPixivProxy.kt
  *
  * 本文件基于 IllustFerry 移植，调整了包名与类名（LocalPixivProxy -> LocalLoginProxy）、

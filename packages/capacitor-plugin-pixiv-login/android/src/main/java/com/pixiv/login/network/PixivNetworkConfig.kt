@@ -1,5 +1,5 @@
 /*
- * Ported from IllustFerry (https://github.com/peasoft/IllustFerry) — GPL-3.0
+ * Ported from IllustFerry (https://github.com/ZZCYUN/IllustFerry) — GPL-3.0
  * Original: app/src/main/java/JunZi/Pixiv/data/network/PixivNetworkConfig.kt
  * 移植改动：新增 SharedPreferences 持久化（替换原项目 TokenStore），
  * initPersistence(context) 由插件在 initialize 时调用。

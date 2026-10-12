@@ -1,5 +1,5 @@
 /*
- * Ported from IllustFerry (https://github.com/peasoft/IllustFerry) — GPL-3.0
+ * Ported from IllustFerry (https://github.com/ZZCYUN/IllustFerry) — GPL-3.0
  * Original: app/src/main/java/JunZi/Pixiv/data/network/PixivHost.kt
  * 本文件为近乎逐行的移植，仅调整包名。
  */

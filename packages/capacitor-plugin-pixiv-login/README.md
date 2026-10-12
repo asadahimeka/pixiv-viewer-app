@@ -1,6 +1,6 @@
 # capacitor-plugin-pixiv-login
 
-应用内 Pixiv 官网登录（Android），移植自 [IllustFerry](https://github.com/peasoft/IllustFerry)（GPL-3.0）。
+应用内 Pixiv 官网登录（Android），移植自 [IllustFerry](https://github.com/ZZCYUN/IllustFerry)（GPL-3.0）。
 
 ## 组成
 

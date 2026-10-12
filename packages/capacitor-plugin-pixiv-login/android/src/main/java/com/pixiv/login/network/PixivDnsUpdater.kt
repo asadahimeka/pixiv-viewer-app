@@ -1,5 +1,5 @@
 /*
- * Ported from IllustFerry (https://github.com/peasoft/IllustFerry) — GPL-3.0
+ * Ported from IllustFerry (https://github.com/ZZCYUN/IllustFerry) — GPL-3.0
  * Original: app/src/main/java/JunZi/Pixiv/data/network/PixivDnsUpdater.kt
  * 移植改动：去掉 OkHttp / Gson / kotlinx.coroutines 依赖，
  * 改为 HttpURLConnection + org.json，方法直接在调用线程执行（Capacitor 桥自带线程池）。

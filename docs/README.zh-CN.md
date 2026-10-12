@@ -91,7 +91,7 @@
 - [PixEz](https://github.com/Notsfsssf/pixez-flutter)：直连模式与客户端逻辑参考
 - [Pixiv-Shaft](https://github.com/CeuiLiSA/Pixiv-Shaft)：直连模式逻辑参考
 - [pxder](https://github.com/Tsuk1ko/pxder)：OAuth 登录参考实现
-- [IllustFerry](https://github.com/peasoft/IllustFerry)：应用内登录参考
+- [IllustFerry](https://github.com/ZZCYUN/IllustFerry)：应用内登录参考
 - [ShinobuTranslator](https://github.com/DonutShinobu/ShinobuTranslator)：漫画翻译引擎
 - [KISS Translator](https://github.com/fishjar/kiss-translator)：整页翻译工具
 
