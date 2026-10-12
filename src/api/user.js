@@ -178,8 +178,8 @@ export async function getDiscoveryArtworks(page = 1, mode = 'all', limit = 60) {
       setCache(cacheKey, list, 60 * 10)
     } else {
       return {
-        status: 0,
-        data: [],
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
   }
@@ -303,9 +303,8 @@ export async function getFollowingIllusts(page = 1, mode = 'all') {
       setCache(cacheKey, list, 60 * 10)
     } else {
       return {
-        status: 0,
-        data: [],
-        rawLen: 0,
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
   }
@@ -348,10 +347,8 @@ export async function getNewIllusts(page = 1, lastId = 0, restrict = 'safe') {
       setCache(cacheKey, { list, lastId: newLastId }, 60 * 10)
     } else {
       return {
-        status: 0,
-        data: [],
-        rawLen: 0,
-        lastId: 0,
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
   }
@@ -386,9 +383,8 @@ export async function getBookmarkIllusts(page = 1, userId) {
       setCache(cacheKey, list, 60 * 10)
     } else {
       return {
-        status: 0,
-        data: [],
-        rawLen: 0,
+        status: -1,
+        msg: i18n.t('tip.unknown_err'),
       }
     }
   }

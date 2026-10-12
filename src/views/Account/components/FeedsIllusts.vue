@@ -112,6 +112,7 @@ export default {
     getRankList: _.throttle(async function () {
       if (this.loading || this.finished) return
       this.loading = true
+      this.error = false
       const res = this.isAppLogin
         ? await localApi.illustFollow(this.curPage, this.restrict)
         : await getFollowingIllusts(this.curPage)
